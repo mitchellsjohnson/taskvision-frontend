@@ -11,6 +11,10 @@ variable "bucket_name" {
 }
 
 provider "aws" {
+
+resource "random_id" "suffix" {
+  byte_length = 2
+}
   region = "us-east-1"
 }
 
@@ -19,7 +23,7 @@ locals {
 }
 
 resource "aws_s3_bucket" "frontend" {
-  bucket = local.full_bucket_name
+  bucket = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
   force_destroy = true
 }
 
