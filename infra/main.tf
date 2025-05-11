@@ -1,25 +1,15 @@
+provider "aws" {
+  region = "us-east-1"
+}
+
 variable "environment" {
   description = "The environment name (dev or prod)"
   type        = string
   default     = "dev"
 }
 
-variable "bucket_name" {
-  description = "The name of the S3 bucket for the frontend app"
-  type        = string
-  default     = ""
-}
-
-provider "aws" {
-
 resource "random_id" "suffix" {
   byte_length = 2
-}
-  region = "us-east-1"
-}
-
-locals {
-  full_bucket_name = "${var.bucket_name != "" ? var.bucket_name : "taskvision-${var.environment}-frontend"}"
 }
 
 resource "aws_s3_bucket" "frontend" {
