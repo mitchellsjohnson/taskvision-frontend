@@ -53,10 +53,12 @@ resource "aws_s3_bucket_policy" "frontend" {
       }
     ]
   })
+
+  depends_on = [aws_s3_bucket_public_access_block.frontend]
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = "frontend-oac-${var.environment}"
+  name                              = "frontend-oac-${var.environment}-${random_id.suffix.hex}"
   description                       = "Access control for CloudFront to S3"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
