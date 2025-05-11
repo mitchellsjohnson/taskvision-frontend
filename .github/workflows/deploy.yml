@@ -21,22 +21,16 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: taskvision-frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install Dependencies
-        run: |
-          cd taskvision-frontend
-          npm ci
+        run: npm ci
 
       - name: Run Tests
-        run: |
-          cd taskvision-frontend
-          npm test
+        run: npm test
 
       - name: Build
-        run: |
-          cd taskvision-frontend
-          npm run build
+        run: npm run build
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -46,5 +40,4 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Deploy to S3
-        run: |
-          aws s3 sync taskvision-frontend/build/ s3://${{ secrets.S3_BUCKET }} --delete 
+        run: aws s3 sync build/ s3://${{ secrets.S3_BUCKET }} --delete 
