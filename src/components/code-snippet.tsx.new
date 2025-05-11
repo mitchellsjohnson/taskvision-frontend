@@ -19,4 +19,4 @@ export const CodeSnippet: React.FC<CodeSnippetProps> = ({
       </div>
     </div>
   </div>
-);
+); 

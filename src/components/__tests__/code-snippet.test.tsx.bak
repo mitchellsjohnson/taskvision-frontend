@@ -1,0 +1,118 @@
+// import React from 'react';
+// import { render, screen } from '@testing-library/react';
+// import { CodeSnippet } from '../code-snippet';
+
+// describe('CodeSnippet', () => {
+//   it('renders code snippet with title and code', () => {
+//     render(
+//       <CodeSnippet 
+//         title="Test Title"
+//         code="const test = 'hello';"
+//       />
+//     );
+
+//     expect(screen.getByText('Test Title')).toBeInTheDocument();
+//     expect(screen.getByText("const test = 'hello';")).toBeInTheDocument();
+//   });
+
+//   it('renders code snippet with only code when title is not provided', () => {
+//     render(
+//       <CodeSnippet 
+//         code="const test = 'hello';"
+//       />
+//     );
+
+//     expect(screen.queryByText('Test Title')).not.toBeInTheDocument();
+//     expect(screen.getByText("const test = 'hello';")).toBeInTheDocument();
+//   });
+
+//   it('renders empty code snippet when code is not provided', () => {
+//     render(
+//       <CodeSnippet 
+//         title="Test Title"
+//       />
+//     );
+
+//     expect(screen.getByText('Test Title')).toBeInTheDocument();
+//     const codeElement = screen.getByRole('code');
+//     expect(codeElement).toBeInTheDocument();
+//     expect(codeElement).toHaveTextContent('');
+//   });
+
+//   it('renders empty code snippet when both title and code are not provided', () => {
+//     render(<CodeSnippet />);
+
+//     expect(screen.queryByText('Test Title')).not.toBeInTheDocument();
+//     const codeElement = screen.getByRole('code');
+//     expect(codeElement).toBeInTheDocument();
+//     expect(codeElement).toHaveTextContent('');
+//   });
+
+//   it('renders code snippet with multiline code', () => {
+//     const multilineCode = `const test = 'hello';
+// console.log(test);`;
+
+//     render(
+//       <CodeSnippet 
+//         title="Multiline Code"
+//         code={multilineCode}
+//       />
+//     );
+
+//     expect(screen.getByText('Multiline Code')).toBeInTheDocument();
+//     expect(screen.getByText(/const test = 'hello';/)).toBeInTheDocument();
+//     expect(screen.getByText(/console\.log\(test\);/)).toBeInTheDocument();
+//   });
+
+//   it('renders code snippet with special characters', () => {
+//     const specialCode = '<div>Hello & World!</div>';
+
+//     render(
+//       <CodeSnippet 
+//         title="Special Characters"
+//         code={specialCode}
+//       />
+//     );
+
+//     expect(screen.getByText('Special Characters')).toBeInTheDocument();
+//     expect(screen.getByText(specialCode)).toBeInTheDocument();
+//   });
+
+//   it('applies the correct CSS classes', () => {
+//     render(
+//       <CodeSnippet 
+//         title="Test Title"
+//         code="const test = 'hello';"
+//       />
+//     );
+
+//     const container = screen.getByText('Test Title').parentElement;
+//     expect(container).toHaveClass('code-snippet');
+    
+//     const title = screen.getByText('Test Title');
+//     expect(title).toHaveClass('code-snippet__title');
+    
+//     const codeContainer = screen.getByText("const test = 'hello';").parentElement?.parentElement;
+//     expect(codeContainer).toHaveClass('code-snippet__container');
+    
+//     const codeWrapper = screen.getByText("const test = 'hello';").parentElement;
+//     expect(codeWrapper).toHaveClass('code-snippet__wrapper');
+    
+//     const codeBody = screen.getByText("const test = 'hello';");
+//     expect(codeBody).toHaveClass('code-snippet__body');
+//   });
+
+//   it('preserves whitespace in code', () => {
+//     const codeWithWhitespace = '    const test = "hello";    ';
+
+//     render(
+//       <CodeSnippet 
+//         title="Whitespace Test"
+//         code={codeWithWhitespace}
+//       />
+//     );
+
+//     const codeElement = screen.getByRole('code');
+//     expect(codeElement).toHaveTextContent(codeWithWhitespace);
+//   });
+// }); 
