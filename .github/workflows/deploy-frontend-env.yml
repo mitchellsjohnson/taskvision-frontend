@@ -63,4 +63,4 @@ jobs:
 
       - name: Upload frontend build to S3
         run: |
-          aws s3 sync taskvision/taskvision-frontend/build/ s3://$BUCKET_NAME/ --delete
+          aws s3 sync build/ s3://$BUCKET_NAME/ --delete
