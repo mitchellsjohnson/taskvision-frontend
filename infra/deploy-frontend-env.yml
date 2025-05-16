@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - dev
+    paths:
+      - 'taskvision-frontend/**'
   workflow_dispatch:
     inputs:
       environment:
@@ -58,7 +60,12 @@ jobs:
         run: terraform apply -auto-approve -var="environment=${{ env.ENVIRONMENT }}"
         working-directory: taskvision-frontend/infra
 
+      - name: Export S3 bucket name from Terraform output
+        run: |
+          cd taskvision-frontend/infra
+          BUCKET_NAME=$(terraform output -raw s3_bucket_name | tr -d '\r\n')
+          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
+
       - name: Upload React build to S3
         run: |
-          export BUCKET_NAME="taskvision-${{ env.ENVIRONMENT }}-frontend"
           aws s3 sync taskvision-frontend/build/ s3://$BUCKET_NAME/ --delete
