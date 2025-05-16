@@ -49,15 +49,15 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: taskvision/taskvision-frontend/infra
+        working-directory: infra
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="environment=${{ env.ENVIRONMENT }}"
-        working-directory: taskvision/taskvision-frontend/infra
+        working-directory: infra
 
       - name: Export S3 bucket name from Terraform
         run: |
-          cd taskvision/taskvision-frontend/infra
+          cd infra
           BUCKET_NAME=$(terraform output -raw s3_bucket_name | tr -d '\r\n')
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
 
