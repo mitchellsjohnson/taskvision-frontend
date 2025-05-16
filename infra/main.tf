@@ -2,6 +2,7 @@ provider "aws" {
   region = "us-east-1"
 }
 
+# Frontend infrastructure for TaskVision application
 variable "environment" {
   description = "The environment name (dev or prod)"
   type        = string
