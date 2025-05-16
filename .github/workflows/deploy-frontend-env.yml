@@ -1,0 +1,41 @@
+name: Deploy TaskVision Frontend
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - 'taskvision-frontend/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy (dev or prod)'
+        required: true
+        default: dev
+        type: choice
+        options: [dev, prod]
+
+jobs:
+  deploy-frontend:
+    name: Deploy Frontend to ${{ github.event.inputs.environment || github.ref_name }}
+    runs-on: ubuntu-latest
+
+    env:
+      ENVIRONMENT: ${{ github.event.inputs.environment || github.ref_name }}
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies and build frontend
+        run: |
+          cd taskvision-frontend
+          npm ci
+          npm
