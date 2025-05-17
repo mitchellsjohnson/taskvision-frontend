@@ -2,7 +2,7 @@ import { AxiosRequestConfig } from "axios";
 import { ApiResponse } from "../models/api-response";
 import { callExternalApi } from "./external-api.service";
 
-const apiServerUrl = process.env.REACT_APP_API_SERVER_URL;
+const apiServerUrl = process.env.REACT_APP_API_URL;
 
 export const getPublicResource = async (): Promise<ApiResponse> => {
   const config: AxiosRequestConfig = {
