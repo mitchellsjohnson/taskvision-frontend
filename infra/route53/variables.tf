@@ -1,0 +1,1 @@
+<Route53 variables.tf contents>
