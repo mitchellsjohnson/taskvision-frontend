@@ -118,3 +118,92 @@ resource "aws_cloudfront_distribution" "frontend" {
     Environment = var.environment
   }
 }
+
+### TaskVision Frontend Domain Resources (START)
+
+# S3 bucket for static frontend hosting
+resource "aws_s3_bucket" "frontend_bucket" {
+  bucket = "${var.subdomain}.${var.domain_name}"
+  acl    = "public-read"
+
+  website {
+    index_document = "index.html"
+    error_document = "index.html"
+  }
+
+  tags = {
+    Environment = var.environment
+  }
+}
+
+# Public read policy for the S3 bucket
+resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "PublicReadGetObject",
+        Effect    = "Allow",
+        Principal = "*",
+        Action    = "s3:GetObject",
+        Resource  = "${aws_s3_bucket.frontend_bucket.arn}/*"
+      }
+    ]
+  })
+}
+
+# CloudFront distribution for frontend
+resource "aws_cloudfront_distribution" "frontend_distribution" {
+  origin {
+    domain_name = aws_s3_bucket.frontend_bucket.website_endpoint
+    origin_id   = "S3-${aws_s3_bucket.frontend_bucket.id}"
+  }
+
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+
+  default_cache_behavior {
+    allowed_methods  = ["GET", "HEAD"]
+    cached_methods   = ["GET", "HEAD"]
+    target_origin_id = "S3-${aws_s3_bucket.frontend_bucket.id}"
+
+    viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      query_string = false
+
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn = var.acm_certificate_arn
+    ssl_support_method  = "sni-only"
+  }
+
+  aliases = ["${var.subdomain}.${var.domain_name}"]
+
+  tags = {
+    Environment = var.environment
+  }
+}
+
+# Route 53 DNS record pointing to CloudFront
+resource "aws_route53_record" "frontend_alias" {
+  zone_id = var.zone_id
+  name    = "${var.subdomain}.${var.domain_name}"
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.frontend_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.frontend_distribution.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+### TaskVision Frontend Domain Resources (END)
