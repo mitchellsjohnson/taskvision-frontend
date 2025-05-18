@@ -1,12 +1,21 @@
-variable "domain_name" {
-  description = "The custom domain for the CloudFront distribution"
+variable "environment" {
+  description = "Deployment environment (e.g., dev, prod)"
   type        = string
 }
 
-variable "san_list" {
-  description = "Optional list of SANs"
-  type        = list(string)
-  default     = []
+variable "subdomain" {
+  description = "Subdomain (e.g., dev, prod)"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "Primary domain name (e.g., taskvision.ai)"
+  type        = string
+}
+
+variable "acm_certificate_arn" {
+  description = "ARN of the ACM certificate for SSL"
+  type        = string
 }
 
 variable "zone_id" {
@@ -14,7 +23,10 @@ variable "zone_id" {
   type        = string
 }
 
-variable "s3_bucket_domain_name" {
-  description = "S3 bucket domain name for frontend hosting"
-  type        = string
+variable "san_list" {
+  description = "Optional subject alternative names for the cert"
+  type        = list(string)
+  default     = []
 }
+
+
