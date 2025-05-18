@@ -31,7 +31,6 @@ output "frontend_cloudfront_domain_name" {
 ### TaskVision ACM Outputs (START)
 
 output "frontend_certificate_arn" {
-  value = aws_acm_certificate_validation.frontend_cert_validation.certificate_arn
+  value = module.acm.certificate_arn
 }
-
 ### TaskVision ACM Outputs (END)
