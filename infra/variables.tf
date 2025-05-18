@@ -13,11 +13,6 @@ variable "domain_name" {
   type        = string
 }
 
-variable "acm_certificate_arn" {
-  description = "ARN of the ACM certificate for SSL"
-  type        = string
-}
-
 variable "zone_id" {
   description = "Route 53 Hosted Zone ID"
   type        = string

@@ -2,11 +2,16 @@ provider "aws" {
   region = "us-east-1"
 }
 
-# Frontend infrastructure for TaskVision application
-variable "environment" {
-  description = "The environment name (dev or prod)"
-  type        = string
-  default     = "dev"
+locals {
+  fqdn = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
+}
+
+module "acm" {
+  source      = "./modules/acm"
+  domain_name = local.fqdn
+  san_list    = []
+  zone_id     = var.zone_id
+  environment = var.environment
 }
 
 resource "random_id" "suffix" {
@@ -14,7 +19,7 @@ resource "random_id" "suffix" {
 }
 
 resource "aws_s3_bucket" "frontend" {
-  bucket = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
+  bucket        = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
   force_destroy = true
 }
 
@@ -103,15 +108,15 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   custom_error_response {
-    error_code            = 403
-    response_code         = 200
-    response_page_path    = "/index.html"
+    error_code         = 403
+    response_code      = 200
+    response_page_path = "/index.html"
   }
 
   custom_error_response {
-    error_code            = 404
-    response_code         = 200
-    response_page_path    = "/index.html"
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
   }
 
   tags = {
@@ -121,22 +126,31 @@ resource "aws_cloudfront_distribution" "frontend" {
 
 ### TaskVision Frontend Domain Resources (START)
 
-# S3 bucket for static frontend hosting
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket = "${var.subdomain}.${var.domain_name}"
-  acl    = "public-read"
+  bucket = local.fqdn
+}
 
-  website {
-    index_document = "index.html"
-    error_document = "index.html"
+resource "aws_s3_bucket_public_access_block" "frontend_bucket" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  block_public_acls       = false
+  ignore_public_acls      = false
+  block_public_policy     = false
+  restrict_public_buckets = false
+}
+
+resource "aws_s3_bucket_website_configuration" "frontend_bucket" {
+  bucket = aws_s3_bucket.frontend_bucket.id
+
+  index_document {
+    suffix = "index.html"
   }
 
-  tags = {
-    Environment = var.environment
+  error_document {
+    key = "index.html"
   }
 }
 
-# Public read policy for the S3 bucket
 resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
   bucket = aws_s3_bucket.frontend_bucket.id
 
@@ -152,12 +166,13 @@ resource "aws_s3_bucket_policy" "frontend_bucket_policy" {
       }
     ]
   })
+
+  depends_on = [aws_s3_bucket_public_access_block.frontend_bucket]
 }
 
-# CloudFront distribution for frontend
 resource "aws_cloudfront_distribution" "frontend_distribution" {
   origin {
-    domain_name = aws_s3_bucket.frontend_bucket.website_endpoint
+    domain_name = aws_s3_bucket_website_configuration.frontend_bucket.website_endpoint
     origin_id   = "S3-${aws_s3_bucket.frontend_bucket.id}"
   }
 
@@ -174,29 +189,33 @@ resource "aws_cloudfront_distribution" "frontend_distribution" {
 
     forwarded_values {
       query_string = false
-
       cookies {
         forward = "none"
       }
     }
   }
 
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
   viewer_certificate {
-    acm_certificate_arn = var.acm_certificate_arn
+    acm_certificate_arn = module.acm.certificate_arn
     ssl_support_method  = "sni-only"
   }
 
-  aliases = ["${var.subdomain}.${var.domain_name}"]
+  aliases = [local.fqdn]
 
   tags = {
     Environment = var.environment
   }
 }
 
-# Route 53 DNS record pointing to CloudFront
 resource "aws_route53_record" "frontend_alias" {
   zone_id = var.zone_id
-  name    = "${var.subdomain}.${var.domain_name}"
+  name    = local.fqdn
   type    = "A"
 
   alias {
