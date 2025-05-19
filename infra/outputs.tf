@@ -12,25 +12,11 @@ output "cloudfront_domain_name" {
   description = "Domain name of the CloudFront distribution"
   value       = aws_cloudfront_distribution.frontend.domain_name
 }
-### TaskVision Frontend Outputs (START)
-
-output "frontend_bucket_name" {
-  value = aws_s3_bucket.frontend_bucket.id
-}
-
-output "frontend_cloudfront_distribution_id" {
-  value = aws_cloudfront_distribution.frontend_distribution.id
-}
-
-output "frontend_cloudfront_domain_name" {
-  value = aws_cloudfront_distribution.frontend_distribution.domain_name
-}
-
-### TaskVision Frontend Outputs (END)
 
 ### TaskVision ACM Outputs (START)
 
 output "frontend_certificate_arn" {
   value = module.acm.certificate_arn
 }
+
 ### TaskVision ACM Outputs (END)
