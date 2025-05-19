@@ -3,7 +3,9 @@ provider "aws" {
 }
 
 locals {
-  fqdn = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
+  fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
+  bucket_name  = "taskvision-${var.environment}-frontend"
+  oac_name     = "frontend-oac-${var.environment}"
 }
 
 module "acm" {
@@ -14,13 +16,10 @@ module "acm" {
   environment = var.environment
 }
 
-resource "random_id" "suffix" {
-  byte_length = 2
-}
-
 resource "aws_s3_bucket" "frontend" {
-  bucket        = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
-  force_destroy = true
+  bucket        = local.bucket_name
+  force_destroy = false
+
   tags = {
     Environment = var.environment
   }
@@ -36,7 +35,7 @@ resource "aws_s3_bucket_public_access_block" "frontend" {
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = "frontend-oac-${var.environment}-${random_id.suffix.hex}"
+  name                              = local.oac_name
   description                       = "Access control for CloudFront to S3"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
@@ -55,12 +54,7 @@ resource "aws_s3_bucket_policy" "frontend" {
           Service = "cloudfront.amazonaws.com"
         },
         Action   = "s3:GetObject",
-        Resource = "${aws_s3_bucket.frontend.arn}/*",
-        Condition = {
-          StringEquals = {
-            "AWS:SourceArn" = "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.frontend.id}"
-          }
-        }
+        Resource = "${aws_s3_bucket.frontend.arn}/*"
       }
     ]
   })
@@ -70,8 +64,8 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_cloudfront_distribution" "frontend" {
   enabled             = true
-  default_root_object = "index.html"
   is_ipv6_enabled     = true
+  default_root_object = "index.html"
   aliases             = [local.fqdn]
 
   origin {
