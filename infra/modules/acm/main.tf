@@ -4,6 +4,11 @@ resource "aws_acm_certificate" "cert" {
   domain_name               = var.domain_name
   validation_method         = "DNS"
   subject_alternative_names = var.san_list
+
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Environment = var.environment
   }
