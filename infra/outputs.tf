@@ -1,20 +1,23 @@
 output "s3_bucket_name" {
-  description = "Name of the S3 bucket hosting the frontend"
-  value       = aws_s3_bucket.frontend.bucket
+  description = "Name of the S3 bucket"
+  value       = local.bucket_id
 }
 
 output "cloudfront_distribution_id" {
-  value = data.aws_cloudfront_distribution.frontend.id
+  description = "ID of the CloudFront distribution"
+  value       = var.cloudfront_distribution_id != "" ? var.cloudfront_distribution_id : aws_cloudfront_distribution.frontend[0].id
 }
 
 output "cloudfront_domain_name" {
-  value = data.aws_cloudfront_distribution.frontend.domain_name
+  description = "Domain name of the CloudFront distribution"
+  value       = local.cloudfront_domain_name
 }
 
 ### TaskVision ACM Outputs (START)
 
 output "certificate_arn" {
-  value = module.acm.certificate_arn
+  description = "ARN of the ACM certificate"
+  value       = module.acm.certificate_arn
 }
 
 ### TaskVision ACM Outputs (END)
