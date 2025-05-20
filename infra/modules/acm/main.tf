@@ -29,16 +29,17 @@ resource "aws_acm_certificate" "cert" {
 
 locals {
   certificate_arn = data.aws_acm_certificate.existing.arn != null ? data.aws_acm_certificate.existing.arn : aws_acm_certificate.cert[0].arn
+  validation_options = data.aws_acm_certificate.existing.arn == null ? tolist(aws_acm_certificate.cert[0].domain_validation_options) : []
 }
 
 resource "aws_route53_record" "cert_validation" {
-  count = data.aws_acm_certificate.existing.arn == null ? 1 : 0
+  count = length(local.validation_options)
 
   allow_overwrite = true
-  name            = aws_acm_certificate.cert[0].domain_validation_options[0].resource_record_name
-  records         = [aws_acm_certificate.cert[0].domain_validation_options[0].resource_record_value]
+  name            = local.validation_options[count.index].resource_record_name
+  records         = [local.validation_options[count.index].resource_record_value]
   ttl             = 60
-  type            = aws_acm_certificate.cert[0].domain_validation_options[0].resource_record_type
+  type            = local.validation_options[count.index].resource_record_type
   zone_id         = var.zone_id
 }
 
@@ -46,7 +47,7 @@ resource "aws_acm_certificate_validation" "cert_validation" {
   count = data.aws_acm_certificate.existing.arn == null ? 1 : 0
 
   certificate_arn         = local.certificate_arn
-  validation_record_fqdns = [aws_route53_record.cert_validation[0].fqdn]
+  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 }
 
 ### TaskVision ACM Module (END)
