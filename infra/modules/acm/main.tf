@@ -1,13 +1,15 @@
 ### TaskVision ACM Module (START)
 
+# Only try to read existing certificate if we have permissions
 data "aws_acm_certificate" "existing" {
+  count = var.domain_name != "" ? 1 : 0
   domain      = var.domain_name
   statuses    = ["ISSUED"]
   most_recent = true
 }
 
 resource "aws_acm_certificate" "cert" {
-  count = data.aws_acm_certificate.existing.arn == null ? 1 : 0
+  count = var.domain_name != "" && (length(data.aws_acm_certificate.existing) == 0 || data.aws_acm_certificate.existing[0].arn == null) ? 1 : 0
 
   domain_name               = var.domain_name
   validation_method         = "DNS"
@@ -28,8 +30,8 @@ resource "aws_acm_certificate" "cert" {
 }
 
 locals {
-  certificate_arn = data.aws_acm_certificate.existing.arn != null ? data.aws_acm_certificate.existing.arn : aws_acm_certificate.cert[0].arn
-  validation_options = data.aws_acm_certificate.existing.arn == null ? tolist(aws_acm_certificate.cert[0].domain_validation_options) : []
+  certificate_arn = var.domain_name != "" && length(data.aws_acm_certificate.existing) > 0 && data.aws_acm_certificate.existing[0].arn != null ? data.aws_acm_certificate.existing[0].arn : (length(aws_acm_certificate.cert) > 0 ? aws_acm_certificate.cert[0].arn : null)
+  validation_options = length(aws_acm_certificate.cert) > 0 ? tolist(aws_acm_certificate.cert[0].domain_validation_options) : []
 }
 
 resource "aws_route53_record" "cert_validation" {
@@ -44,7 +46,7 @@ resource "aws_route53_record" "cert_validation" {
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
-  count = data.aws_acm_certificate.existing.arn == null ? 1 : 0
+  count = length(local.validation_options) > 0 ? 1 : 0
 
   certificate_arn         = local.certificate_arn
   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]

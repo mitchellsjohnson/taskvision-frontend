@@ -7,11 +7,13 @@ locals {
   bucket_name  = "taskvision-${var.environment}-frontend"
 }
 
+# Only try to read existing CloudFront distribution if ID is provided
 data "aws_cloudfront_distribution" "existing" {
   count = var.cloudfront_distribution_id != "" ? 1 : 0
   id    = var.cloudfront_distribution_id
 }
 
+# Only try to read existing S3 bucket
 data "aws_s3_bucket" "existing" {
   bucket = local.bucket_name
 }
