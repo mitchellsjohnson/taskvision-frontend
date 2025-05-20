@@ -1,9 +1,29 @@
 output "certificate_arn" {
-  description = "ARN of the ACM certificate (either created or reused)"
-  value = length(data.aws_acm_certificate.existing) > 0 ? data.aws_acm_certificate.existing[0].arn : aws_acm_certificate.cert[0].arn
+  description = "ARN of the ACM certificate"
+  value       = module.acm.certificate_arn
 }
 
 output "validation_record_fqdns" {
-  description = "The DNS records to add to validate the certificate"
-  value = length(data.aws_acm_certificate.existing) == 0 ? [for record in aws_route53_record.cert_validation : record.fqdn] : []
+  description = "DNS records needed to validate ACM certificate (if any)"
+  value       = module.acm.validation_record_fqdns
+}
+
+output "s3_bucket_name" {
+  description = "Name of the S3 bucket"
+  value       = aws_s3_bucket.frontend.bucket
+}
+
+output "cloudfront_distribution_id" {
+  description = "ID of the CloudFront distribution"
+  value       = var.cloudfront_distribution_id != "" ? var.cloudfront_distribution_id : aws_cloudfront_distribution.frontend[0].id
+}
+
+output "cloudfront_domain_name" {
+  description = "Domain name of the CloudFront distribution"
+  value       = var.cloudfront_distribution_id != "" ? data.aws_cloudfront_distribution.frontend.domain_name : aws_cloudfront_distribution.frontend[0].domain_name
+}
+
+output "route53_record_name" {
+  description = "DNS record created for the frontend domain"
+  value       = aws_route53_record.frontend_alias.name
 }
