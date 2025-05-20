@@ -20,8 +20,35 @@ resource "aws_s3_bucket" "frontend" {
   bucket        = local.bucket_name
   force_destroy = true
 
+  lifecycle {
+    ignore_changes = [
+      bucket,
+      tags
+    ]
+  }
+
   tags = {
     Environment = var.environment
+  }
+}
+
+resource "aws_s3_bucket_versioning" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_lifecycle_configuration" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+
+  rule {
+    id     = "cleanup"
+    status = "Enabled"
+
+    expiration {
+      days = 30
+    }
   }
 }
 

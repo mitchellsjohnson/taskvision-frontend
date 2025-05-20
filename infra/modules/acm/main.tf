@@ -28,6 +28,15 @@ resource "aws_route53_record" "cert_validation" {
   zone_id = var.zone_id
   records = [each.value.record]
   ttl     = 60
+
+  lifecycle {
+    ignore_changes = [
+      name,
+      type,
+      records,
+      ttl
+    ]
+  }
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
