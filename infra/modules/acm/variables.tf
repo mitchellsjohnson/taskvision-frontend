@@ -1,6 +1,7 @@
 variable "domain_name" {
   type        = string
   description = "Primary domain for the certificate"
+  default     = ""
 }
 
 variable "san_list" {
