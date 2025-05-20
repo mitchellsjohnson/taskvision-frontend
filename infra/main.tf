@@ -9,11 +9,19 @@ resource "random_id" "suffix" {
 locals {
   fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
   bucket_name  = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
-  oac_name     = "frontend-oac-${var.environment}-${random_id.suffix.hex}"
+}
+
+variable "cloudfront_distribution_id" {
+  description = "ID of the existing CloudFront distribution to use"
+  type        = string
+}
+
+data "aws_cloudfront_distribution" "frontend" {
+  id = var.cloudfront_distribution_id
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = local.oac_name
+  name                              = "frontend-oac-${var.environment}-${random_id.suffix.hex}"
   description                       = "Access control for CloudFront to S3"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
@@ -26,63 +34,33 @@ resource "aws_s3_bucket" "frontend" {
   tags = {
     Environment = var.environment
   }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
-resource "aws_cloudfront_distribution" "frontend" {
-  enabled             = true
-  is_ipv6_enabled     = true
-  default_root_object = "index.html"
-  price_class         = "PriceClass_All"
-  retain_on_delete    = false
-  wait_for_deployment = true
-
-  origin {
-    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
-    origin_id                = "frontendS3Origin"
-  }
-
-  default_cache_behavior {
-    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "frontendS3Origin"
-    viewer_protocol_policy = "redirect-to-https"
-
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = aws_s3_bucket.frontend.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCloudFrontServicePrincipal"
+        Effect    = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.frontend.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = data.aws_cloudfront_distribution.frontend.arn
+          }
+        }
       }
-    }
-  }
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    acm_certificate_arn      = module.acm.certificate_arn
-    ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.2_2021"
-  }
-
-  custom_error_response {
-    error_code         = 403
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-
-  custom_error_response {
-    error_code         = 404
-    response_code      = 200
-    response_page_path = "/index.html"
-  }
-
-  tags = {
-    Environment = var.environment
-  }
+    ]
+  })
 }
 
 resource "aws_route53_record" "frontend_alias" {
@@ -92,8 +70,8 @@ resource "aws_route53_record" "frontend_alias" {
   allow_overwrite = true
 
   alias {
-    name                   = aws_cloudfront_distribution.frontend.domain_name
-    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    name                   = data.aws_cloudfront_distribution.frontend.domain_name
+    zone_id                = data.aws_cloudfront_distribution.frontend.hosted_zone_id
     evaluate_target_health = false
   }
 }

@@ -4,11 +4,11 @@ output "s3_bucket_name" {
 }
 
 output "cloudfront_distribution_id" {
-  value = aws_cloudfront_distribution.frontend.id
+  value = data.aws_cloudfront_distribution.frontend.id
 }
 
 output "cloudfront_domain_name" {
-  value = aws_cloudfront_distribution.frontend.domain_name
+  value = data.aws_cloudfront_distribution.frontend.domain_name
 }
 
 ### TaskVision ACM Outputs (START)
