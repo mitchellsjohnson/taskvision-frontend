@@ -16,11 +16,12 @@ on:
 
 jobs:
   deploy-frontend:
-    name: Deploy Frontend to ${{ github.event.inputs.environment || github.ref_name }}
+    name: Deploy Frontend
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || github.ref_name == 'main' && 'prod' || 'dev' }}
 
     env:
-      ENVIRONMENT: ${{ github.event.inputs.environment || github.ref_name }}
+      ENVIRONMENT: ${{ github.event.inputs.environment || github.ref_name == 'main' && 'prod' || 'dev' }}
       AWS_REGION: us-east-1
       NODE_ENV: production
 
@@ -36,11 +37,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-        working-directory: ${{ github.workspace }}
 
       - name: Build frontend
         run: npm run build
-        working-directory: ${{ github.workspace }}
 
       - name: Verify build artifacts
         run: |
@@ -61,41 +60,31 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ${{ github.workspace }}/infra
+        working-directory: infra
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="environment=${{ env.ENVIRONMENT }}"
-        working-directory: ${{ github.workspace }}/infra
+        working-directory: infra
 
-      - name: Export S3 bucket name from Terraform
+      - name: Export S3 bucket and CloudFront details
         id: terraform-output
         run: |
-          cd ${{ github.workspace }}/infra
-          BUCKET_NAME=$(terraform output -raw s3_bucket_name)
-          CLOUDFRONT_URL=$(terraform output -raw cloudfront_domain_name)
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "Failed to get S3 bucket name from Terraform"
-            exit 1
-          fi
-          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
-          echo "CLOUDFRONT_URL=$CLOUDFRONT_URL" >> $GITHUB_ENV
+          cd infra
+          echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
+          echo "CLOUDFRONT_URL=$(terraform output -raw cloudfront_domain_name)" >> $GITHUB_ENV
+          echo "CLOUDFRONT_DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_ENV
 
       - name: Create .env file
         run: |
-          if [ "${{ env.ENVIRONMENT }}" = "prod" ]; then
-            cp .env.prod .env
-          else
-            cp .env.dev .env
-          fi
-          # Override callback URL with CloudFront URL
-          echo "REACT_APP_AUTH0_CALLBACK_URL=https://$CLOUDFRONT_URL/callback" >> .env
-        working-directory: ${{ github.workspace }}
+          cp .env.${{ env.ENVIRONMENT }} .env
+          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${CLOUDFRONT_URL}/callback" >> .env
 
       - name: Upload frontend build to S3
         run: |
-          if [ ! -d "build" ]; then
-            echo "Build directory not found!"
-            exit 1
-          fi
-          aws s3 sync build/ s3://$BUCKET_NAME/ --delete
-        working-directory: ${{ github.workspace }}
+          aws s3 sync build/ s3://$BUCKET_NAME --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --paths "/*"
