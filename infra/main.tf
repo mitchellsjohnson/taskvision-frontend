@@ -18,7 +18,7 @@ module "acm" {
 
 resource "aws_s3_bucket" "frontend" {
   bucket        = local.bucket_name
-  force_destroy = false
+  force_destroy = true
 
   tags = {
     Environment = var.environment
@@ -35,7 +35,7 @@ resource "aws_s3_bucket_public_access_block" "frontend" {
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = local.oac_name
+  name                              = "${local.oac_name}-${formatdate("YYYYMMDDHHmmss", timestamp())}"
   description                       = "Access control for CloudFront to S3"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
