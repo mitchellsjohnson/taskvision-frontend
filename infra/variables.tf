@@ -13,7 +13,7 @@ variable "domain_name" {
   type        = string
 }
 
-variable "zone_id" {
+variable "route53_zone_id" {
   description = "Route 53 Hosted Zone ID"
   type        = string
 }
