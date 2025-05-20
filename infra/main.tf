@@ -16,4 +16,6 @@ module "acm" {
   source      = "./modules/acm"
   domain_name = local.fqdn
   san_list    = []
-  zone_id_
+  zone_id     = var.route53_zone_id
+  environment = var.environment
+}
