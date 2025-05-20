@@ -2,13 +2,9 @@ provider "aws" {
   region = "us-east-1"
 }
 
-resource "random_id" "suffix" {
-  byte_length = 2
-}
-
 locals {
   fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
-  bucket_name  = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
+  bucket_name  = "taskvision-${var.environment}-frontend"
 }
 
 variable "cloudfront_distribution_id" {
@@ -21,7 +17,7 @@ data "aws_cloudfront_distribution" "frontend" {
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = "frontend-oac-${var.environment}-${random_id.suffix.hex}"
+  name                              = "frontend-oac-${var.environment}"
   description                       = "Access control for CloudFront to S3"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
