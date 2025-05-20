@@ -15,7 +15,7 @@ output "s3_bucket_name" {
 
 output "cloudfront_distribution_id" {
   description = "ID of the CloudFront distribution"
-  value       = var.cloudfront_distribution_id != "" ? var.cloudfront_distribution_id : aws_cloudfront_distribution.frontend[0].id
+  value       = var.cloudfront_distribution_id
 }
 
 output "cloudfront_domain_name" {

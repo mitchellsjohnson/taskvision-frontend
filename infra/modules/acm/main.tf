@@ -16,7 +16,6 @@ resource "aws_acm_certificate" "cert" {
   subject_alternative_names = var.san_list
 
   lifecycle {
-    prevent_destroy = true
     ignore_changes = [
       domain_name,
       subject_alternative_names,
