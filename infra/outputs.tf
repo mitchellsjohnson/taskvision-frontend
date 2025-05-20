@@ -10,7 +10,7 @@ output "validation_record_fqdns" {
 
 output "s3_bucket_name" {
   description = "Name of the S3 bucket"
-  value       = aws_s3_bucket.frontend[0].bucket
+  value       = local.bucket_id
 }
 
 output "cloudfront_distribution_id" {
@@ -20,7 +20,7 @@ output "cloudfront_distribution_id" {
 
 output "cloudfront_domain_name" {
   description = "Domain name of the CloudFront distribution"
-  value       = var.cloudfront_distribution_id != "" ? "" : aws_cloudfront_distribution.frontend[0].domain_name
+  value       = local.cloudfront_domain_name
 }
 
 output "route53_record_name" {

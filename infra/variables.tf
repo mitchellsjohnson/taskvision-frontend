@@ -31,4 +31,10 @@ variable "cloudfront_distribution_id" {
   default     = ""
 }
 
+variable "s3_bucket_name" {
+  description = "Optional name of an existing S3 bucket to use. If not provided, a new bucket will be created."
+  type        = string
+  default     = ""
+}
+
 

@@ -4,23 +4,23 @@ provider "aws" {
 
 locals {
   fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
-  bucket_name  = "taskvision-${var.environment}-frontend"
+  bucket_name  = var.s3_bucket_name != "" ? var.s3_bucket_name : "taskvision-${var.environment}-frontend"
 }
 
-# Only try to read existing CloudFront distribution if ID is provided
+# CloudFront Distribution
 data "aws_cloudfront_distribution" "existing" {
   count = var.cloudfront_distribution_id != "" ? 1 : 0
   id    = var.cloudfront_distribution_id
 }
 
-# Only try to read existing S3 bucket
+# S3 Bucket
 data "aws_s3_bucket" "existing" {
-  bucket = local.bucket_name
+  count  = var.s3_bucket_name != "" ? 1 : 0
+  bucket = var.s3_bucket_name
 }
 
 resource "aws_s3_bucket" "frontend" {
-  count = data.aws_s3_bucket.existing.id == null ? 1 : 0
-
+  count  = var.s3_bucket_name == "" ? 1 : 0
   bucket = local.bucket_name
 
   tags = {
@@ -33,8 +33,8 @@ resource "aws_s3_bucket" "frontend" {
 }
 
 locals {
-  bucket_id = data.aws_s3_bucket.existing.id != null ? data.aws_s3_bucket.existing.id : aws_s3_bucket.frontend[0].id
-  bucket_arn = data.aws_s3_bucket.existing.id != null ? data.aws_s3_bucket.existing.arn : aws_s3_bucket.frontend[0].arn
+  bucket_id = var.s3_bucket_name != "" ? data.aws_s3_bucket.existing[0].id : aws_s3_bucket.frontend[0].id
+  bucket_arn = var.s3_bucket_name != "" ? data.aws_s3_bucket.existing[0].arn : aws_s3_bucket.frontend[0].arn
 }
 
 resource "aws_cloudfront_origin_access_control" "frontend" {

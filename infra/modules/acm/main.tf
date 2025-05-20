@@ -1,10 +1,10 @@
 ### TaskVision ACM Module (START)
 
-# Only try to read existing certificate if we have permissions
+# ACM Certificate
 data "aws_acm_certificate" "existing" {
-  count = var.domain_name != "" ? 1 : 0
-  domain      = var.domain_name
-  statuses    = ["ISSUED"]
+  count  = var.domain_name != "" ? 1 : 0
+  domain = var.domain_name
+  statuses = ["ISSUED"]
   most_recent = true
 }
 
