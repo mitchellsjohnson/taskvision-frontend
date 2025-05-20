@@ -12,20 +12,16 @@ locals {
   oac_name     = "frontend-oac-${var.environment}"
 }
 
+data "aws_cloudfront_origin_access_control" "frontend" {
+  name = local.oac_name
+}
+
 resource "aws_s3_bucket" "frontend" {
   bucket = local.bucket_name
 
   tags = {
     Environment = var.environment
   }
-}
-
-resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = local.oac_name
-  description                       = "Access control for CloudFront to S3"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
 }
 
 resource "aws_cloudfront_distribution" "frontend" {
@@ -38,7 +34,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   origin {
     domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
+    origin_access_control_id = data.aws_cloudfront_origin_access_control.frontend.id
     origin_id                = "frontendS3Origin"
   }
 

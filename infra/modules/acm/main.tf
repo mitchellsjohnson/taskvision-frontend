@@ -9,7 +9,8 @@ resource "aws_acm_certificate" "cert" {
     prevent_destroy = true
     ignore_changes = [
       domain_name,
-      subject_alternative_names
+      subject_alternative_names,
+      validation_method
     ]
   }
 
@@ -18,7 +19,7 @@ resource "aws_acm_certificate" "cert" {
   }
 }
 
-resource "aws_route53_record" "cert_validation" {
+data "aws_route53_record" "cert_validation" {
   for_each = {
     for dvo in aws_acm_certificate.cert.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
@@ -30,22 +31,11 @@ resource "aws_route53_record" "cert_validation" {
   name    = each.value.name
   type    = each.value.type
   zone_id = var.zone_id
-  records = [each.value.record]
-  ttl     = 60
-
-  lifecycle {
-    ignore_changes = [
-      name,
-      type,
-      records,
-      ttl
-    ]
-  }
 }
 
 resource "aws_acm_certificate_validation" "cert_validation" {
   certificate_arn         = aws_acm_certificate.cert.arn
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+  validation_record_fqdns = [for record in data.aws_route53_record.cert_validation : record.fqdn]
 }
 
 ### TaskVision ACM Module (END)
