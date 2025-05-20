@@ -7,6 +7,10 @@ resource "aws_acm_certificate" "cert" {
 
   lifecycle {
     prevent_destroy = true
+    ignore_changes = [
+      domain_name,
+      subject_alternative_names
+    ]
   }
 
   tags = {
