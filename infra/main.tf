@@ -12,7 +12,7 @@ module "acm" {
   source      = "./modules/acm"
   domain_name = local.fqdn
   san_list    = []
-  zone_id     = var.zone_id
+  zone_id     = var.route53_zone_id
   environment = var.environment
 }
 
@@ -120,7 +120,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 }
 
 resource "aws_route53_record" "frontend_alias" {
-  zone_id = var.zone_id
+  zone_id = var.route53_zone_id
   name    = local.fqdn
   type    = "A"
 
