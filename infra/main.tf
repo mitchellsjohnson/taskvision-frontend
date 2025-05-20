@@ -9,11 +9,15 @@ resource "random_id" "suffix" {
 locals {
   fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
   bucket_name  = "taskvision-${var.environment}-frontend-${random_id.suffix.hex}"
-  oac_name     = "frontend-oac-${var.environment}"
+  oac_name     = "frontend-oac-${var.environment}-${random_id.suffix.hex}"
 }
 
-data "aws_cloudfront_origin_access_control" "frontend" {
-  name = local.oac_name
+resource "aws_cloudfront_origin_access_control" "frontend" {
+  name                              = local.oac_name
+  description                       = "Access control for CloudFront to S3"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
 }
 
 resource "aws_s3_bucket" "frontend" {
@@ -34,7 +38,7 @@ resource "aws_cloudfront_distribution" "frontend" {
 
   origin {
     domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_access_control_id = data.aws_cloudfront_origin_access_control.frontend.id
+    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
     origin_id                = "frontendS3Origin"
   }
 
@@ -85,6 +89,7 @@ resource "aws_route53_record" "frontend_alias" {
   zone_id = var.route53_zone_id
   name    = local.fqdn
   type    = "A"
+  allow_overwrite = true
 
   alias {
     name                   = aws_cloudfront_distribution.frontend.domain_name
