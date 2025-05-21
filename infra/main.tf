@@ -9,19 +9,19 @@ locals {
   create_cf    = var.cloudfront_distribution_id == ""
 }
 
-# Fetch existing CloudFront if ID provided
+# Look up existing CloudFront distribution if ID is provided
 data "aws_cloudfront_distribution" "existing" {
   count = local.create_cf ? 0 : 1
   id    = var.cloudfront_distribution_id
 }
 
-# Fetch existing S3 if name provided
+# Look up existing S3 bucket if name is provided
 data "aws_s3_bucket" "existing" {
   count  = local.create_s3 ? 0 : 1
   bucket = var.s3_bucket_name
 }
 
-# Create S3 bucket if needed
+# Conditionally create S3 bucket
 resource "aws_s3_bucket" "frontend" {
   count  = local.create_s3 ? 1 : 0
   bucket = local.bucket_name
@@ -35,23 +35,12 @@ resource "aws_s3_bucket" "frontend" {
   }
 }
 
-# Bucket identity
 locals {
   bucket_id  = local.create_s3 ? aws_s3_bucket.frontend[0].id : data.aws_s3_bucket.existing[0].id
   bucket_arn = local.create_s3 ? aws_s3_bucket.frontend[0].arn : data.aws_s3_bucket.existing[0].arn
 }
 
-# Origin Access Control
-resource "aws_cloudfront_origin_access_control" "frontend" {
-  count                             = local.create_cf ? 1 : 0
-  name                              = "frontend-oac-${var.environment}"
-  description                       = "Access control for CloudFront to S3"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
-
-# CloudFront Distribution
+# Conditionally create CloudFront distribution
 resource "aws_cloudfront_distribution" "frontend" {
   count               = local.create_cf ? 1 : 0
   enabled             = true
@@ -110,27 +99,28 @@ resource "aws_cloudfront_distribution" "frontend" {
   depends_on = [module.acm]
 }
 
-# Distribution ID and domain
+# Resolve the CloudFront values dynamically
 locals {
-  cloudfront_distribution_arn  = local.create_cf ? aws_cloudfront_distribution.frontend[0].arn : data.aws_cloudfront_distribution.existing[0].arn
-  cloudfront_domain_name       = local.create_cf ? aws_cloudfront_distribution.frontend[0].domain_name : data.aws_cloudfront_distribution.existing[0].domain_name
-  cloudfront_hosted_zone_id    = local.create_cf ? aws_cloudfront_distribution.frontend[0].hosted_zone_id : data.aws_cloudfront_distribution.existing[0].hosted_zone_id
+  cloudfront_distribution_arn   = local.create_cf ? aws_cloudfront_distribution.frontend[0].arn : data.aws_cloudfront_distribution.existing[0].arn
+  cloudfront_domain_name        = local.create_cf ? aws_cloudfront_distribution.frontend[0].domain_name : data.aws_cloudfront_distribution.existing[0].domain_name
+  cloudfront_hosted_zone_id     = local.create_cf ? aws_cloudfront_distribution.frontend[0].hosted_zone_id : data.aws_cloudfront_distribution.existing[0].hosted_zone_id
 }
 
-# S3 Bucket Policy for CloudFront
+# S3 bucket policy allowing CloudFront to read from it
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = local.bucket_id
+
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "AllowCloudFrontServicePrincipal"
-        Effect    = "Allow"
+        Sid       = "AllowCloudFrontServicePrincipal",
+        Effect    = "Allow",
         Principal = {
           Service = "cloudfront.amazonaws.com"
-        }
-        Action   = "s3:GetObject"
-        Resource = "${local.bucket_arn}/*"
+        },
+        Action    = "s3:GetObject",
+        Resource  = "${local.bucket_arn}/*",
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = local.cloudfront_distribution_arn
@@ -141,11 +131,11 @@ resource "aws_s3_bucket_policy" "frontend" {
   })
 }
 
-# Route 53 Alias Record
+# Route 53 alias record for CloudFront
 resource "aws_route53_record" "frontend_alias" {
-  zone_id = var.route53_zone_id
-  name    = local.fqdn
-  type    = "A"
+  zone_id         = var.route53_zone_id
+  name            = local.fqdn
+  type            = "A"
   allow_overwrite = true
 
   alias {
@@ -155,7 +145,7 @@ resource "aws_route53_record" "frontend_alias" {
   }
 }
 
-# ACM Certificate Module
+# ACM module to manage certs
 module "acm" {
   source      = "./modules/acm"
   domain_name = local.fqdn
