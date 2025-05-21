@@ -113,11 +113,15 @@ jobs:
           BUCKET="${{ secrets.S3_BUCKET_NAME }}"
           aws s3 sync build/ "s3://${BUCKET}" --delete
 
+      - name: Verify S3 Upload
+        run: |
+          aws s3 ls "s3://${BUCKET}/" --recursive
+
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*"
+            --paths "/*" "/index.html" "/static/*"
 
       - name: Debug Raw Secret
         run: |
