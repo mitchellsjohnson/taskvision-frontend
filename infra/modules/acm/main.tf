@@ -2,35 +2,13 @@
 
 # ACM Certificate
 data "aws_acm_certificate" "existing" {
-  count  = var.domain_name != "" ? 1 : 0
   domain = var.domain_name
   statuses = ["ISSUED"]
   most_recent = true
 }
 
-resource "aws_acm_certificate" "cert" {
-  count = var.domain_name != "" && (length(data.aws_acm_certificate.existing) == 0 || data.aws_acm_certificate.existing[0].arn == null) ? 1 : 0
-
-  domain_name               = var.domain_name
-  validation_method         = "DNS"
-  subject_alternative_names = var.san_list
-
-  lifecycle {
-    ignore_changes = [
-      domain_name,
-      subject_alternative_names,
-      validation_method
-    ]
-  }
-
-  tags = {
-    Environment = var.environment
-  }
-}
-
 locals {
-  certificate_arn = var.domain_name != "" && length(data.aws_acm_certificate.existing) > 0 && data.aws_acm_certificate.existing[0].arn != null ? data.aws_acm_certificate.existing[0].arn : (length(aws_acm_certificate.cert) > 0 ? aws_acm_certificate.cert[0].arn : null)
-  validation_options = length(aws_acm_certificate.cert) > 0 ? tolist(aws_acm_certificate.cert[0].domain_validation_options) : []
+  certificate_arn = data.aws_acm_certificate.existing.arn
 }
 
 resource "aws_route53_record" "cert_validation" {
