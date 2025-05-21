@@ -94,14 +94,8 @@ jobs:
 
       - name: Set S3 Bucket Name
         run: |
-          if [ "${{ env.DNS_RECORD_EXISTS }}" == "true" ]; then
-            echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
-            echo "CLOUDFRONT_DOMAIN_NAME=$(aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --query 'Distribution.DomainName' --output text)" >> $GITHUB_ENV
-          else
-            cd infra
-            echo "S3_BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
-            echo "CLOUDFRONT_DOMAIN_NAME=$(terraform output -raw cloudfront_domain_name)" >> $GITHUB_ENV
-          fi
+          echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
+          echo "CLOUDFRONT_DOMAIN_NAME=$(aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --query 'Distribution.DomainName' --output text)" >> $GITHUB_ENV
 
       - name: Create .env file
         run: |
