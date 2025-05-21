@@ -109,7 +109,7 @@ jobs:
           aws s3 ls s3://$S3_BUCKET_NAME || true
 
       - name: Upload build to S3
-        run: aws s3 sync build/ s3://$S3_BUCKET_NAME --delete
+        run: aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
       - name: Invalidate CloudFront Cache
         run: |
