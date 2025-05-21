@@ -39,6 +39,7 @@ jobs:
         run: |
           npm ci
           npm install -g cross-env dotenv-cli
+          npm install --save-dev eslint-plugin-prettier
 
       - name: Build frontend
         run: |
