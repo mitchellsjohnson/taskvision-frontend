@@ -109,7 +109,9 @@ jobs:
           aws s3 ls s3://$S3_BUCKET_NAME || true
 
       - name: Upload build to S3
-        run: aws s3 sync build/ s3://taskvision-dev-frontend --delete
+        run: |
+          BUCKET="${{ secrets.S3_BUCKET_NAME }}"
+          aws s3 sync build/ "s3://${BUCKET}" --delete
 
       - name: Invalidate CloudFront Cache
         run: |
