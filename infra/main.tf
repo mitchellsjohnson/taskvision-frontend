@@ -21,6 +21,7 @@ data "aws_s3_bucket" "existing" {
   bucket = var.s3_bucket_name
 }
 
+# Create S3 bucket if needed
 resource "aws_s3_bucket" "frontend" {
   count  = local.create_s3 ? 1 : 0
   bucket = local.bucket_name
@@ -34,17 +35,29 @@ resource "aws_s3_bucket" "frontend" {
   }
 }
 
+# Bucket identity
 locals {
-  bucket_id = local.create_s3 ? aws_s3_bucket.frontend[0].id : data.aws_s3_bucket.existing[0].id
+  bucket_id  = local.create_s3 ? aws_s3_bucket.frontend[0].id : data.aws_s3_bucket.existing[0].id
   bucket_arn = local.create_s3 ? aws_s3_bucket.frontend[0].arn : data.aws_s3_bucket.existing[0].arn
 }
 
+# Origin Access Control
+resource "aws_cloudfront_origin_access_control" "frontend" {
+  count                             = local.create_cf ? 1 : 0
+  name                              = "frontend-oac-${var.environment}"
+  description                       = "Access control for CloudFront to S3"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+# CloudFront Distribution
 resource "aws_cloudfront_distribution" "frontend" {
-  count                = local.create_cf ? 1 : 0
-  enabled              = true
-  is_ipv6_enabled      = true
-  default_root_object  = "index.html"
-  aliases              = [local.fqdn]
+  count               = local.create_cf ? 1 : 0
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+  aliases             = [local.fqdn]
 
   origin {
     domain_name              = local.bucket_id
@@ -97,16 +110,18 @@ resource "aws_cloudfront_distribution" "frontend" {
   depends_on = [module.acm]
 }
 
+# Distribution ID and domain
 locals {
-  cloudfront_distribution_arn = local.create_cf ? aws_cloudfront_distribution.frontend[0].arn : data.aws_cloudfront_distribution.existing[0].arn
-  cloudfront_domain_name      = local.create_cf ? aws_cloudfront_distribution.frontend[0].domain_name : data.aws_cloudfront_distribution.existing[0].domain_name
-  cloudfront_hosted_zone_id  = local.create_cf ? aws_cloudfront_distribution.frontend[0].hosted_zone_id : data.aws_cloudfront_distribution.existing[0].hosted_zone_id
+  cloudfront_distribution_arn  = local.create_cf ? aws_cloudfront_distribution.frontend[0].arn : data.aws_cloudfront_distribution.existing[0].arn
+  cloudfront_domain_name       = local.create_cf ? aws_cloudfront_distribution.frontend[0].domain_name : data.aws_cloudfront_distribution.existing[0].domain_name
+  cloudfront_hosted_zone_id    = local.create_cf ? aws_cloudfront_distribution.frontend[0].hosted_zone_id : data.aws_cloudfront_distribution.existing[0].hosted_zone_id
 }
 
+# S3 Bucket Policy for CloudFront
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = local.bucket_id
   policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
         Sid       = "AllowCloudFrontServicePrincipal"
@@ -126,6 +141,7 @@ resource "aws_s3_bucket_policy" "frontend" {
   })
 }
 
+# Route 53 Alias Record
 resource "aws_route53_record" "frontend_alias" {
   zone_id = var.route53_zone_id
   name    = local.fqdn
@@ -139,6 +155,7 @@ resource "aws_route53_record" "frontend_alias" {
   }
 }
 
+# ACM Certificate Module
 module "acm" {
   source      = "./modules/acm"
   domain_name = local.fqdn
