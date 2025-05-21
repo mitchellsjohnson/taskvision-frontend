@@ -102,6 +102,12 @@ jobs:
           cp .env.${{ env.ENVIRONMENT }} .env
           echo "REACT_APP_AUTH0_CALLBACK_URL=https://${CLOUDFRONT_DOMAIN_NAME}/callback" >> .env
 
+      - name: Debug S3 Bucket Name
+        run: |
+          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME"
+          aws s3 ls
+          aws s3 ls s3://$S3_BUCKET_NAME || true
+
       - name: Upload build to S3
         run: aws s3 sync build/ s3://$S3_BUCKET_NAME --delete
 
