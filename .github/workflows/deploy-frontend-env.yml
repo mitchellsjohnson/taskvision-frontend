@@ -36,10 +36,14 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm install -g cross-env
 
       - name: Build frontend
-        run: npm run build
+        run: |
+          cp .env.${{ env.ENVIRONMENT }} .env.local
+          npm run build
 
       - name: Verify build artifacts
         run: |
