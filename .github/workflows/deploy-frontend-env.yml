@@ -116,3 +116,7 @@ jobs:
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*"
+
+      - name: Debug Raw Secret
+        run: |
+          echo "Raw S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}"
