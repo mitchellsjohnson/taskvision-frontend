@@ -36,7 +36,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci --include=dev
+        run: npm ci
 
       - name: Build frontend
         run: npm run build
@@ -62,27 +62,51 @@ jobs:
         run: terraform init
         working-directory: infra
 
-      - name: Terraform Apply
+      - name: Check if DNS record exists
+        id: check-dns
         run: |
-          terraform apply -auto-approve \
-            -var="environment=${{ env.ENVIRONMENT }}" \
-            -var="subdomain=${{ env.ENVIRONMENT }}" \
-            -var="domain_name=${{ secrets.DOMAIN_NAME }}" \
-            -var="route53_zone_id=${{ secrets.ROUTE53_ZONE_ID }}" \
-            -var="cloudfront_distribution_id=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
+          RECORD_NAME="${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}"
+          if aws route53 list-resource-record-sets \
+            --hosted-zone-id ${{ secrets.ROUTE53_ZONE_ID }} \
+            --query "ResourceRecordSets[?Name=='${RECORD_NAME}.']" \
+            --output text | grep -q "${RECORD_NAME}"; then
+            echo "DNS_RECORD_EXISTS=true" >> $GITHUB_ENV
+          else
+            echo "DNS_RECORD_EXISTS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Terraform Apply
+        if: env.DNS_RECORD_EXISTS == 'false'
+        run: terraform apply -auto-approve \
+          -var="environment=${{ env.ENVIRONMENT }}" \
+          -var="subdomain=${{ env.ENVIRONMENT }}" \
+          -var="domain_name=${{ secrets.DOMAIN_NAME }}" \
+          -var="route53_zone_id=${{ secrets.ROUTE53_ZONE_ID }}" \
+          -var="cloudfront_distribution_id=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
+          -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}"
         working-directory: infra
 
-      - name: Export S3 bucket details
-        id: terraform-output
+      - name: Set S3 Bucket Name
         run: |
-          cd infra
-          echo "BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
+          if [ "${{ env.DNS_RECORD_EXISTS }}" == "true" ]; then
+            echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DOMAIN_NAME=$(aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --query 'Distribution.DomainName' --output text)" >> $GITHUB_ENV
+          else
+            cd infra
+            echo "S3_BUCKET_NAME=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
+            echo "CLOUDFRONT_DOMAIN_NAME=$(terraform output -raw cloudfront_domain_name)" >> $GITHUB_ENV
+          fi
 
       - name: Create .env file
         run: |
           cp .env.${{ env.ENVIRONMENT }} .env
-          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${BUCKET_NAME}.s3.amazonaws.com/callback" >> .env
+          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${CLOUDFRONT_DOMAIN_NAME}/callback" >> .env
 
-      - name: Upload frontend build to S3
+      - name: Upload build to S3
+        run: aws s3 sync build/ s3://$S3_BUCKET_NAME --delete
+
+      - name: Invalidate CloudFront Cache
         run: |
-          aws s3 sync build/ s3://$BUCKET_NAME --delete
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
