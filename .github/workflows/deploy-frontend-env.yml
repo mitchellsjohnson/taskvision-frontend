@@ -61,6 +61,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Debug S3 Configuration
+        run: |
+          echo "Checking S3 bucket access..."
+          aws s3 ls s3://${{ secrets.S3_BUCKET_NAME }}/ || echo "Failed to access bucket"
+          echo "S3 bucket name length: ${#S3_BUCKET_NAME}"
+
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
