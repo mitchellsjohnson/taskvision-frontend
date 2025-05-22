@@ -103,8 +103,7 @@ jobs:
           echo "REACT_APP_AUTH0_CALLBACK_URL=https://${CLOUDFRONT_DOMAIN_NAME}/callback" >> .env
 
       - name: Upload build to S3
-        run: |
-          aws s3 sync build/ "s3://${S3_BUCKET_NAME}" --delete
+        run: aws s3 sync build/ "s3://${{ secrets.S3_BUCKET_NAME }}" --delete
 
       - name: Invalidate CloudFront Cache
         run: |
