@@ -4,60 +4,120 @@ provider "aws" {
 
 locals {
   fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
-  bucket_name  = var.s3_bucket_name
+  bucket_name  = var.s3_bucket_name != "" ? var.s3_bucket_name : "taskvision-${var.environment}-frontend"
+  create_s3    = var.s3_bucket_name == ""
+  create_cf    = var.cloudfront_distribution_id == ""
 }
 
-# CloudFront Distribution
+# Optional CloudFront lookup
 data "aws_cloudfront_distribution" "existing" {
-  count = var.cloudfront_distribution_id != "" ? 1 : 0
+  count = local.create_cf ? 0 : 1
   id    = var.cloudfront_distribution_id
-
-  lifecycle {
-    postcondition {
-      condition     = self.arn != ""
-      error_message = "CloudFront distribution ${var.cloudfront_distribution_id} not found"
-    }
-  }
 }
 
-# S3 Bucket
+# Optional S3 bucket lookup
 data "aws_s3_bucket" "existing" {
-  count  = var.s3_bucket_name != "" ? 1 : 0
+  count  = local.create_s3 ? 0 : 1
   bucket = var.s3_bucket_name
+}
+
+# Create S3 bucket if needed
+resource "aws_s3_bucket" "frontend" {
+  count  = local.create_s3 ? 1 : 0
+  bucket = local.bucket_name
 
   lifecycle {
-    postcondition {
-      condition     = self.arn != ""
-      error_message = "S3 bucket ${var.s3_bucket_name} not found"
-    }
+    prevent_destroy = true
+  }
+
+  tags = {
+    Environment = var.environment
   }
 }
 
 locals {
-  bucket_id  = var.s3_bucket_name != "" ? data.aws_s3_bucket.existing[0].id : ""
-  bucket_arn = var.s3_bucket_name != "" ? data.aws_s3_bucket.existing[0].arn : ""
+  bucket_id  = local.create_s3 ? aws_s3_bucket.frontend[0].id : data.aws_s3_bucket.existing[0].id
+  bucket_arn = local.create_s3 ? aws_s3_bucket.frontend[0].arn : data.aws_s3_bucket.existing[0].arn
+}
+
+# Create CloudFront distribution if needed
+resource "aws_cloudfront_distribution" "frontend" {
+  count               = local.create_cf ? 1 : 0
+  enabled             = true
+  is_ipv6_enabled     = true
+  default_root_object = "index.html"
+  aliases             = [local.fqdn]
+
+  origin {
+    domain_name              = "${local.bucket_id}.s3.amazonaws.com"
+    origin_id                = "frontendS3Origin"
+  }
+
+  default_cache_behavior {
+    target_origin_id       = "frontendS3Origin"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  custom_error_response {
+    error_code         = 403
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+
+  custom_error_response {
+    error_code         = 404
+    response_code      = 200
+    response_page_path = "/index.html"
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    acm_certificate_arn      = module.acm.certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
+  }
+
+  tags = {
+    Environment = var.environment
+  }
+
+  depends_on = [module.acm]
 }
 
 locals {
-  cloudfront_distribution_arn = var.cloudfront_distribution_id != "" ? data.aws_cloudfront_distribution.existing[0].arn : ""
-  cloudfront_domain_name = var.cloudfront_distribution_id != "" ? data.aws_cloudfront_distribution.existing[0].domain_name : ""
-  cloudfront_hosted_zone_id = var.cloudfront_distribution_id != "" ? data.aws_cloudfront_distribution.existing[0].hosted_zone_id : ""
+  cloudfront_distribution_arn = local.create_cf ? aws_cloudfront_distribution.frontend[0].arn : data.aws_cloudfront_distribution.existing[0].arn
+  cloudfront_domain_name      = local.create_cf ? aws_cloudfront_distribution.frontend[0].domain_name : data.aws_cloudfront_distribution.existing[0].domain_name
+  cloudfront_hosted_zone_id   = local.create_cf ? aws_cloudfront_distribution.frontend[0].hosted_zone_id : data.aws_cloudfront_distribution.existing[0].hosted_zone_id
 }
 
 resource "aws_s3_bucket_policy" "frontend" {
-  count  = var.s3_bucket_name != "" && var.cloudfront_distribution_id != "" ? 1 : 0
   bucket = local.bucket_id
+
   policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Sid       = "AllowCloudFrontServicePrincipal"
-        Effect    = "Allow"
+        Sid       = "AllowCloudFrontAccess",
+        Effect    = "Allow",
         Principal = {
           Service = "cloudfront.amazonaws.com"
-        }
-        Action   = "s3:GetObject"
-        Resource = "${local.bucket_arn}/*"
+        },
+        Action    = "s3:GetObject",
+        Resource  = "${local.bucket_arn}/*",
         Condition = {
           StringEquals = {
             "AWS:SourceArn" = local.cloudfront_distribution_arn
@@ -66,15 +126,9 @@ resource "aws_s3_bucket_policy" "frontend" {
       }
     ]
   })
-
-  depends_on = [
-    data.aws_s3_bucket.existing,
-    data.aws_cloudfront_distribution.existing
-  ]
 }
 
 resource "aws_route53_record" "frontend_alias" {
-  count   = var.cloudfront_distribution_id != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = local.fqdn
   type    = "A"
@@ -85,19 +139,6 @@ resource "aws_route53_record" "frontend_alias" {
     zone_id                = local.cloudfront_hosted_zone_id
     evaluate_target_health = false
   }
-
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes = [
-      name,
-      type,
-      alias
-    ]
-  }
-
-  depends_on = [
-    data.aws_cloudfront_distribution.existing
-  ]
 }
 
 module "acm" {
