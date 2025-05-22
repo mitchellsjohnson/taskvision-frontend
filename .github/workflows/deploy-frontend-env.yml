@@ -39,8 +39,6 @@ jobs:
         run: |
           npm ci
           npm install -g cross-env dotenv-cli
-          npm install --save-dev eslint-plugin-prettier
-          npm install --include=dev
 
       - name: Build frontend
         run: |
@@ -92,7 +90,7 @@ jobs:
           -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}"
         working-directory: infra
 
-      - name: Set S3 Bucket Name
+      - name: Set environment variables for S3 and CloudFront
         run: |
           echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
           echo "CLOUDFRONT_DOMAIN_NAME=$(aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --query 'Distribution.DomainName' --output text)" >> $GITHUB_ENV
@@ -102,27 +100,12 @@ jobs:
           cp .env.${{ env.ENVIRONMENT }} .env
           echo "REACT_APP_AUTH0_CALLBACK_URL=https://${CLOUDFRONT_DOMAIN_NAME}/callback" >> .env
 
-      - name: Debug S3 Bucket Name
-        run: |
-          echo "S3_BUCKET_NAME=$S3_BUCKET_NAME"
-          aws s3 ls
-          aws s3 ls s3://$S3_BUCKET_NAME || true
-
       - name: Upload build to S3
         run: |
-          BUCKET="${{ secrets.S3_BUCKET_NAME }}"
-          aws s3 sync build/ "s3://${BUCKET}" --delete
-
-      - name: Verify S3 Upload
-        run: |
-          aws s3 ls "s3://${BUCKET}/" --recursive
+          aws s3 sync build/ "s3://${S3_BUCKET_NAME}" --delete
 
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*" "/index.html" "/static/*"
-
-      - name: Debug Raw Secret
-        run: |
-          echo "Raw S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}"
