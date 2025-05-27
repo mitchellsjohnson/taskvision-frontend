@@ -45,6 +45,7 @@ jobs:
       - name: Build frontend
         run: |
           cp .env.${{ env.ENVIRONMENT }} .env.local
+          echo "REACT_APP_API_URL=${{ secrets.REACT_APP_API_URL }}" >> .env.local
           npm run build
 
       - name: Verify build artifacts
@@ -110,7 +111,7 @@ jobs:
 
       - name: Upload build to S3
         run: aws s3 sync build/ "s3://${{ secrets.S3_BUCKET_NAME }}" --delete
-        # Triggering new build to test SSL configuration
+        # Testing frontend build with npm install
 
       - name: Invalidate CloudFront Cache
         run: |
