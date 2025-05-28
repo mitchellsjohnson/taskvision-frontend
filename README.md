@@ -1,3 +1,7 @@
+# TaskVision Frontend
+
+Last build trigger: $(date)
+
 # React/TypeScript: Basic User Authentication Code Sample
 
 This is a SAMPLE application to test Dependency Management, SCA, and malware protection.
