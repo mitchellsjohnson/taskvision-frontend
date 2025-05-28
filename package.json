@@ -2,7 +2,7 @@
   "name": "taskvision-frontend",
   "version": "0.1.0",
   "private": true,
-  "homepage": ".",
+  "homepage": "https://dev.taskvision.app",
   "dependencies": {
     "@auth0/auth0-react": "^1.10.2",
     "@types/react": "^17.0.47",
