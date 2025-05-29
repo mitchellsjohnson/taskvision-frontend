@@ -44,6 +44,7 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
+    // eslint-disable-next-line prettier/prettier
     return this.props.children;
   }
 }
