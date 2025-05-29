@@ -38,7 +38,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install -g cross-env dotenv-cli
+          npm install cross-env dotenv-cli --save-dev
           npm install --save-dev eslint-plugin-prettier eslint-config-prettier prettier
           npm install --include=dev
 
@@ -53,7 +53,7 @@ jobs:
           echo "REACT_APP_CDN=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}" >> .env.local
           echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env.local
           echo "GENERATE_SOURCEMAP=false" >> .env.local
-          npm run build
+          npx react-scripts build
 
       - name: Verify build artifacts
         run: |
