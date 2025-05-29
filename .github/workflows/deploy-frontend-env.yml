@@ -55,8 +55,10 @@ jobs:
       - name: Build frontend
         run: |
           cp .env.${{ env.ENVIRONMENT }} .env.local
+          npm pkg delete homepage
           npm pkg set homepage="https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}"
-          npm run build:${{ env.ENVIRONMENT }}
+          npm pkg get homepage
+          NODE_ENV=production react-scripts build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
