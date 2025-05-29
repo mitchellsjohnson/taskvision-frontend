@@ -8,58 +8,107 @@ on:
       - main
       - dev
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy (dev or prod)'
-        required: true
-        default: dev
-        type: choice
-        options: [dev, prod]
 
 jobs:
   deploy-frontend:
-    name: Deploy Frontend to ${{ github.event.inputs.environment || github.ref_name }}
+    name: Deploy Frontend
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || github.ref_name }}
 
     env:
-      ENVIRONMENT: ${{ github.event.inputs.environment || github.ref_name }}
-      AWS_REGION: us-east-1
+      AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-      - name: Debug Environment and Secrets
+      - name: Debug Secrets
         run: |
-          echo "Current environment: ${{ env.ENVIRONMENT }}"
-          echo "GitHub environment: ${{ github.event.inputs.environment || github.ref_name }}"
-          echo "GitHub ref name: ${{ github.ref_name }}"
-          echo "GitHub event name: ${{ github.event_name }}"
-          echo "GitHub event inputs: ${{ toJSON(github.event.inputs) }}"
+          echo "=== Required Secrets Check ==="
+          MISSING_SECRETS=0
           
-          echo "Checking environment secrets:"
-          if [ -n "${{ secrets.S3_BUCKET_NAME }}" ]; then
-            echo "✓ S3_BUCKET_NAME is set"
+          # Check AWS credentials
+          if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
+            echo "❌ AWS_ACCESS_KEY_ID is not set"
+            MISSING_SECRETS=1
           else
-            echo "✗ S3_BUCKET_NAME is not set"
+            echo "✅ AWS_ACCESS_KEY_ID is set"
           fi
           
-          if [ -n "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
-            echo "✓ CLOUDFRONT_DISTRIBUTION_ID is set"
+          if [ -z "${{ secrets.AWS_SECRET_ACCESS_KEY }}" ]; then
+            echo "❌ AWS_SECRET_ACCESS_KEY is not set"
+            MISSING_SECRETS=1
           else
-            echo "✗ CLOUDFRONT_DISTRIBUTION_ID is not set"
+            echo "✅ AWS_SECRET_ACCESS_KEY is set"
           fi
           
-          echo "Checking repository secrets:"
-          if [ -n "${{ secrets.ROUTE53_ZONE_ID }}" ]; then
-            echo "✓ ROUTE53_ZONE_ID is set"
+          if [ -z "${{ secrets.AWS_REGION }}" ]; then
+            echo "❌ AWS_REGION is not set"
+            MISSING_SECRETS=1
           else
-            echo "✗ ROUTE53_ZONE_ID is not set"
+            echo "✅ AWS_REGION is set"
           fi
           
-          if [ -n "${{ secrets.DOMAIN_NAME }}" ]; then
-            echo "✓ DOMAIN_NAME is set"
+          # Check infrastructure secrets
+          if [ -z "${{ secrets.S3_BUCKET_NAME }}" ]; then
+            echo "❌ S3_BUCKET_NAME is not set"
+            MISSING_SECRETS=1
           else
-            echo "✗ DOMAIN_NAME is not set"
+            echo "✅ S3_BUCKET_NAME is set"
           fi
+          
+          if [ -z "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
+            echo "❌ CLOUDFRONT_DISTRIBUTION_ID is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ CLOUDFRONT_DISTRIBUTION_ID is set"
+          fi
+          
+          if [ -z "${{ secrets.ROUTE53_ZONE_ID }}" ]; then
+            echo "❌ ROUTE53_ZONE_ID is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ ROUTE53_ZONE_ID is set"
+          fi
+          
+          if [ -z "${{ secrets.DOMAIN_NAME }}" ]; then
+            echo "❌ DOMAIN_NAME is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ DOMAIN_NAME is set"
+          fi
+          
+          # Check application secrets
+          if [ -z "${{ secrets.API_URL }}" ]; then
+            echo "❌ API_URL is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ API_URL is set"
+          fi
+          
+          if [ -z "${{ secrets.AUTH0_DOMAIN }}" ]; then
+            echo "❌ AUTH0_DOMAIN is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ AUTH0_DOMAIN is set"
+          fi
+          
+          if [ -z "${{ secrets.AUTH0_CLIENT_ID }}" ]; then
+            echo "❌ AUTH0_CLIENT_ID is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ AUTH0_CLIENT_ID is set"
+          fi
+          
+          if [ -z "${{ secrets.AUTH0_AUDIENCE }}" ]; then
+            echo "❌ AUTH0_AUDIENCE is not set"
+            MISSING_SECRETS=1
+          else
+            echo "✅ AUTH0_AUDIENCE is set"
+          fi
+          
+          if [ "$MISSING_SECRETS" -eq 1 ]; then
+            echo -e "\n❌ Some required secrets are missing. Please check your repository secrets."
+            exit 1
+          fi
+          
+          echo -e "\n✅ All required secrets are present"
 
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -74,47 +123,29 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - name: Verify required CLIs are installed
-        run: |
-          npx cross-env echo "✓ cross-env is working"
-          npx dotenv -- echo "✓ dotenv-cli is working"
-        working-directory: ${{ github.workspace }}
-
       - name: Create environment file
         run: |
-          echo "REACT_APP_API_URL=${{ secrets.API_URL }}" > .env.${{ env.ENVIRONMENT }}
-          echo "REACT_APP_AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env.${{ env.ENVIRONMENT }}
-          echo "REACT_APP_AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env.${{ env.ENVIRONMENT }}
-          echo "REACT_APP_AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> .env.${{ env.ENVIRONMENT }}
-          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}/callback" >> .env.${{ env.ENVIRONMENT }}
-          echo "REACT_APP_CDN=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}" >> .env.${{ env.ENVIRONMENT }}
-          echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env.${{ env.ENVIRONMENT }}
-          echo "GENERATE_SOURCEMAP=false" >> .env.${{ env.ENVIRONMENT }}
-          cp .env.${{ env.ENVIRONMENT }} .env.local
+          echo "REACT_APP_API_URL=${{ secrets.API_URL }}" > .env
+          echo "REACT_APP_AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env
+          echo "REACT_APP_AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env
+          echo "REACT_APP_AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> .env
+          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${{ secrets.DOMAIN_NAME }}/callback" >> .env
+          echo "REACT_APP_CDN=https://${{ secrets.DOMAIN_NAME }}" >> .env
+          echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env
+          echo "GENERATE_SOURCEMAP=${{ secrets.GENERATE_SOURCEMAP }}" >> .env
+          cp .env .env.local
         working-directory: ${{ github.workspace }}
 
       - name: Build frontend
-        run: |
-          if [[ "${{ env.ENVIRONMENT }}" == "main" ]]; then
-            npm run build:prod
-          else
-            npm run build:${{ env.ENVIRONMENT }}
-          fi
+        run: npm run build
         working-directory: ${{ github.workspace }}
-
-      - name: Verify build artifacts
-        run: |
-          if [ ! -d "build" ]; then
-            echo "Build directory not found!"
-            exit 1
-          fi
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -123,43 +154,14 @@ jobs:
         run: terraform init
         working-directory: ${{ github.workspace }}/infra
 
-      - name: Debug S3_BUCKET_NAME
-        run: |
-          if [ -n "${{ secrets.S3_BUCKET_NAME }}" ]; then
-            echo "S3_BUCKET_NAME is set (value hidden)"
-          else
-            echo "S3_BUCKET_NAME is empty"
-          fi
-
-      - name: Check required secrets
-        run: |
-          [ -z "${{ secrets.S3_BUCKET_NAME }}" ] && echo "Missing S3_BUCKET_NAME" && exit 1
-          [ -z "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ] && echo "Missing CLOUDFRONT_DISTRIBUTION_ID" && exit 1
-          [ -z "${{ secrets.ROUTE53_ZONE_ID }}" ] && echo "Missing ROUTE53_ZONE_ID" && exit 1
-          [ -z "${{ secrets.DOMAIN_NAME }}" ] && echo "Missing DOMAIN_NAME" && exit 1
-
       - name: Terraform Apply
         run: |
           terraform apply -auto-approve \
-            -var="environment=${{ env.ENVIRONMENT }}" \
             -var="domain_name=${{ secrets.DOMAIN_NAME }}" \
             -var="route53_zone_id=${{ secrets.ROUTE53_ZONE_ID }}" \
             -var="cloudfront_distribution_id=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
             -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}"
         working-directory: ${{ github.workspace }}/infra
-
-      - name: Export S3 bucket name from Terraform
-        id: terraform-output
-        run: |
-          cd ${{ github.workspace }}/infra
-          BUCKET_NAME=$(terraform output -raw s3_bucket_name)
-          CLOUDFRONT_URL=$(terraform output -raw cloudfront_domain_name)
-          if [ -z "$BUCKET_NAME" ]; then
-            echo "Failed to get S3 bucket name from Terraform"
-            exit 1
-          fi
-          echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
-          echo "CLOUDFRONT_URL=$CLOUDFRONT_URL" >> $GITHUB_ENV
 
       - name: Upload frontend build to S3
         run: |
@@ -167,7 +169,7 @@ jobs:
             echo "Build directory not found!"
             exit 1
           fi
-          aws s3 sync build/ s3://$BUCKET_NAME/ --delete
+          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }}/ --delete
         working-directory: ${{ github.workspace }}
 
       - name: Invalidate CloudFront cache
