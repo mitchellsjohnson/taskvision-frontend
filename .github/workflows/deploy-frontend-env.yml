@@ -27,13 +27,39 @@ jobs:
       AWS_REGION: us-east-1
 
     steps:
-      - name: Debug Environment
+      - name: Debug Environment and Secrets
         run: |
           echo "Current environment: ${{ env.ENVIRONMENT }}"
           echo "GitHub environment: ${{ github.event.inputs.environment || github.ref_name }}"
           echo "GitHub ref name: ${{ github.ref_name }}"
           echo "GitHub event name: ${{ github.event_name }}"
           echo "GitHub event inputs: ${{ toJSON(github.event.inputs) }}"
+          
+          echo "Checking environment secrets:"
+          if [ -n "${{ secrets.S3_BUCKET_NAME }}" ]; then
+            echo "✓ S3_BUCKET_NAME is set"
+          else
+            echo "✗ S3_BUCKET_NAME is not set"
+          fi
+          
+          if [ -n "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ]; then
+            echo "✓ CLOUDFRONT_DISTRIBUTION_ID is set"
+          else
+            echo "✗ CLOUDFRONT_DISTRIBUTION_ID is not set"
+          fi
+          
+          echo "Checking repository secrets:"
+          if [ -n "${{ secrets.ROUTE53_ZONE_ID }}" ]; then
+            echo "✓ ROUTE53_ZONE_ID is set"
+          else
+            echo "✗ ROUTE53_ZONE_ID is not set"
+          fi
+          
+          if [ -n "${{ secrets.DOMAIN_NAME }}" ]; then
+            echo "✓ DOMAIN_NAME is set"
+          else
+            echo "✗ DOMAIN_NAME is not set"
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@v3
