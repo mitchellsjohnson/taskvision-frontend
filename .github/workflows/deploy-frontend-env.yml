@@ -88,6 +88,14 @@ jobs:
         run: terraform init
         working-directory: ${{ github.workspace }}/infra
 
+      - name: Debug S3_BUCKET_NAME
+        run: |
+          if [ -n "${{ secrets.S3_BUCKET_NAME }}" ]; then
+            echo "S3_BUCKET_NAME is set (value hidden)"
+          else
+            echo "S3_BUCKET_NAME is empty"
+          fi
+
       - name: Check required secrets
         run: |
           [ -z "${{ secrets.S3_BUCKET_NAME }}" ] && echo "Missing S3_BUCKET_NAME" && exit 1
@@ -111,6 +119,10 @@ jobs:
           cd ${{ github.workspace }}/infra
           BUCKET_NAME=$(terraform output -raw s3_bucket_name)
           CLOUDFRONT_URL=$(terraform output -raw cloudfront_domain_name)
+          if [ -z "$BUCKET_NAME" ]; then
+            echo "Failed to get S3 bucket name from Terraform"
+            exit 1
+          fi
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
           echo "CLOUDFRONT_URL=$CLOUDFRONT_URL" >> $GITHUB_ENV
 
