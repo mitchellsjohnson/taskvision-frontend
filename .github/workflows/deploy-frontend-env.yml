@@ -1,5 +1,7 @@
 name: Deploy TaskVision Frontend
 
+description: Deploy TaskVision frontend using existing S3 bucket and CloudFront distribution.
+
 on:
   push:
     branches:
@@ -35,18 +37,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: ${{ github.workspace }}
 
       - name: Verify required CLIs are installed
         run: |
           npx cross-env echo "✓ cross-env is working"
           npx dotenv -- echo "✓ dotenv-cli is working"
-
-      - name: Check required secrets
-        run: |
-          [ -z "${{ secrets.S3_BUCKET_NAME }}" ] && echo "Missing S3_BUCKET_NAME" && exit 1
-          [ -z "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ] && echo "Missing CLOUDFRONT_DISTRIBUTION_ID" && exit 1
-          [ -z "${{ secrets.ROUTE53_ZONE_ID }}" ] && echo "Missing ROUTE53_ZONE_ID" && exit 1
-          [ -z "${{ secrets.DOMAIN_NAME }}" ] && echo "Missing DOMAIN_NAME" && exit 1
+        working-directory: ${{ github.workspace }}
 
       - name: Create environment file
         run: |
@@ -59,6 +56,7 @@ jobs:
           echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env.${{ env.ENVIRONMENT }}
           echo "GENERATE_SOURCEMAP=false" >> .env.${{ env.ENVIRONMENT }}
           cp .env.${{ env.ENVIRONMENT }} .env.local
+        working-directory: ${{ github.workspace }}
 
       - name: Build frontend
         run: |
@@ -67,6 +65,7 @@ jobs:
           else
             npm run build:${{ env.ENVIRONMENT }}
           fi
+        working-directory: ${{ github.workspace }}
 
       - name: Verify build artifacts
         run: |
@@ -110,7 +109,12 @@ jobs:
 
       - name: Upload frontend build to S3
         run: |
+          if [ ! -d "build" ]; then
+            echo "Build directory not found!"
+            exit 1
+          fi
           aws s3 sync build/ s3://$BUCKET_NAME/ --delete
+        working-directory: ${{ github.workspace }}
 
       - name: Invalidate CloudFront cache
         run: |
