@@ -40,7 +40,7 @@ jobs:
       - name: Verify required CLIs are installed
         run: |
           npx cross-env echo "✓ cross-env is working"
-          npx dotenv --version
+          npx dotenv -- echo "✓ dotenv-cli is working"
         working-directory: ${{ github.workspace }}
 
       - name: Create environment file
