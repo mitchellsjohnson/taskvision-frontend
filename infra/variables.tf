@@ -1,16 +1,10 @@
-
-variable "environment" {
-  description = "Deployment environment name (e.g., dev, prod)"
-  type        = string
-}
-
 variable "domain_name" {
   description = "Base domain name"
   type        = string
 }
 
 variable "subdomain" {
-  description = "Subdomain to use (e.g., dev, www)"
+  description = "Optional subdomain to use (e.g., www)"
   type        = string
   default     = ""
 }
@@ -32,6 +26,11 @@ variable "cloudfront_distribution_id" {
 }
 
 variable "s3_bucket_name" {
-  description = "Existing S3 bucket name"
+  description = "Name of the existing S3 bucket"
+  type        = string
+}
+
+variable "acm_certificate_arn" {
+  description = "ARN of the existing ACM certificate"
   type        = string
 }

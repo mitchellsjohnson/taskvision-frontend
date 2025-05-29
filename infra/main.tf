@@ -7,19 +7,16 @@ locals {
 }
 
 # Reference existing S3 bucket
-
 data "aws_s3_bucket" "frontend" {
   bucket = var.s3_bucket_name
 }
 
 # Reference existing CloudFront distribution
-
 data "aws_cloudfront_distribution" "frontend" {
   id = var.cloudfront_distribution_id
 }
 
 # S3 bucket policy to allow CloudFront access
-
 resource "aws_s3_bucket_policy" "frontend" {
   bucket = data.aws_s3_bucket.frontend.id
 
@@ -45,7 +42,6 @@ resource "aws_s3_bucket_policy" "frontend" {
 }
 
 # Route53 record pointing to CloudFront
-
 resource "aws_route53_record" "frontend_alias" {
   zone_id = var.route53_zone_id
   name    = local.fqdn
@@ -59,12 +55,7 @@ resource "aws_route53_record" "frontend_alias" {
   }
 }
 
-# ACM Certificate via module
-
-module "acm" {
-  source      = "./modules/acm"
-  domain_name = local.fqdn
-  san_list    = var.san_list
-  zone_id     = var.route53_zone_id
-  environment = var.environment
+# Reference existing ACM certificate
+data "aws_acm_certificate" "frontend" {
+  arn = var.acm_certificate_arn
 }

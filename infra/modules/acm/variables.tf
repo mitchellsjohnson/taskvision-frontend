@@ -13,8 +13,3 @@ variable "zone_id" {
   description = "Route53 hosted zone ID"
   type        = string
 }
-
-variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
-  type        = string
-}
