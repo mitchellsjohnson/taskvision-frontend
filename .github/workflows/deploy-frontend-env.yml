@@ -88,6 +88,13 @@ jobs:
         run: terraform init
         working-directory: ${{ github.workspace }}/infra
 
+      - name: Check required secrets
+        run: |
+          [ -z "${{ secrets.S3_BUCKET_NAME }}" ] && echo "Missing S3_BUCKET_NAME" && exit 1
+          [ -z "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" ] && echo "Missing CLOUDFRONT_DISTRIBUTION_ID" && exit 1
+          [ -z "${{ secrets.ROUTE53_ZONE_ID }}" ] && echo "Missing ROUTE53_ZONE_ID" && exit 1
+          [ -z "${{ secrets.DOMAIN_NAME }}" ] && echo "Missing DOMAIN_NAME" && exit 1
+
       - name: Terraform Apply
         run: |
           terraform apply -auto-approve \
