@@ -52,7 +52,13 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Build frontend
-        run: NODE_ENV=production npm run build:${{ env.ENVIRONMENT }}
+        # If ENVIRONMENT is 'main', run the production build script. Otherwise, use the environment-specific build script.
+        run: |
+          if [[ "${{ env.ENVIRONMENT }}" == "main" ]]; then
+            NODE_ENV=production npm run build:prod
+          else
+            NODE_ENV=production npm run build:${{ env.ENVIRONMENT }}
+          fi
         working-directory: ${{ github.workspace }}
 
       - name: Verify build artifacts
