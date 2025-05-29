@@ -36,7 +36,9 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm install cross-env dotenv-cli --save-dev
 
       - name: Create environment file
         run: |
@@ -50,7 +52,9 @@ jobs:
           echo "GENERATE_SOURCEMAP=false" >> .env.${{ env.ENVIRONMENT }}
 
       - name: Build frontend
-        run: npm run build:${{ env.ENVIRONMENT }}
+        run: |
+          cp .env.${{ env.ENVIRONMENT }} .env.local
+          npx react-scripts build
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
