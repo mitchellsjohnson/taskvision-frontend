@@ -4,74 +4,53 @@ provider "aws" {
 
 locals {
   fqdn         = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
-  bucket_name  = "taskvision-${var.environment}-frontend"
-  oac_name     = "frontend-oac-${var.environment}"
+  bucket_name  = var.s3_bucket_name != "" ? var.s3_bucket_name : "taskvision-${var.environment}-frontend"
+  create_s3    = var.s3_bucket_name == ""
+  create_cf    = var.cloudfront_distribution_id == ""
 }
 
-module "acm" {
-  source      = "./modules/acm"
-  domain_name = local.fqdn
-  san_list    = []
-  zone_id     = var.zone_id
-  environment = var.environment
+# Optional CloudFront lookup
+data "aws_cloudfront_distribution" "existing" {
+  count = local.create_cf ? 0 : 1
+  id    = var.cloudfront_distribution_id
 }
 
+# Optional S3 bucket lookup
+data "aws_s3_bucket" "existing" {
+  count  = local.create_s3 ? 0 : 1
+  bucket = var.s3_bucket_name
+}
+
+# Create S3 bucket if needed
 resource "aws_s3_bucket" "frontend" {
-  bucket        = local.bucket_name
-  force_destroy = false
+  count  = local.create_s3 ? 1 : 0
+  bucket = local.bucket_name
+
+  lifecycle {
+    prevent_destroy = true
+  }
 
   tags = {
     Environment = var.environment
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
-
-  block_public_acls       = true
-  ignore_public_acls      = true
-  block_public_policy     = true
-  restrict_public_buckets = true
+locals {
+  bucket_id  = local.create_s3 ? aws_s3_bucket.frontend[0].id : data.aws_s3_bucket.existing[0].id
+  bucket_arn = local.create_s3 ? aws_s3_bucket.frontend[0].arn : data.aws_s3_bucket.existing[0].arn
 }
 
-resource "aws_cloudfront_origin_access_control" "frontend" {
-  name                              = local.oac_name
-  description                       = "Access control for CloudFront to S3"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
-
-resource "aws_s3_bucket_policy" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          Service = "cloudfront.amazonaws.com"
-        },
-        Action   = "s3:GetObject",
-        Resource = "${aws_s3_bucket.frontend.arn}/*"
-      }
-    ]
-  })
-}
-
-data "aws_caller_identity" "current" {}
-
+# Create CloudFront distribution if needed
 resource "aws_cloudfront_distribution" "frontend" {
+  count               = local.create_cf ? 1 : 0
   enabled             = true
   is_ipv6_enabled     = true
   default_root_object = "index.html"
   aliases             = [local.fqdn]
 
   origin {
-    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
+    domain_name              = "${local.bucket_id}.s3.amazonaws.com"
     origin_id                = "frontendS3Origin"
-    origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
   }
 
   default_cache_behavior {
@@ -119,14 +98,53 @@ resource "aws_cloudfront_distribution" "frontend" {
   depends_on = [module.acm]
 }
 
+locals {
+  cloudfront_distribution_arn = local.create_cf ? aws_cloudfront_distribution.frontend[0].arn : data.aws_cloudfront_distribution.existing[0].arn
+  cloudfront_domain_name      = local.create_cf ? aws_cloudfront_distribution.frontend[0].domain_name : data.aws_cloudfront_distribution.existing[0].domain_name
+  cloudfront_hosted_zone_id   = local.create_cf ? aws_cloudfront_distribution.frontend[0].hosted_zone_id : data.aws_cloudfront_distribution.existing[0].hosted_zone_id
+}
+
+resource "aws_s3_bucket_policy" "frontend" {
+  bucket = local.bucket_id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AllowCloudFrontAccess",
+        Effect    = "Allow",
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        },
+        Action    = "s3:GetObject",
+        Resource  = "${local.bucket_arn}/*",
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = local.cloudfront_distribution_arn
+          }
+        }
+      }
+    ]
+  })
+}
+
 resource "aws_route53_record" "frontend_alias" {
-  zone_id = var.zone_id
+  zone_id = var.route53_zone_id
   name    = local.fqdn
   type    = "A"
+  allow_overwrite = true
 
   alias {
-    name                   = aws_cloudfront_distribution.frontend.domain_name
-    zone_id                = aws_cloudfront_distribution.frontend.hosted_zone_id
+    name                   = local.cloudfront_domain_name
+    zone_id                = local.cloudfront_hosted_zone_id
     evaluate_target_health = false
   }
+}
+
+module "acm" {
+  source      = "./modules/acm"
+  domain_name = local.fqdn
+  san_list    = var.san_list
+  zone_id     = var.route53_zone_id
+  environment = var.environment
 }

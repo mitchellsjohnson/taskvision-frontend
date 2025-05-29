@@ -35,20 +35,24 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=dev
         working-directory: ${{ github.workspace }}
 
-      - name: Prepare environment
+      - name: Create environment file
         run: |
-          if [[ "${{ env.ENVIRONMENT }}" == "prod" ]]; then
-            cp .env.prod .env.local
-          else
-            cp .env.dev .env.local
-          fi
+          echo "REACT_APP_API_URL=${{ secrets.API_URL }}" > .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}/callback" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_CDN=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "GENERATE_SOURCEMAP=false" >> .env.${{ env.ENVIRONMENT }}
+          cp .env.${{ env.ENVIRONMENT }} .env.local
         working-directory: ${{ github.workspace }}
 
       - name: Build frontend
-        run: npm run build:${{ env.ENVIRONMENT }}
+        run: NODE_ENV=production npm run build:${{ env.ENVIRONMENT }}
         working-directory: ${{ github.workspace }}
 
       - name: Verify build artifacts

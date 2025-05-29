@@ -1,20 +1,20 @@
 variable "domain_name" {
+  description = "Domain name for the certificate"
   type        = string
-  description = "Primary domain for the certificate"
 }
 
 variable "san_list" {
+  description = "Optional subject alternative names for the cert"
   type        = list(string)
-  description = "Subject alternative names"
   default     = []
 }
 
 variable "zone_id" {
+  description = "Route53 hosted zone ID"
   type        = string
-  description = "Route 53 hosted zone ID"
 }
 
 variable "environment" {
+  description = "Environment name (e.g., dev, prod)"
   type        = string
-  description = "Environment name (e.g., dev or prod)"
 }

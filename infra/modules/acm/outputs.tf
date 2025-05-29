@@ -1,3 +1,9 @@
 output "certificate_arn" {
-  value = aws_acm_certificate_validation.cert_validation.certificate_arn
+  description = "ARN of the ACM certificate"
+  value       = local.certificate_arn
+}
+
+output "validation_record_fqdns" {
+  description = "DNS records needed to validate ACM certificate (if any)"
+  value       = []
 }
