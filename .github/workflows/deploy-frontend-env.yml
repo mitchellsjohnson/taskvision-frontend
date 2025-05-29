@@ -55,6 +55,7 @@ jobs:
       - name: Build frontend
         run: |
           cp .env.${{ env.ENVIRONMENT }} .env.local
+          npm pkg set homepage="https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}"
           npx react-scripts build
 
       - name: Configure AWS credentials
