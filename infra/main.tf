@@ -54,8 +54,3 @@ resource "aws_route53_record" "frontend_alias" {
     evaluate_target_health = false
   }
 }
-
-# Reference existing ACM certificate
-data "aws_acm_certificate" "frontend" {
-  arn = var.acm_certificate_arn
-}

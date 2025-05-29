@@ -29,8 +29,3 @@ variable "s3_bucket_name" {
   description = "Name of the existing S3 bucket"
   type        = string
 }
-
-variable "acm_certificate_arn" {
-  description = "ARN of the existing ACM certificate"
-  type        = string
-}
