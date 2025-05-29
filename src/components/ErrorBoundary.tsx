@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -20,7 +20,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    console.error("Uncaught error:", error, errorInfo);
   }
 
   public render() {
@@ -28,15 +28,15 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div
           style={{
-            padding: '20px',
-            margin: '20px',
-            border: '1px solid red',
-            borderRadius: '4px',
-            backgroundColor: '#fff5f5',
+            padding: "20px",
+            margin: "20px",
+            border: "1px solid red",
+            borderRadius: "4px",
+            backgroundColor: "#fff5f5",
           }}
         >
           <h2>Something went wrong.</h2>
-          <details style={{ whiteSpace: 'pre-wrap' }}>
+          <details style={{ whiteSpace: "pre-wrap" }}>
             <summary>Error Details</summary>
             {this.state.error?.toString()}
           </details>
