@@ -36,31 +36,21 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        run: npm ci
+
+      - name: Create environment file
         run: |
-          npm install
-          npm install cross-env dotenv-cli --save-dev
-          npm install --save-dev eslint-plugin-prettier eslint-config-prettier prettier
-          npm install --include=dev
+          echo "REACT_APP_API_URL=${{ secrets.API_URL }}" > .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}/callback" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_CDN=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env.${{ env.ENVIRONMENT }}
+          echo "GENERATE_SOURCEMAP=false" >> .env.${{ env.ENVIRONMENT }}
 
       - name: Build frontend
-        run: |
-          cp .env.${{ env.ENVIRONMENT }} .env.local
-          echo "REACT_APP_API_URL=${{ secrets.API_URL }}" >> .env.local
-          echo "REACT_APP_AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> .env.local
-          echo "REACT_APP_AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> .env.local
-          echo "REACT_APP_AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> .env.local
-          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}/callback" >> .env.local
-          echo "REACT_APP_CDN=https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}" >> .env.local
-          echo "REACT_APP_API_SERVER_URL=${{ secrets.API_URL }}" >> .env.local
-          echo "GENERATE_SOURCEMAP=false" >> .env.local
-          npx react-scripts build
-
-      - name: Verify build artifacts
-        run: |
-          if [ ! -d "build" ]; then
-            echo "Build directory not found!"
-            exit 1
-          fi
+        run: npm run build:${{ env.ENVIRONMENT }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -69,59 +59,16 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Debug S3 Configuration
-        run: |
-          echo "Checking S3 bucket access..."
-          aws s3 ls s3://${{ secrets.S3_BUCKET_NAME }}/ || echo "Failed to access bucket"
-          echo "S3 bucket name length: ${#S3_BUCKET_NAME}"
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: infra
-
-      - name: Check if DNS record exists
-        id: check-dns
-        run: |
-          RECORD_NAME="${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}"
-          if aws route53 list-resource-record-sets \
-            --hosted-zone-id ${{ secrets.ROUTE53_ZONE_ID }} \
-            --query "ResourceRecordSets[?Name=='${RECORD_NAME}.']" \
-            --output text | grep -q "${RECORD_NAME}"; then
-            echo "DNS_RECORD_EXISTS=true" >> $GITHUB_ENV
-          else
-            echo "DNS_RECORD_EXISTS=false" >> $GITHUB_ENV
-          fi
-
-      - name: Terraform Apply
-        if: env.DNS_RECORD_EXISTS == 'false'
-        run: terraform apply -auto-approve \
-          -var="environment=${{ env.ENVIRONMENT }}" \
-          -var="subdomain=${{ env.ENVIRONMENT }}" \
-          -var="domain_name=${{ secrets.DOMAIN_NAME }}" \
-          -var="route53_zone_id=${{ secrets.ROUTE53_ZONE_ID }}" \
-          -var="cloudfront_distribution_id=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
-          -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}"
-        working-directory: infra
-
-      - name: Set environment variables for S3 and CloudFront
-        run: |
-          echo "S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }}" >> $GITHUB_ENV
-          echo "CLOUDFRONT_DOMAIN_NAME=$(aws cloudfront get-distribution --id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --query 'Distribution.DomainName' --output text)" >> $GITHUB_ENV
-
-      - name: Create .env file
-        run: |
-          cp .env.${{ env.ENVIRONMENT }} .env
-          echo "REACT_APP_AUTH0_CALLBACK_URL=https://${CLOUDFRONT_DOMAIN_NAME}/callback" >> .env
-
-      - name: Upload build to S3
+      - name: Deploy to S3
         run: aws s3 sync build/ "s3://${{ secrets.S3_BUCKET_NAME }}" --delete
-        # Testing frontend build with npm install
 
       - name: Invalidate CloudFront Cache
         run: |
           aws cloudfront create-invalidation \
             --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
             --paths "/*" "/index.html" "/static/*"
+
+      - name: Verify Deployment
+        run: |
+          echo "Deployment completed successfully!"
+          echo "Frontend is now available at: https://${{ env.ENVIRONMENT }}.${{ secrets.DOMAIN_NAME }}"
