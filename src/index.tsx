@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 import { App } from "./app";
 import { Auth0ProviderWithConfig } from "./auth0-provider-with-config";
 import "./styles/styles.css";
-import ErrorBoundary from './components/ErrorBoundary';
+import ErrorBoundary from "./components/ErrorBoundary";
 
 ReactDOM.render(
   <React.StrictMode>

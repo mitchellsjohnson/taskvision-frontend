@@ -12,7 +12,7 @@ interface State {
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null
+    error: null,
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -26,13 +26,15 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{ 
-          padding: '20px', 
-          margin: '20px', 
-          border: '1px solid red', 
-          borderRadius: '4px',
-          backgroundColor: '#fff5f5'
-        }}>
+        <div
+          style={{
+            padding: '20px',
+            margin: '20px',
+            border: '1px solid red',
+            borderRadius: '4px',
+            backgroundColor: '#fff5f5',
+          }}
+        >
           <h2>Something went wrong.</h2>
           <details style={{ whiteSpace: 'pre-wrap' }}>
             <summary>Error Details</summary>
