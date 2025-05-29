@@ -59,9 +59,9 @@ jobs:
       - name: Build frontend
         run: |
           if [[ "${{ env.ENVIRONMENT }}" == "main" ]]; then
-            NODE_ENV=production npm run build:prod
+            npm run build:prod
           else
-            NODE_ENV=production npm run build:${{ env.ENVIRONMENT }}
+            npm run build:${{ env.ENVIRONMENT }}
           fi
         working-directory: ${{ github.workspace }}
 
