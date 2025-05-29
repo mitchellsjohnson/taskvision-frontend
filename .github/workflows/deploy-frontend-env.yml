@@ -38,8 +38,17 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
+      - name: Prepare environment file
+        run: |
+          if [[ "${{ env.ENVIRONMENT }}" == "prod" ]]; then
+              cp .env.prod .env.local
+          else
+              cp .env.dev .env.local
+          fi
+        working-directory: ${{ github.workspace }}
+
       - name: Build frontend
-        run: npm run build
+        run: npm run build:${{ env.ENVIRONMENT }}
         working-directory: ${{ github.workspace }}
 
       - name: Verify build artifacts
@@ -80,16 +89,6 @@ jobs:
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
           echo "CLOUDFRONT_URL=$CLOUDFRONT_URL" >> $GITHUB_ENV
 
-      - name: Create .env file
-        run: |
-          if [ "${{ env.ENVIRONMENT }}" = "prod" ]; then
-            cp .env.prod .env
-          else
-            cp .env.dev .env
-          fi
-          # Override callback URL with CloudFront URL
-          echo "REACT_APP_AUTH0_CALLBACK_URL=https://$CLOUDFRONT_URL/callback" >> .env
-        working-directory: ${{ github.workspace }}
 
       - name: Upload frontend build to S3
         run: |
