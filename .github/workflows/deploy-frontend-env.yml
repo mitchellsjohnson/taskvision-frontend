@@ -22,7 +22,6 @@ jobs:
     env:
       ENVIRONMENT: ${{ github.event.inputs.environment || github.ref_name }}
       AWS_REGION: us-east-1
-      NODE_ENV: production
 
     steps:
       - name: Checkout repository
