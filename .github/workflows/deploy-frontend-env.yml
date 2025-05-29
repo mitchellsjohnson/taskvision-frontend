@@ -38,7 +38,8 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm install cross-env dotenv-cli --save-dev
+          npm install --save-dev eslint-plugin-prettier eslint-config-prettier prettier cross-env dotenv-cli
+          npm install --include=dev
 
       - name: Create environment file
         run: |
