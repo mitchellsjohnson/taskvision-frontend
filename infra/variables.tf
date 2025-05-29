@@ -1,5 +1,6 @@
+
 variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
+  description = "Deployment environment name (e.g., dev, prod)"
   type        = string
 }
 
@@ -20,21 +21,17 @@ variable "route53_zone_id" {
 }
 
 variable "san_list" {
-  description = "Optional subject alternative names for the cert"
+  description = "Optional SANs for the ACM certificate"
   type        = list(string)
   default     = []
 }
 
 variable "cloudfront_distribution_id" {
-  description = "Optional ID of an existing CloudFront distribution to use. If not provided, a new distribution will be created."
+  description = "Existing CloudFront distribution ID"
   type        = string
-  default     = ""
 }
 
 variable "s3_bucket_name" {
-  description = "Optional name of an existing S3 bucket to use. If not provided, a new bucket will be created."
+  description = "Existing S3 bucket name"
   type        = string
-  default     = ""
 }
-
-
