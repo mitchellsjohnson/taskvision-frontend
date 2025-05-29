@@ -49,8 +49,8 @@ resource "aws_cloudfront_distribution" "frontend" {
   aliases             = [local.fqdn]
 
   origin {
-    domain_name              = "${local.bucket_id}.s3.amazonaws.com"
-    origin_id                = "frontendS3Origin"
+    domain_name = "${local.bucket_name}.s3.amazonaws.com"
+    origin_id   = "frontendS3Origin"
   }
 
   default_cache_behavior {
@@ -129,9 +129,9 @@ resource "aws_s3_bucket_policy" "frontend" {
 }
 
 resource "aws_route53_record" "frontend_alias" {
-  zone_id = var.route53_zone_id
-  name    = local.fqdn
-  type    = "A"
+  zone_id         = var.route53_zone_id
+  name            = local.fqdn
+  type            = "A"
   allow_overwrite = true
 
   alias {
