@@ -1,3 +1,4 @@
+
 name: Deploy TaskVision Frontend
 
 on:
@@ -34,7 +35,13 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Verify required CLIs are installed
+        run: |
+          npx cross-env --version
+          npx dotenv --version
         working-directory: ${{ github.workspace }}
 
       - name: Create environment file
@@ -51,7 +58,6 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Build frontend
-        # If ENVIRONMENT is 'main', run the production build script. Otherwise, use the environment-specific build script.
         run: |
           if [[ "${{ env.ENVIRONMENT }}" == "main" ]]; then
             NODE_ENV=production npm run build:prod
@@ -98,7 +104,6 @@ jobs:
           echo "BUCKET_NAME=$BUCKET_NAME" >> $GITHUB_ENV
           echo "CLOUDFRONT_URL=$CLOUDFRONT_URL" >> $GITHUB_ENV
 
-
       - name: Upload frontend build to S3
         run: |
           if [ ! -d "build" ]; then
@@ -107,3 +112,9 @@ jobs:
           fi
           aws s3 sync build/ s3://$BUCKET_NAME/ --delete
         working-directory: ${{ github.workspace }}
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
