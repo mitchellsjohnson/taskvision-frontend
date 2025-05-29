@@ -25,5 +25,5 @@ output "cloudfront_domain_name" {
 
 output "route53_record_name" {
   description = "DNS record created for the frontend domain"
-  value       = var.cloudfront_distribution_id != "" ? aws_route53_record.frontend_alias[0].name : ""
+  value       = var.cloudfront_distribution_id != "" ? aws_route53_record.frontend_alias.name : ""
 }
