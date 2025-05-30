@@ -12,8 +12,3 @@ output "cloudfront_domain_name" {
   description = "Domain name of the CloudFront distribution"
   value       = data.aws_cloudfront_distribution.frontend.domain_name
 }
-
-output "certificate_arn" {
-  description = "ARN of the ACM certificate"
-  value       = data.aws_acm_certificate.frontend.arn
-}

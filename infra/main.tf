@@ -14,12 +14,6 @@ data "aws_cloudfront_distribution" "frontend" {
   id = var.cloudfront_distribution_id
 }
 
-data "aws_acm_certificate" "frontend" {
-  domain      = local.fqdn
-  statuses    = ["ISSUED"]
-  most_recent = true
-}
-
 resource "aws_route53_record" "frontend_alias" {
   zone_id = var.zone_id
   name    = local.fqdn
