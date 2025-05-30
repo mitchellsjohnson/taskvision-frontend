@@ -1,20 +1,20 @@
 variable "environment" {
-  description = "Deployment environment (e.g., dev, prod)"
+  description = "Environment name (e.g., dev, prod)"
   type        = string
 }
 
 variable "subdomain" {
-  description = "Subdomain (e.g., dev, prod)"
+  description = "Subdomain for the frontend (e.g., dev, prod)"
   type        = string
 }
 
 variable "domain_name" {
-  description = "Primary domain name (e.g., taskvision.ai)"
+  description = "Base domain name"
   type        = string
 }
 
 variable "zone_id" {
-  description = "Route 53 Hosted Zone ID"
+  description = "Route53 hosted zone ID"
   type        = string
 }
 
@@ -26,12 +26,6 @@ variable "s3_bucket_name" {
 variable "cloudfront_distribution_id" {
   description = "ID of the existing CloudFront distribution"
   type        = string
-}
-
-variable "san_list" {
-  description = "Optional subject alternative names for the cert"
-  type        = list(string)
-  default     = []
 }
 
 
