@@ -60,13 +60,6 @@ jobs:
             echo "✅ CLOUDFRONT_DISTRIBUTION_ID is set"
           fi
           
-          if [ -z "${{ secrets.ROUTE53_ZONE_ID }}" ]; then
-            echo "❌ ROUTE53_ZONE_ID is not set"
-            MISSING_SECRETS=1
-          else
-            echo "✅ ROUTE53_ZONE_ID is set"
-          fi
-          
           if [ -z "${{ secrets.DOMAIN_NAME }}" ]; then
             echo "❌ DOMAIN_NAME is not set"
             MISSING_SECRETS=1
@@ -158,9 +151,7 @@ jobs:
         run: |
           terraform apply -auto-approve \
             -var="environment=prod" \
-            -var="subdomain=prod" \
             -var="domain_name=${{ secrets.DOMAIN_NAME }}" \
-            -var="zone_id=${{ secrets.ROUTE53_ZONE_ID }}" \
             -var="s3_bucket_name=${{ secrets.S3_BUCKET_NAME }}" \
             -var="cloudfront_distribution_id=${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}"
         working-directory: ${{ github.workspace }}/infra

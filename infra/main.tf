@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 locals {
-  fqdn = var.subdomain != "" ? "${var.subdomain}.${var.domain_name}" : var.domain_name
+  fqdn = var.domain_name
 }
 
 data "aws_s3_bucket" "frontend" {
