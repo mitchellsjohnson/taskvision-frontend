@@ -1,8 +1,3 @@
-variable "environment" {
-  description = "Environment name (e.g., dev, prod)"
-  type        = string
-}
-
 variable "domain_name" {
   description = "Base domain name"
   type        = string
