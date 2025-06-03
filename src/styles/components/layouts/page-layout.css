@@ -1,26 +1,40 @@
 .page-layout {
   display: flex;
   flex-direction: column;
-  align-items: center;
-
-  height: 100%;
+  align-items: stretch;
+  height: 100vh;
   width: 100%;
+  overflow: hidden;
 }
 
-.page-layout__content {
-  flex: 1;
-  flex-basis: auto;
-  flex-shrink: 0;
+.page-layout__body {
   display: flex;
-  flex-direction: column;
-
-  margin-top: 8rem;
-  max-width: 120rem;
+  flex-direction: row;
   width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-top: 8rem;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.page-layout__content-main {
+  flex-grow: 1;
+  padding: 24px;
+  overflow-y: auto;
+  height: 100%;
 }
 
 @media only screen and (max-width: 640px) {
-  .page-layout__content {
-    margin-top: 6.4rem;
+  .page-layout__body {
+    padding-top: 6.4rem;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .page-layout__content-main {
+    padding: 1.6rem;
   }
 }
