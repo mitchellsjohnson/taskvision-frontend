@@ -1,16 +1,22 @@
 .left-nav {
   width: 220px;
   background-color: var(--dark-aluminium);
-  padding: 20px 15px;
-  height: 100%;
+  /* padding: 20px 15px; */ /* Padding will be handled by children or specific sections if needed */
+  height: 100vh; /* Make it full viewport height */
   overflow-y: auto;
-  flex-shrink: 0;
+  /* flex-shrink: 0; */ /* Not needed with fixed positioning */
   border-right: 1px solid var(--aluminium);
+  position: fixed; /* Fix it to the viewport */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Ensure it's on top */
+  padding-top: 8rem; /* Align content below the top NavBar */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .left-nav ul {
   list-style-type: none;
-  padding: 0;
+  padding: 20px 15px; /* Re-apply padding here or to individual items as needed */
   margin: 0;
 }
 
@@ -21,7 +27,9 @@
   text-decoration: none;
   border-radius: 4px;
   margin-bottom: 8px;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    background-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
   font-size: 1.6rem;
   line-height: 1.5;
 }
@@ -37,8 +45,41 @@
   color: var(--white);
 }
 
+.left-nav__brand {
+  padding: 0 1rem 1rem 0; /* Set left and top padding to 0 */
+  border-bottom: 1px solid var(--grey-light);
+  margin-bottom: 1rem;
+  display: flex;
+}
+
+.left-nav__brand-link {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-weight: bold;
+  font-size: 1.6rem; /* Increased font size */
+  width: 100%;
+}
+
+.left-nav__brand-link:hover {
+  color: var(--primary);
+}
+
+.left-nav__logo {
+  margin-right: 0.75rem;
+  width: 60px;
+  height: 60px;
+  object-fit: contain; /* Added to prevent stretching */
+}
+
+.left-nav__brand-text {
+  /* Styles for the brand text if needed beyond the link's style */
+}
+
 @media only screen and (max-width: 640px) {
   .left-nav {
     display: none;
   }
-} 
+}

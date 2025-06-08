@@ -3,6 +3,9 @@ import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { PageLoader } from "./components/page-loader";
 import { ProtectedRoute } from "./components/protected-route";
+import { RoleProtectedRoute } from "./components/role-protected-route";
+
+// Original Pages
 import { AdminPage } from "./pages/admin-page";
 import { CallbackPage } from "./pages/callback-page";
 import { HomePage } from "./pages/home-page";
@@ -11,6 +14,13 @@ import { ProfilePage } from "./pages/profile-page";
 import { ProtectedPage } from "./pages/protected-page";
 import { PublicPage } from "./pages/public-page";
 import { AdminFeaturesPage } from "./pages/admin-features-page";
+
+// New Pages
+import { DashboardPage } from "./pages/dashboard-page";
+import { TasksPage } from "./pages/tasks-page";
+import { AppAdminPage } from "./pages/app-admin-page";
+import { EcosystemsPage } from "./pages/ecosystems-page";
+import { UnauthorizedPage } from "./pages/unauthorized-page";
 
 export const App: React.FC = () => {
   const { isLoading } = useAuth0();
@@ -22,6 +32,7 @@ export const App: React.FC = () => {
       </div>
     );
   }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -43,6 +54,33 @@ export const App: React.FC = () => {
           path="/admin-features"
           element={<ProtectedRoute component={AdminFeaturesPage} />}
         />
+        <Route
+          path="/dashboard"
+          element={<ProtectedRoute component={DashboardPage} />}
+        />
+        <Route
+          path="/tasks"
+          element={<ProtectedRoute component={TasksPage} />}
+        />
+        <Route
+          path="/app-admin"
+          element={
+            <RoleProtectedRoute
+              component={AppAdminPage}
+              requiredRoles={["admin", "ecosystem-admin"]}
+            />
+          }
+        />
+        <Route
+          path="/ecosystems"
+          element={
+            <RoleProtectedRoute
+              component={EcosystemsPage}
+              requiredRoles={["ecosystem-admin"]}
+            />
+          }
+        />
+        <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom"; // Ensure NavLink is imported
 
 interface MobileNavBarBrandProps {
   handleClick: () => void;
@@ -18,12 +18,12 @@ export const MobileNavBarBrand: React.FC<MobileNavBarBrandProps> = ({
       >
         <img
           className="mobile-nav-bar__logo"
-          src="/opsvision2.svg"
-          alt="Opsvision3"
+          src="/eagle-mitty.svg"
+          alt="Taskvision" // Changed from Opsvision3
           width="30"
           height="30"
         />{" "}
-        Opsvision3
+        Taskvision {/* Changed from Opsvision3 */}
       </NavLink>
     </div>
   );

@@ -1,7 +1,7 @@
 .nav-bar__container {
   position: fixed;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   flex-shrink: 0;
   width: 100%;
 
@@ -22,7 +22,7 @@
   height: 80px;
   max-width: 1200px;
 
-  padding: 0 24px;
+  padding: 0 24px 0 16px;
   margin: 0;
 }
 
@@ -45,7 +45,9 @@
 }
 
 .nav-bar__logo {
-  height: 3.2rem;
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
 }
 
 .nav-bar__tabs {

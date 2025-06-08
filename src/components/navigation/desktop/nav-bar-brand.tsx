@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom"; // Ensure NavLink is imported
 
 export const NavBarBrand: React.FC = () => {
   return (
@@ -12,12 +12,12 @@ export const NavBarBrand: React.FC = () => {
       >
         <img
           className="nav-bar__logo"
-          src="/opsvision2.svg"
-          alt="Opsvision3"
+          src="/eagle-mitty.svg"
+          alt="Taskvision" // Changed from Opsvision3
           width="60"
           height="60"
         />{" "}
-        Opsvision3
+        Taskvision {/* Changed from Opsvision3 */}
       </NavLink>
     </div>
   );

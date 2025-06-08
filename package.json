@@ -30,7 +30,10 @@
       "plugin:react/recommended",
       "plugin:prettier/recommended",
       "plugin:@typescript-eslint/recommended"
-    ]
+    ],
+    "rules": {
+      "react/react-in-jsx-scope": "off"
+    }
   },
   "browserslist": {
     "production": [

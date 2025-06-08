@@ -2,10 +2,10 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Mock Auth0
-jest.mock('@auth0/auth0-react', () => ({
+jest.mock("@auth0/auth0-react", () => ({
   useAuth0: () => ({
     isAuthenticated: false,
     loginWithRedirect: jest.fn(),
@@ -18,8 +18,8 @@ jest.mock('@auth0/auth0-react', () => ({
 }));
 
 // Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
   useNavigate: () => jest.fn(),
-  useLocation: () => ({ pathname: '/' }),
-})); 
+  useLocation: () => ({ pathname: "/" }),
+}));

@@ -8,33 +8,40 @@
 }
 
 .page-layout__body {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 1200px;
-  margin-left: auto;
+  /* display: flex; */ /* No longer a flex container for LeftNav as it's fixed */
+  /* flex-direction: row; */
+  width: 100%; /* It will take full width available after margin */
+  max-width: 1200px; /* This max-width will apply to the content area */
+  margin-left: 220px; /* Accommodate fixed LeftNav */
   margin-right: auto;
   padding-top: 8rem;
   flex-grow: 1;
-  overflow: hidden;
+  overflow: hidden; /* Re-evaluate if this causes issues with content scroll */
 }
 
 .page-layout__content-main {
   flex-grow: 1;
   padding: 24px;
   overflow-y: auto;
-  height: 100%;
+  height: calc(
+    100vh - 8rem
+  ); /* Adjust height for full viewport minus top nav padding */
+  box-sizing: border-box;
 }
 
 @media only screen and (max-width: 640px) {
   .page-layout__body {
     padding-top: 6.4rem;
     max-width: 100%;
-    margin-left: 0;
+    margin-left: 0; /* Reset margin as LeftNav is hidden */
     margin-right: 0;
+    /* width: 100%; */ /* Ensure it takes full width if not already */
   }
 
   .page-layout__content-main {
     padding: 1.6rem;
+    height: calc(
+      100vh - 6.4rem
+    ); /* Adjust height for mobile considering its own body's padding-top */
   }
 }

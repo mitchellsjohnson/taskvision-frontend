@@ -61,26 +61,41 @@
 }
 
 .hero-banner__headline {
-  letter-spacing: -1.5px;
+  letter-spacing: -1px;
 
   /* responsive */
 
-  margin: 2.4rem 0 8px 0;
+  margin: 2rem 0 0.8rem 0;
 
-  font-size: 4.8rem;
+  font-size: 3.6rem;
 }
 
 .hero-banner__description {
-  max-width: 58rem;
+  max-width: 68rem;
 
-  text-align: center;
+  text-align: left;
 
   /* responsive */
 
-  margin-bottom: 3.2rem;
+  margin-bottom: 2.4rem;
 
-  font-size: 20px;
-  line-height: 3.2rem;
+  font-size: 18px;
+  line-height: 2.8rem;
+}
+
+.hero-banner__description ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.8rem;
+  margin-bottom: 1.6rem;
+}
+
+.hero-banner__description li {
+  font-size: 1.3em;
+  line-height: 1.8;
+  margin-bottom: 0.8rem;
+  text-align: left;
+  max-width: 100%;
 }
 
 @media only screen and (max-width: 540px) {
@@ -104,11 +119,15 @@
   }
 
   .hero-banner__headline {
-    font-size: 3.2rem;
+    font-size: 2.8rem;
   }
 
   .hero-banner__description {
-    font-size: 1.6rem;
-    line-height: 2.4rem;
+    font-size: 1.5rem;
+    line-height: 2.2rem;
+  }
+
+  .hero-banner__description li {
+    max-width: 100%;
   }
 }
