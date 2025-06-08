@@ -50,16 +50,6 @@ const navItems: NavItem[] = [
 export const LeftNav: React.FC = () => {
   const { isAuthenticated, user } = useAuth0();
 
-  // Temporary logging for debugging roles
-  console.log("Auth0 User Object:", user);
-  console.log("AUTH0_NAMESPACE:", AUTH0_NAMESPACE);
-  if (user) {
-    console.log(
-      'Attempted roles access (user[AUTH0_NAMESPACE + "roles"]):',
-      user[`${AUTH0_NAMESPACE}roles`]
-    );
-  }
-
   return (
     <aside className="left-nav">
       <div className="left-nav__brand">
