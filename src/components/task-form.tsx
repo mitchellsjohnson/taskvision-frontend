@@ -1,8 +1,17 @@
 import { useAuth0 } from "@auth0/auth0-react";
 import React, { useState } from "react";
 
+interface Task {
+  TaskId: string;
+  title: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  UserId: string;
+}
+
 interface TaskFormProps {
-  onTaskCreated: (newTask: any) => void;
+  onTaskCreated: (newTask: Task) => void;
 }
 
 export const TaskForm: React.FC<TaskFormProps> = ({ onTaskCreated }) => {
