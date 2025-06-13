@@ -1,5 +1,5 @@
 import { useAuth0 } from '@auth0/auth0-react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { PageLoader } from './components/page-loader';
 import { ProtectedRoute } from './components/protected-route';
@@ -24,9 +24,28 @@ import { UnauthorizedPage } from './pages/unauthorized-page';
 import { FontSizeProvider } from './contexts/font-size-context';
 
 const DebugFrontendEnvPage = () => {
+  const { getAccessTokenSilently } = useAuth0();
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [decodedToken, setDecodedToken] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const token = await getAccessTokenSilently();
+        setAccessToken(token);
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        setDecodedToken(decoded);
+      } catch (error) {
+        console.error('Error fetching access token', error);
+      }
+    };
+    fetchToken();
+  }, [getAccessTokenSilently]);
+
   return (
     <div style={{ padding: '20px', fontFamily: 'monospace', fontSize: '14px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '5px', margin: '20px' }}>
-      <h1>Frontend Environment Variables</h1>
+      <h1>Frontend Environment Variables & Access Token</h1>
+      <h2>Environment Variables</h2>
       <pre>
         <code>
           {JSON.stringify(
@@ -41,6 +60,14 @@ const DebugFrontendEnvPage = () => {
           )}
         </code>
       </pre>
+      <h2>Decoded Access Token</h2>
+      {decodedToken ? (
+        <pre>
+          <code>{JSON.stringify(decodedToken, null, 2)}</code>
+        </pre>
+      ) : (
+        <p>Fetching token...</p>
+      )}
     </div>
   );
 };
