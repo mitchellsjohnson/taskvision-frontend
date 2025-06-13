@@ -1,12 +1,8 @@
-import {
-  useAuth0,
-  withAuthenticationRequired,
-  WithAuthenticationRequiredOptions,
-  User,
-} from "@auth0/auth0-react";
-import React, { ComponentType } from "react";
-import { PageLoader } from "./page-loader";
-import { AUTH0_NAMESPACE } from "../auth0-namespace";
+import { useAuth0, withAuthenticationRequired, WithAuthenticationRequiredOptions, User } from '@auth0/auth0-react';
+import React, { ComponentType } from 'react';
+import { PageLoader } from './page-loader';
+import { AUTH0_NAMESPACE } from '../auth0-namespace';
+import { PageLayout } from './page-layout';
 
 interface RoleProtectedRouteProps {
   component: ComponentType;
@@ -15,10 +11,7 @@ interface RoleProtectedRouteProps {
 }
 
 // Helper function to check for roles
-const userHasRequiredRole = (
-  user: User | undefined,
-  requiredRoles?: string[]
-): boolean => {
+const userHasRequiredRole = (user: User | undefined, requiredRoles?: string[]): boolean => {
   if (!requiredRoles || requiredRoles.length === 0) {
     return true;
   }
@@ -29,14 +22,10 @@ const userHasRequiredRole = (
   if (!userRoles || !Array.isArray(userRoles)) {
     return false;
   }
-  return requiredRoles.some((role) => userRoles.includes(role));
+  return requiredRoles.some(role => userRoles.includes(role));
 };
 
-export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
-  component,
-  requiredRoles,
-  ...args
-}) => {
+export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ component, requiredRoles, ...args }) => {
   const { user, isLoading, isAuthenticated } = useAuth0();
 
   const withAuthOptions: WithAuthenticationRequiredOptions = {
@@ -45,13 +34,10 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
         <PageLoader />
       </div>
     ),
-    ...args,
+    ...args
   };
 
-  const AuthenticatedComponent = withAuthenticationRequired(
-    component,
-    withAuthOptions
-  );
+  const AuthenticatedComponent = withAuthenticationRequired(component, withAuthOptions);
 
   if (isLoading) {
     return (
@@ -61,12 +47,7 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
     );
   }
 
-  if (
-    isAuthenticated &&
-    requiredRoles &&
-    requiredRoles.length > 0 &&
-    !userHasRequiredRole(user, requiredRoles)
-  ) {
+  if (isAuthenticated && requiredRoles && requiredRoles.length > 0 && !userHasRequiredRole(user, requiredRoles)) {
     return (
       <div className="page-layout">
         <div className="content-layout">
@@ -79,5 +60,9 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({
     );
   }
 
-  return <AuthenticatedComponent />;
+  return (
+    <PageLayout>
+      <AuthenticatedComponent />
+    </PageLayout>
+  );
 };

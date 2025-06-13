@@ -1,5 +1,5 @@
-import React from "react";
-import { PageLayout } from "../components/page-layout";
+import React from 'react';
+import { PageLayout } from '../components/page-layout';
 
 export const AppAdminPage: React.FC = () => {
   return (
@@ -10,8 +10,8 @@ export const AppAdminPage: React.FC = () => {
         </h1>
         <div className="content__body">
           <p>
-            TODO: Admin functionality. You are seeing this page because you have
-            the &apos;admin&apos; or &apos;ecosystem-admin&apos; role.
+            TODO: Admin functionality. You are seeing this page because you have the &apos;admin&apos; or
+            &apos;ecosystem-admin&apos; role.
           </p>
         </div>
       </div>

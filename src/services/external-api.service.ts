@@ -1,17 +1,15 @@
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
-import { ApiResponse } from "../models/api-response";
-import { AppError } from "../models/app-error";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { ApiResponse } from '../models/api-response';
+import { AppError } from '../models/app-error';
 
-export const callExternalApi = async (options: {
-  config: AxiosRequestConfig;
-}): Promise<ApiResponse> => {
+export const callExternalApi = async (options: { config: AxiosRequestConfig }): Promise<ApiResponse> => {
   try {
     const response: AxiosResponse = await axios(options.config);
     const { data } = response;
 
     return {
       data,
-      error: null,
+      error: null
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -19,7 +17,7 @@ export const callExternalApi = async (options: {
 
       const { response } = axiosError;
 
-      let message = "http request failed";
+      let message = 'http request failed';
 
       if (response && response.statusText) {
         message = response.statusText;
@@ -36,16 +34,16 @@ export const callExternalApi = async (options: {
       return {
         data: null,
         error: {
-          message,
-        },
+          message
+        }
       };
     }
 
     return {
       data: null,
       error: {
-        message: (error as Error).message,
-      },
+        message: (error as Error).message
+      }
     };
   }
 };

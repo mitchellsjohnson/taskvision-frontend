@@ -5,35 +5,46 @@
   "homepage": ".",
   "dependencies": {
     "@auth0/auth0-react": "^1.10.2",
-    "@types/react": "^17.0.47",
-    "@types/react-dom": "^17.0.17",
+    "@dnd-kit/core": "^6.0.8",
+    "@dnd-kit/sortable": "^7.0.2",
+    "@heroicons/react": "^2.2.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^12.1.5",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.11.64",
+    "@types/react": "^17.0.52",
+    "@types/react-beautiful-dnd": "^13.1.2",
+    "@types/react-dom": "^17.0.18",
+    "@types/react-router-dom": "^5.3.3",
     "axios": "^0.27.2",
+    "bootstrap": "^5.2.2",
+    "cross-env": "^7.0.3",
+    "date-fns": "^2.29.3",
+    "dotenv-cli": "^7.0.0",
     "react": "^17.0.2",
+    "react-beautiful-dnd": "^13.1.1",
+    "react-bootstrap": "^2.5.0",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^6.3.0",
+    "react-router-dom": "^6.4.2",
     "react-scripts": "5.0.1",
-    "serverless-http": "^3.2.0",
-    "typescript": "^4.7.4"
+    "typescript": "^4.8.4",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "cross-env PORT=4040 dotenv -e .env react-scripts start",
-    "build": "cross-env dotenv -e .env react-scripts build",
+    "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "lint": "eslint . --ext .ts,.tsx --fix"
+    "lint": "eslint . --ext .ts,.tsx",
+    "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx src"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
-      "react-app/jest",
-      "eslint:recommended",
-      "plugin:react/recommended",
-      "plugin:prettier/recommended",
-      "plugin:@typescript-eslint/recommended"
+      "react-app/jest"
     ],
-    "rules": {
-      "react/react-in-jsx-scope": "off"
-    }
+    "plugins": []
   },
   "browserslist": {
     "production": [
@@ -48,17 +59,8 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^12.1.5",
-    "@testing-library/user-event": "^14.6.1",
-    "@types/jest": "^29.2.4",
-    "cross-env": "^7.0.3",
-    "dotenv-cli": "^8.0.0",
-    "eslint": "^8.18.0",
-    "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.1.0",
-    "json-server": "^0.17.0",
-    "prettier": "^2.7.1",
-    "webpack-bundle-analyzer": "^4.10.2"
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.0"
   }
 }

@@ -1,38 +1,37 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { useAuth0 } from "@auth0/auth0-react";
-import { LoginButton } from "../login-button";
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { LoginButton } from '../login-button';
 
 // Mock the useAuth0 hook
 const mockLoginWithRedirect = jest.fn();
-jest.mock("@auth0/auth0-react", () => ({
+jest.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
-    loginWithRedirect: mockLoginWithRedirect,
-  }),
+    loginWithRedirect: mockLoginWithRedirect
+  })
 }));
 
-describe("LoginButton", () => {
+describe('LoginButton', () => {
   beforeEach(() => {
     mockLoginWithRedirect.mockClear();
   });
 
-  it("renders the login button", () => {
+  it('renders the login button', () => {
     render(<LoginButton />);
-    expect(screen.getByText("Log In")).toBeInTheDocument();
-    expect(screen.getByRole("button")).toHaveClass("button__login");
+    expect(screen.getByText('Log In')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toHaveClass('button__login');
   });
 
-  it("calls loginWithRedirect with correct parameters when clicked", async () => {
+  it('calls loginWithRedirect with correct parameters when clicked', async () => {
     render(<LoginButton />);
 
-    const loginButton = screen.getByText("Log In");
+    const loginButton = screen.getByText('Log In');
     await fireEvent.click(loginButton);
 
     expect(mockLoginWithRedirect).toHaveBeenCalledWith({
-      prompt: "login",
+      prompt: 'login',
       appState: {
-        returnTo: "/profile",
-      },
+        returnTo: '/profile'
+      }
     });
   });
 });

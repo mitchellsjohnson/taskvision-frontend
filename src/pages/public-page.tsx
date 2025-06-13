@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { CodeSnippet } from "../components/code-snippet";
-import { PageLayout } from "../components/page-layout";
-import { getPublicResource } from "../services/message.service";
+import React, { useEffect, useState } from 'react';
+import { CodeSnippet } from '../components/code-snippet';
+import { PageLayout } from '../components/page-layout';
+import { getPublicResource } from '../services/message.service';
 
 export const PublicPage: React.FC = () => {
-  const [message, setMessage] = useState<string>("");
+  const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
@@ -41,8 +41,7 @@ export const PublicPage: React.FC = () => {
         <div className="content__body">
           <p id="page-description">
             <span>
-              This page retrieves a <strong>public message</strong> from an
-              external API.
+              This page retrieves a <strong>public message</strong> from an external API.
             </span>
             <span>
               <strong>Any visitor can access this page.</strong>

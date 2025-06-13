@@ -1,5 +1,10 @@
 /* task-page.css */
 
+.mit-grid__title,
+.lit-list__title {
+  color: var(--white) !important;
+}
+
 .task-form {
   margin-bottom: 2rem;
   padding: 1.5rem;
@@ -102,9 +107,7 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
-  transition:
-    background-color 0.2s,
-    border-color 0.2s;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
 .button-delete {
@@ -151,12 +154,12 @@
   transition: background-color 0.2s;
 }
 
-.update-task-form button[type="submit"] {
+.update-task-form button[type='submit'] {
   background-color: #28a745;
   color: white;
 }
 
-.update-task-form button[type="submit"]:hover {
+.update-task-form button[type='submit']:hover {
   background-color: #218838;
 }
 

@@ -1,6 +1,6 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { useAuth0, User } from "@auth0/auth0-react";
+import React from 'react';
+import { Link, useLocation, NavLink } from 'react-router-dom';
+import { useAuth0, User } from '@auth0/auth0-react';
 import "./left-nav.css";
 import { AUTH0_NAMESPACE } from "../../../auth0-namespace";
 
@@ -51,52 +51,52 @@ export const LeftNav: React.FC = () => {
   const { isAuthenticated, user } = useAuth0();
 
   return (
-    <aside className="left-nav">
-      <div className="left-nav__brand">
-        <NavLink to="/" className="left-nav__brand-link">
-          <img
-            className="left-nav__logo"
-            src="/eagle-mitty.svg" // Assuming this is your desired logo file
-            alt="Taskvision"
-            width="60" // Changed from 30
-            height="60" // Changed from 30
-          />
-          <span className="left-nav__brand-text">Taskvision</span>
-        </NavLink>
-      </div>
-      <nav>
-        <ul>
-          {navItems.map((item) => {
-            // Determine if the link should be shown
-            let canShowLink = false;
-            if (item.requiresAuth) {
-              if (isAuthenticated) {
-                canShowLink = userHasRequiredRoles(user, item.requiredRoles);
+    <>
+      <div className="left-nav">
+        <div className="left-nav__brand">
+          <NavLink to="/" className="left-nav__brand-link">
+            <img
+              className="left-nav__logo"
+              src="/eagle-mitty.svg"
+              alt="Taskvision"
+              width="60"
+              height="60"
+            />
+            <span className="left-nav__brand-text">Taskvision</span>
+          </NavLink>
+        </div>
+        <nav>
+          <ul>
+            {navItems.map((item) => {
+              // Determine if the link should be shown
+              let canShowLink = false;
+              if (item.requiresAuth) {
+                if (isAuthenticated) {
+                  canShowLink = userHasRequiredRoles(user, item.requiredRoles);
+                }
+              } else {
+                canShowLink = true;
               }
-            } else {
-              canShowLink = true;
-            }
 
-            if (!canShowLink) {
-              return null;
-            }
+              if (!canShowLink) {
+                return null;
+              }
 
-            return (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) => (isActive ? "active" : "")}
-                  end={
-                    item.exact !== undefined ? item.exact : item.path === "/"
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-    </aside>
+              return (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) => (isActive ? "active" : "")}
+                    end={item.exact !== undefined ? item.exact : item.path === "/"}
+                  >
+                    {item.label}
+                  </NavLink>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+    </>
   );
 };

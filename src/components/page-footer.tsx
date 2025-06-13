@@ -1,25 +1,25 @@
-import React from "react";
-import { Auth0Resource } from "../models/auth0-resource";
-import { PageFooterHyperlink } from "./page-footer-hyperlink";
+import React from 'react';
+import { Auth0Resource } from '../models/auth0-resource';
+import { PageFooterHyperlink } from './page-footer-hyperlink';
 
 export const PageFooter = () => {
   const resourceList: Auth0Resource[] = [
     {
-      path: "https://auth0.com/why-auth0/",
-      label: "Why Auth0",
+      path: 'https://auth0.com/why-auth0/',
+      label: 'Why Auth0'
     },
     {
-      path: "https://auth0.com/docs/get-started",
-      label: "How It Works",
+      path: 'https://auth0.com/docs/get-started',
+      label: 'How It Works'
     },
     {
-      path: "https://auth0.com/blog/developers/",
-      label: "Developer Blog",
+      path: 'https://auth0.com/blog/developers/',
+      label: 'Developer Blog'
     },
     {
-      path: "https://auth0.com/contact-us",
-      label: "Contact an Expert",
-    },
+      path: 'https://auth0.com/contact-us',
+      label: 'Contact an Expert'
+    }
   ];
 
   return (
@@ -29,16 +29,11 @@ export const PageFooter = () => {
           <div className="page-footer-info__message">
             <p className="page-footer-message__headline">
               <span>This sample application is brought to you by&nbsp;</span>
-              <PageFooterHyperlink path="https://auth0.com/">
-                Auth0
-              </PageFooterHyperlink>
+              <PageFooterHyperlink path="https://auth0.com/">Auth0</PageFooterHyperlink>
             </p>
             <p className="page-footer-message__description">
               <PageFooterHyperlink path="https://auth0.com/docs/quickstarts/">
-                <span>
-                  Securely implement authentication using Auth0 on any stack and
-                  any device&nbsp;
-                </span>
+                <span>Securely implement authentication using Auth0 on any stack and any device&nbsp;</span>
                 <u>in less than 10 minutes</u>
               </PageFooterHyperlink>
             </p>
@@ -55,14 +50,9 @@ export const PageFooter = () => {
             </a>
           </div>
           <div className="page-footer-info__resource-list">
-            {resourceList.map((resource) => (
-              <div
-                key={resource.path}
-                className="page-footer-info__resource-list-item"
-              >
-                <PageFooterHyperlink path={resource.path}>
-                  {resource.label}
-                </PageFooterHyperlink>
+            {resourceList.map(resource => (
+              <div key={resource.path} className="page-footer-info__resource-list-item">
+                <PageFooterHyperlink path={resource.path}>{resource.label}</PageFooterHyperlink>
               </div>
             ))}
           </div>
@@ -76,9 +66,7 @@ export const PageFooter = () => {
               width="20"
               height="22.22"
             />
-            <PageFooterHyperlink path="https://auth0.com/">
-              Auth0 Inc
-            </PageFooterHyperlink>
+            <PageFooterHyperlink path="https://auth0.com/">Auth0 Inc</PageFooterHyperlink>
           </div>
         </div>
       </div>

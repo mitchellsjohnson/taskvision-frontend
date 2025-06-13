@@ -1,6 +1,6 @@
 const AUTH0_NAMESPACE_FROM_ENV = process.env.REACT_APP_AUTH0_NAMESPACE;
 
-if (!AUTH0_NAMESPACE_FROM_ENV && process.env.NODE_ENV === "development") {
+if (!AUTH0_NAMESPACE_FROM_ENV && process.env.NODE_ENV === 'development') {
   // In development, throw an error to alert the developer immediately.
   throw new Error(
     `ERROR: REACT_APP_AUTH0_NAMESPACE is not defined in your .env.local file. \n` +
@@ -8,14 +8,11 @@ if (!AUTH0_NAMESPACE_FROM_ENV && process.env.NODE_ENV === "development") {
       `Please create a .env.local file in the taskvision-frontend directory and add:\n` +
       `REACT_APP_AUTH0_NAMESPACE="your_auth0_namespace_here"`
   );
-} else if (
-  !AUTH0_NAMESPACE_FROM_ENV &&
-  process.env.NODE_ENV !== "development"
-) {
+} else if (!AUTH0_NAMESPACE_FROM_ENV && process.env.NODE_ENV !== 'development') {
   // In production or other environments, log an error.
   // You might also have a different fallback or error handling strategy here.
   console.error(
-    "CRITICAL ERROR: REACT_APP_AUTH0_NAMESPACE is not defined. Auth0 features related to custom claims will likely fail."
+    'CRITICAL ERROR: REACT_APP_AUTH0_NAMESPACE is not defined. Auth0 features related to custom claims will likely fail.'
   );
 }
 
