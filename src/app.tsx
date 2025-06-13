@@ -23,6 +23,28 @@ import { EcosystemsPage } from './pages/ecosystems-page';
 import { UnauthorizedPage } from './pages/unauthorized-page';
 import { FontSizeProvider } from './contexts/font-size-context';
 
+const DebugFrontendEnvPage = () => {
+  return (
+    <div style={{ padding: '20px', fontFamily: 'monospace', fontSize: '14px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '5px', margin: '20px' }}>
+      <h1>Frontend Environment Variables</h1>
+      <pre>
+        <code>
+          {JSON.stringify(
+            {
+              REACT_APP_AUTH0_DOMAIN: process.env.REACT_APP_AUTH0_DOMAIN || 'Not Set',
+              REACT_APP_AUTH0_CLIENT_ID: process.env.REACT_APP_AUTH0_CLIENT_ID || 'Not Set',
+              REACT_APP_AUTH0_CALLBACK_URL: process.env.REACT_APP_AUTH0_CALLBACK_URL || 'Not Set',
+              REACT_APP_AUTH0_AUDIENCE: process.env.REACT_APP_AUTH0_AUDIENCE || 'Not Set',
+            },
+            null,
+            2
+          )}
+        </code>
+      </pre>
+    </div>
+  );
+};
+
 export const App: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth0();
 
@@ -55,6 +77,7 @@ export const App: React.FC = () => {
         />
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
         <Route path="/callback" element={<CallbackPage />} />
+        <Route path="/debug-frontend-env" element={<DebugFrontendEnvPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </FontSizeProvider>
