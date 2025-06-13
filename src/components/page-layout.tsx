@@ -2,7 +2,6 @@ import React, { useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NavBar } from './navigation/desktop/nav-bar';
 import { MobileNavBar } from './navigation/mobile/mobile-nav-bar';
-import { LeftNav } from './navigation/left/left-nav';
 import { useResizeObserver } from '../utils/resize-observer';
 
 interface PageLayoutProps {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation, NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useAuth0, User } from '@auth0/auth0-react';
 import "./left-nav.css";
 import { AUTH0_NAMESPACE } from "../../../auth0-namespace";
