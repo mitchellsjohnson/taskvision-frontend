@@ -25,7 +25,7 @@ import { FontSizeProvider } from './contexts/font-size-context';
 
 const DebugFrontendEnvPage = () => {
   const { getAccessTokenSilently } = useAuth0();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [_accessToken, setAccessToken] = useState<string | null>(null);
   const [decodedToken, setDecodedToken] = useState<any>(null);
 
   useEffect(() => {
