@@ -32,9 +32,22 @@ const DebugFrontendEnvPage = () => {
       try {
         const token = await getAccessTokenSilently();
 
-        // Robustly decode the JWT payload
+        // Robustly decode the JWT payload, handling URL-safe encoding and padding
         const payload = token.split('.')[1];
-        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        let base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        switch (base64.length % 4) {
+          case 0:
+            break;
+          case 2:
+            base64 += '==';
+            break;
+          case 3:
+            base64 += '=';
+            break;
+          default:
+            throw new Error('Illegal base64url string!');
+        }
+
         const jsonPayload = decodeURIComponent(
           atob(base64)
             .split('')
