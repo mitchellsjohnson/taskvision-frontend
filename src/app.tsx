@@ -31,7 +31,20 @@ const DebugFrontendEnvPage = () => {
     const fetchToken = async () => {
       try {
         const token = await getAccessTokenSilently();
-        const decoded = JSON.parse(atob(token.split('.')[1]));
+
+        // Robustly decode the JWT payload
+        const payload = token.split('.')[1];
+        const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map(function (c) {
+              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            })
+            .join('')
+        );
+        const decoded = JSON.parse(jsonPayload);
+
         setDecodedToken(decoded);
       } catch (error) {
         console.error('Error fetching access token', error);
