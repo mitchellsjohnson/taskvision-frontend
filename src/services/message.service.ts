@@ -57,6 +57,24 @@ export const getAdminResource = async (accessToken: string): Promise<ApiResponse
   };
 };
 
+export const getEcosystemAdminResource = async (accessToken: string): Promise<ApiResponse> => {
+  const config: AxiosRequestConfig = {
+    url: `${apiServerUrl}/api/messages/ecosystem-admin`,
+    method: 'GET',
+    headers: {
+      'content-type': 'application/json',
+      Authorization: `Bearer ${accessToken}`
+    }
+  };
+
+  const { data, error } = (await callExternalApi({ config })) as ApiResponse;
+
+  return {
+    data,
+    error
+  };
+};
+
 export const getAdminFeatureResource = async (accessToken: string): Promise<ApiResponse> => {
   const config: AxiosRequestConfig = {
     url: `${apiServerUrl}/api/messages/admin-features`,

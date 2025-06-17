@@ -18,7 +18,12 @@ export const Auth0ProviderWithConfig = ({
   }
 
   return (
-    <Auth0Provider domain={domain} clientId={clientId} redirectUri={redirectUri} audience={audience}>
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      redirectUri={redirectUri}
+      audience={audience}
+    >
       {children}
     </Auth0Provider>
   );

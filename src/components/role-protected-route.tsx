@@ -1,8 +1,8 @@
-import { useAuth0, withAuthenticationRequired, WithAuthenticationRequiredOptions, User } from '@auth0/auth0-react';
-import React, { ComponentType } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import React, { ComponentType, useState, useEffect } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import { PageLoader } from './page-loader';
 import { AUTH0_NAMESPACE } from '../auth0-namespace';
-import { PageLayout } from './page-layout';
 
 interface RoleProtectedRouteProps {
   component: ComponentType;
@@ -10,59 +10,73 @@ interface RoleProtectedRouteProps {
   [key: string]: unknown;
 }
 
-// Helper function to check for roles
-const userHasRequiredRole = (user: User | undefined, requiredRoles?: string[]): boolean => {
-  if (!requiredRoles || requiredRoles.length === 0) {
-    return true;
-  }
-  if (!user) {
-    return false;
-  }
-  const userRoles = user[`${AUTH0_NAMESPACE}roles`] as string[];
-  if (!userRoles || !Array.isArray(userRoles)) {
-    return false;
-  }
-  return requiredRoles.some(role => userRoles.includes(role));
-};
+interface DecodedToken {
+  [key: string]: any;
+}
 
 export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ component, requiredRoles, ...args }) => {
-  const { user, isLoading, isAuthenticated } = useAuth0();
+  const Component = component;
+  const { getAccessTokenSilently, isLoading, isAuthenticated } = useAuth0();
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+  const [isRolesLoading, setIsRolesLoading] = useState(true);
 
-  const withAuthOptions: WithAuthenticationRequiredOptions = {
-    onRedirecting: () => (
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (isAuthenticated) {
+        try {
+          const accessToken = await getAccessTokenSilently();
+          const decodedToken = jwtDecode<DecodedToken>(accessToken);
+          const roles = decodedToken[`${AUTH0_NAMESPACE}/roles`] as string[] || [];
+          setUserRoles(roles);
+        } catch (error) {
+          console.error("Error fetching or decoding access token:", error);
+          setUserRoles([]);
+        } finally {
+          setIsRolesLoading(false);
+        }
+      } else {
+        setIsRolesLoading(false);
+      }
+    };
+
+    fetchUserRoles();
+  }, [getAccessTokenSilently, isAuthenticated]);
+
+  if (isLoading || isRolesLoading) {
+    return (
       <div className="page-layout">
         <PageLoader />
       </div>
-    ),
-    ...args
+    );
+  }
+
+  const userHasRequiredRole = () => {
+    if (!requiredRoles || requiredRoles.length === 0) {
+      return true;
+    }
+    return requiredRoles.some(role => userRoles.includes(role));
   };
 
-  const AuthenticatedComponent = withAuthenticationRequired(component, withAuthOptions);
+  if (isAuthenticated && userHasRequiredRole()) {
+    return <Component {...args} />;
+  }
 
-  if (isLoading) {
+  // Option 1: Render an Access Denied message if authenticated but roles don't match
+  if (isAuthenticated && !userHasRequiredRole()) {
     return (
-      <div className="page-layout">
-        <PageLoader />
+      <div className="content-layout">
+        <h1 id="page-title" className="content__title">
+          Access Denied
+        </h1>
+        <p>You do not have the required roles to view this page.</p>
       </div>
     );
   }
 
-  if (isAuthenticated && requiredRoles && requiredRoles.length > 0 && !userHasRequiredRole(user, requiredRoles)) {
-    return (
-      <div className="page-layout">
-        <div className="content-layout">
-          <h1 id="page-title" className="content__title">
-            Access Denied
-          </h1>
-          <p>You do not have the required roles for this page.</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Option 2: Show a loader and let Auth0 handle the redirect for unauthenticated users
   return (
-    <PageLayout>
-      <AuthenticatedComponent />
-    </PageLayout>
+    <div className="page-layout">
+      <PageLoader />
+    </div>
   );
 };

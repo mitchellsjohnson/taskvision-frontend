@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Task } from '../types';
 
-interface Task {
-  TaskId: string;
-  title: string;
-  description?: string;
-  dueDate?: string;
-  status: 'Open' | 'Completed' | 'Canceled';
-  creationDate: string;
-  modifiedDate: string;
-  completedDate: string | null;
-  UserId: string;
-}
-
-type TaskInput = Omit<Task, 'TaskId' | 'creationDate' | 'modifiedDate' | 'completedDate' | 'UserId'>;
+type TaskInput = Omit<Task, 'TaskId' | 'creationDate' | 'modifiedDate' | 'completedDate' | 'UserId' | 'priority' | 'isMIT' | 'tags' | 'completedDate'>;
 
 interface TaskFormProps {
   onSubmit: (input: TaskInput) => void;
@@ -80,6 +69,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialValues, onC
             className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="Open">Open</option>
+            <option value="Waiting">Waiting</option>
             <option value="Completed">Completed</option>
             <option value="Canceled">Canceled</option>
           </select>

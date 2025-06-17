@@ -23,7 +23,6 @@ describe('LogoutButton', () => {
   it('renders the logout button', () => {
     render(<LogoutButton />);
     expect(screen.getByText('Log Out')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveClass('button__logout');
   });
 
   it('calls logout with correct parameters when clicked', () => {

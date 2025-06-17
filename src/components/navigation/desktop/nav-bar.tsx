@@ -1,16 +1,18 @@
 import React from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useNavigate } from 'react-router-dom';
 import { NavBarBrand } from './nav-bar-brand';
 import { NavBarButtons } from './nav-bar-buttons';
 import { NavBarTabs } from './nav-bar-tabs';
 import { LogoutButton } from '../../buttons/logout-button';
+import { LoginButton } from '../../buttons/login-button';
 
 export const NavBar: React.FC = () => {
   const { isAuthenticated } = useAuth0();
+  const navigate = useNavigate();
 
   const handleSettingsClick = () => {
-    // TODO: Navigate to settings page or open settings modal
-    console.log('Settings clicked');
+    navigate('/settings');
   };
 
   return (
@@ -22,6 +24,7 @@ export const NavBar: React.FC = () => {
         </div>
         <div className="flex items-center gap-4">
           <NavBarButtons />
+          {!isAuthenticated && <LoginButton />}
           {isAuthenticated && (
             <>
               <button

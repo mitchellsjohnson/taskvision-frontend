@@ -1,36 +1,74 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { NavBar } from '../nav-bar';
+import { useAuth0 } from '@auth0/auth0-react';
+import { MemoryRouter } from 'react-router-dom';
 
-// Mock the child components
+jest.mock('@auth0/auth0-react', () => ({
+  useAuth0: jest.fn(),
+}));
+
+const mockedUseAuth0 = useAuth0 as jest.Mock;
+
+// Mock child components
 jest.mock('../nav-bar-brand', () => ({
-  NavBarBrand: () => <div data-testid="nav-bar-brand">Brand</div>
+  NavBarBrand: () => <div data-testid="nav-bar-brand">Brand</div>,
 }));
-
 jest.mock('../nav-bar-tabs', () => ({
-  NavBarTabs: () => <div data-testid="nav-bar-tabs">Tabs</div>
+  NavBarTabs: () => <div data-testid="nav-bar-tabs">Tabs</div>,
+}));
+jest.mock('../nav-bar-buttons', () => ({
+  NavBarButtons: () => <div data-testid="nav-bar-buttons">Buttons</div>,
+}));
+jest.mock('../../../buttons/login-button', () => ({
+  LoginButton: () => <button data-testid="login-button">Log In</button>,
+}));
+jest.mock('../../../buttons/logout-button', () => ({
+  LogoutButton: () => <button data-testid="logout-button">Log Out</button>,
 }));
 
-jest.mock('../nav-bar-buttons', () => ({
-  NavBarButtons: () => <div data-testid="nav-bar-buttons">Buttons</div>
-}));
+const renderNavBar = () => {
+  return render(
+    <MemoryRouter>
+      <NavBar />
+    </MemoryRouter>
+  );
+};
 
 describe('NavBar', () => {
-  it('renders the navigation bar with all components', () => {
-    render(<NavBar />);
-
-    expect(screen.getByTestId('nav-bar-brand')).toBeInTheDocument();
-    expect(screen.getByTestId('nav-bar-tabs')).toBeInTheDocument();
-    expect(screen.getByTestId('nav-bar-buttons')).toBeInTheDocument();
+  afterEach(() => {
+    mockedUseAuth0.mockClear();
   });
 
-  it('applies the correct CSS classes', () => {
-    render(<NavBar />);
+  describe('when unauthenticated', () => {
+    it('renders the login button', () => {
+      mockedUseAuth0.mockReturnValueOnce({ isAuthenticated: false });
+      renderNavBar();
+      expect(screen.getByTestId('login-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('logout-button')).not.toBeInTheDocument();
+    });
 
-    const navBar = screen.getByTestId('nav-bar');
-    expect(navBar).toHaveClass('nav-bar');
+    it('does not render the settings button', () => {
+      mockedUseAuth0.mockReturnValueOnce({ isAuthenticated: false });
+      renderNavBar();
+      expect(screen.queryByTitle('Settings')).not.toBeInTheDocument();
+    });
+  });
 
-    const container = screen.getByTestId('nav-bar-container');
-    expect(container).toHaveClass('nav-bar__container');
+  describe('when authenticated', () => {
+    beforeEach(() => {
+      mockedUseAuth0.mockReturnValue({ isAuthenticated: true });
+    });
+
+    it('renders the logout button', () => {
+      renderNavBar();
+      expect(screen.getByTestId('logout-button')).toBeInTheDocument();
+      expect(screen.queryByTestId('login-button')).not.toBeInTheDocument();
+    });
+
+    it('renders the settings button', () => {
+      renderNavBar();
+      expect(screen.getByTitle('Settings')).toBeInTheDocument();
+    });
   });
 });

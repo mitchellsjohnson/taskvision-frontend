@@ -9,7 +9,7 @@ interface FontSizeContextType {
 
 const FontSizeContext = createContext<FontSizeContextType | undefined>(undefined);
 
-export const FontSizeProvider: React.FC = ({ children }) => {
+export const FontSizeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [fontSize, setFontSize] = useState<FontSize>('medium');
 
   useEffect(() => {

@@ -1,24 +1,15 @@
 import React from 'react';
-import { TaskCard } from './task-card';
-
-interface Task {
-  TaskId: string;
-  title: string;
-  description?: string;
-  dueDate?: string;
-  status: 'Open' | 'Completed' | 'Canceled';
-  creationDate: string;
-  modifiedDate: string;
-  completedDate: string | null;
-  UserId: string;
-}
+import { TaskCard } from './TaskCard';
+import { Task } from '../types';
 
 interface MITGridProps {
   tasks: Task[];
-  onEditTask: (taskId: string) => void;
+  onOpenEditModal: (task: Task) => void;
+  onUpdate: (taskId: string, updates: Partial<Task>) => void;
+  onDelete: (taskId: string) => void;
 }
 
-export const MITGrid: React.FC<MITGridProps> = ({ tasks, onEditTask }) => {
+export const MITGrid: React.FC<MITGridProps> = ({ tasks, onOpenEditModal, onUpdate, onDelete }) => {
   const slots = Array.from({ length: 3 });
 
   return (
@@ -30,7 +21,12 @@ export const MITGrid: React.FC<MITGridProps> = ({ tasks, onEditTask }) => {
           return (
             <div key={index}>
               {task ? (
-                <TaskCard task={task} onEdit={onEditTask} />
+                <TaskCard 
+                  task={task} 
+                  onOpenEditModal={() => onOpenEditModal(task)} 
+                  onUpdate={onUpdate}
+                  onDelete={onDelete}
+                />
               ) : (
                 <div className="h-full min-h-[150px] border-2 border-dashed border-gray-600 rounded-lg flex items-center justify-center">
                   <span className="text-gray-500">Empty MIT Slot</span>

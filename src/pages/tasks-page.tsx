@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
 // import { PageLayout } from '../components/page-layout';
 import { EditTaskModal } from '../components/edit-task-modal';
-import { TaskCard } from '../components/TaskCard';
+import { TaskCard, TaskCardProps } from '../components/TaskCard';
 import { Task } from '../types';
 import {
   DndContext,
-  closestCenter,
   KeyboardSensor,
   PointerSensor,
   useSensor,
@@ -13,63 +12,81 @@ import {
   DragOverlay,
   DragStartEvent,
   DragEndEvent,
-  DropAnimation,
-  defaultDropAnimationSideEffects,
-  UniqueIdentifier,
-  useDroppable
+  DragOverEvent,
+  useDroppable,
+  rectIntersection,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
-  verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { useTaskApi } from '../services/task-api';
 import { DropdownFilter } from '../components/DropdownFilter';
+import { TagFilterPills } from '../components/TagFilterPills';
+import { DropPointer } from '../components/DropPointer';
 
 const STATUS_OPTIONS = ['Open', 'Completed', 'Canceled', 'Waiting'] as const;
 type TaskStatus = (typeof STATUS_OPTIONS)[number];
 
-const dropAnimation: DropAnimation = {
-  sideEffects: defaultDropAnimationSideEffects({
-    styles: {
-      active: {
-        opacity: '0.5'
-      }
-    }
-  })
+type DndContainerProps = {
+  id: string;
+  items: Task[];
+  title: string;
+  taskCardProps: Omit<TaskCardProps, 'task' | 'isOverlay'>;
+  pointerState: { y: number | null; containerId: string | null };
 };
 
-interface DndContainerProps {
-  id: UniqueIdentifier;
-  items: Task[];
-  children: React.ReactNode;
-}
+const DndContainer: React.FC<DndContainerProps> = ({ id, items, title, taskCardProps, pointerState }) => {
+  const { setNodeRef } = useDroppable({ id });
 
-const DndContainer: React.FC<DndContainerProps> = ({ id, items, children }) => {
-  const { setNodeRef } = useDroppable({ id: id.toString() });
+  const containerStyle = `
+    p-4 rounded-lg
+    bg-gray-800/50
+    transition-colors duration-200 ease-in-out
+    relative
+  `;
+
   return (
-    <SortableContext id={id.toString()} items={items.map(i => i.TaskId)} strategy={verticalListSortingStrategy}>
-      <div
-        ref={setNodeRef}
-        className="flex flex-col gap-4 p-6 bg-gray-900/50 rounded-xl min-h-[200px] border-2 border-dashed border-gray-700 transition-colors duration-200 hover:border-gray-600"
-      >
-        {children}
+    <div ref={setNodeRef} id={id} className={`${containerStyle} dnd-container`}>
+      {pointerState.containerId === id && pointerState.y !== null && <DropPointer y={pointerState.y} />}
+      <h2 className="text-xl font-bold mb-4 text-white">{title}</h2>
+      <div className="space-y-4">
+        <SortableContext items={items.map(t => t.TaskId)}>
+          {items.map((task, index) => (
+            <TaskCard 
+              key={task.TaskId} 
+              task={task} 
+              {...taskCardProps}
+              listId={id.toUpperCase() as 'MIT' | 'LIT'}
+              index={index}
+            />
+          ))}
+        </SortableContext>
       </div>
-    </SortableContext>
+    </div>
   );
 };
 
 export const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [pointerState, setPointerState] = useState<{ overId: string | null; position: 'top' | 'bottom' | null, y: number | null; containerId: string | null }>({ overId: null, position: null, y: null, containerId: null });
+  const [lastDroppedId, setLastDroppedId] = useState<string | null>(null);
+  const [isDragSessionActive, setIsDragSessionActive] = useState(false);
+
+  useEffect(() => {
+    if (activeId) {
+      document.body.style.cursor = 'grabbing';
+    } else {
+      document.body.style.cursor = '';
+    }
+  }, [activeId]);
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus[]>(['Open', 'Waiting']);
-  const [dueDateFilter, setDueDateFilter] = useState<string>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchFilter, setSearchFilter] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -85,7 +102,7 @@ export const TasksPage: React.FC = () => {
       const fetchedTasks = await getTasks({
         status: statusFilter,
         tags: tagFilter,
-        search: searchTerm
+        search: searchFilter
       });
 
       // Validate and sanitize tasks
@@ -106,9 +123,10 @@ export const TasksPage: React.FC = () => {
 
       setTasks(validTasks);
     } catch (error) {
+      console.error("Failed to fetch tasks:", error);
       setTasks([]);
     }
-  }, [getTasks, statusFilter, tagFilter, searchTerm]);
+  }, [getTasks, statusFilter, tagFilter, searchFilter]);
 
   useEffect(() => {
     // Debounce fetching to avoid excessive API calls
@@ -121,57 +139,41 @@ export const TasksPage: React.FC = () => {
     };
   }, [fetchTasks]);
 
-  const handleCardClick = (taskId: string) => {
-    const task = tasks.find((t) => t.TaskId === taskId);
-    if (task) {
-      setSelectedTask(task);
-      setIsEditModalOpen(true);
-    }
-  };
-
-  const handleCreateClick = () => {
-    setSelectedTask(null);
-    setIsEditModalOpen(true);
-  };
-
-  const handleStatusFilterChange = (status: TaskStatus) => {
-    setStatusFilter(prev => {
-      const newFilter = prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status];
-      return newFilter;
-    });
+  const handleStatusFilterChangeSingle = (status: TaskStatus) => {
+    setStatusFilter(prev =>
+      prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status]
+    );
   };
 
   const handleTagFilterChange = (tag: string) => {
-    setTagFilter(prev => {
-      const newFilter = prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag];
-      return newFilter;
-    });
+    setTagFilter(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleSearchFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchFilter(event.target.value);
   };
 
   const handleSaveTask = async (taskData: Partial<Task>) => {
     if (selectedTask) {
       // Update existing task
       const updatedTask = await updateTask(selectedTask.TaskId, taskData);
-      // Validate MIT task count
-      const currentMITCount = tasks.filter(t => t.isMIT && t.TaskId !== selectedTask.TaskId).length;
-      const willBeMIT = taskData.isMIT || (taskData.priority !== undefined && taskData.priority <= 3);
-      if (willBeMIT && currentMITCount >= 3) {
-        alert('Cannot have more than 3 MIT tasks. Please adjust the priority to be greater than 3.');
-        return;
-      }
       setTasks(currentTasks =>
         currentTasks.map(t => (t.TaskId === selectedTask.TaskId ? { ...t, ...updatedTask } : t))
       );
     } else {
       // Create new task
-      const newTask = await createTask(taskData);
-      // Validate MIT task count for new tasks
-      const currentMITCount = tasks.filter(t => t.isMIT).length;
-      const willBeMIT = taskData.isMIT || (taskData.priority !== undefined && taskData.priority <= 3);
-      if (willBeMIT && currentMITCount >= 3) {
-        alert('Cannot have more than 3 MIT tasks. Please adjust the priority to be greater than 3.');
-        return;
-      }
+      const litTasks = tasks.filter(task => !task.isMIT);
+      const newPriority = litTasks.length > 0 ? Math.max(...litTasks.map(t => t.priority)) + 1 : 1;
+      
+      const newTaskData = {
+        ...taskData,
+        isMIT: false,
+        priority: newPriority,
+      };
+
+      const newTask = await createTask(newTaskData);
       setTasks(currentTasks => [...currentTasks, newTask]);
     }
     setIsEditModalOpen(false);
@@ -181,141 +183,222 @@ export const TasksPage: React.FC = () => {
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
     try {
       const updatedTask = await updateTask(taskId, updates);
-      setTasks(currentTasks => currentTasks.map(t => (t.TaskId === taskId ? { ...t, ...updatedTask } : t)));
+      if (updates.status === 'Canceled' || updates.status === 'Completed') {
+        setTasks(currentTasks => currentTasks.filter(t => t.TaskId !== taskId));
+      } else {
+        setTasks(currentTasks => currentTasks.map(t => (t.TaskId === taskId ? { ...t, ...updatedTask } : t)));
+      }
     } catch (error) {
       // Optionally, show an error to the user
     }
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
-      try {
-        await deleteTask(taskId);
-        await fetchTasks();
-      } catch (error) {
-        alert('Failed to delete the task. Please try again.');
-      }
+    try {
+      await deleteTask(taskId);
+      setTasks(currentTasks => currentTasks.filter(t => t.TaskId !== taskId));
+    } catch (error) {
+      console.error('Failed to delete task:', error);
     }
   };
 
-  const findContainer = (id: UniqueIdentifier) => {
-    const task = tasks.find(({ TaskId }) => TaskId === id);
-    if (task) {
-      return task.isMIT ? 'mit-zone' : 'lit-zone';
-    }
-    if (id === 'mit-zone' || id === 'lit-zone') {
-      return id;
-    }
-    return null;
+  const mitTasks = useMemo(() => tasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority), [tasks]);
+  const litTasks = useMemo(() => tasks.filter(task => !task.isMIT).sort((a, b) => a.priority - b.priority), [tasks]);
+
+  const handleMove = (taskId: string, targetListId: 'MIT' | 'LIT', targetIndex: number) => {
+    setTasks(currentTasks => {
+      const taskToMove = currentTasks.find(t => t.TaskId === taskId);
+      if (!taskToMove) return currentTasks;
+  
+      // Remove the task from its current position
+      const tasksWithoutMoved = currentTasks.filter(t => t.TaskId !== taskId);
+  
+      // Add the task to the target position
+      const newTasks = [...tasksWithoutMoved];
+      const updatedMovedTask = { ...taskToMove, isMIT: targetListId === 'MIT' };
+      newTasks.splice(targetIndex, 0, updatedMovedTask);
+  
+      // Re-calculate priorities for all tasks
+      let mitPriority = 1;
+      let litPriority = 1;
+      const updatedTasks = newTasks.map(task => {
+        const priority = task.isMIT ? mitPriority++ : litPriority++;
+        return { ...task, priority };
+      });
+      
+      // Persist changes
+      updatedTasks.forEach(task => {
+        const originalTask = currentTasks.find(t => t.TaskId === task.TaskId);
+        if (!originalTask || task.priority !== originalTask.priority || task.isMIT !== originalTask.isMIT) {
+          updateTask(task.TaskId, { priority: task.priority, isMIT: task.isMIT });
+        }
+      });
+  
+      return updatedTasks;
+    });
   };
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+    const { active } = event;
+    setActiveId(active.id as string);
+    setIsDragSessionActive(true);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+
+    if (!over) {
+      setPointerState({ overId: null, position: null, y: null, containerId: null });
+      return;
+    }
+  
+    const activeId = active.id;
+    const overId = over.id;
+  
+    if (activeId === overId) {
+      return;
+    }
+
+    const overElement = document.getElementById(overId as string);
+
+    // If hovering over an empty container, force the drop indicator to the top.
+    const isOverEmptyLitContainer = overId === 'lit' && litTasks.filter(t => t.TaskId !== activeId).length === 0;
+    const isOverEmptyMitContainer = overId === 'mit' && mitTasks.filter(t => t.TaskId !== activeId).length === 0;
+
+    if (overElement && (isOverEmptyLitContainer || isOverEmptyMitContainer)) {
+        setPointerState({
+            overId: overId as string,
+            position: 'top',
+            y: 0, // Position at the very top
+            containerId: overId as string,
+        });
+        return;
+    }
+  
+    const overContainer = overElement?.closest('.dnd-container');
+  
+    if (!overElement || !overContainer) {
+      setPointerState({ overId: null, position: null, y: null, containerId: null });
+      return;
+    }
+  
+    const overContainerId = overContainer.id;
+    const overRect = overElement.getBoundingClientRect();
+    
+    const activeRect = event.active.rect.current;
+    const activeTranslatedTop = activeRect.translated?.top;
+
+    if (activeTranslatedTop === undefined) {
+      setPointerState({ overId: null, position: null, y: null, containerId: null });
+      return;
+    }
+  
+    const position = activeTranslatedTop < overRect.top ? 'top' : 'bottom';
+  
+    const containerRect = overContainer.getBoundingClientRect();
+    const y = position === 'top' 
+      ? overRect.top - containerRect.top 
+      : overRect.bottom - containerRect.top;
+  
+    setPointerState({
+      overId: overId as string,
+      position,
+      y,
+      containerId: overContainerId,
+    });
+  };
+
+  const activeTask = useMemo(() => tasks.find(task => task.TaskId === activeId), [activeId, tasks]);
+
+  const handleOpenEditModal = (task: Task) => {
+    setSelectedTask(task);
+    setIsEditModalOpen(true);
+  };
+
+  const taskCardProps = {
+    onUpdate: handleTaskUpdate,
+    onDelete: handleDeleteTask,
+    onTagClick: handleTagFilterChange,
+    lastDroppedId,
+    onOpenEditModal: handleOpenEditModal,
+    isDragSessionActive,
+    onMove: handleMove,
+    mitListLength: mitTasks.length,
+    litListLength: litTasks.length,
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
     setActiveId(null);
+    setIsDragSessionActive(false);
+    setPointerState({ overId: null, position: null, y: null, containerId: null });
+
     const { active, over } = event;
 
-    if (!over) return;
-
-    const activeId = active.id;
-    const overId = over.id;
-
-    if (activeId === overId) return;
-
-    const activeContainer = findContainer(activeId);
-    const overContainer = findContainer(overId);
-
-    if (!activeContainer || !overContainer) return;
-
-    const originalTasks = [...tasks];
-    let newTasks = [...tasks];
-    const activeTaskIndex = newTasks.findIndex(t => t.TaskId === activeId);
-
-    if (activeTaskIndex === -1) {
+    if (!over) {
       return;
     }
 
-    // Reordering logic
-    if (activeContainer === overContainer) {
-      const overTaskIndex = newTasks.findIndex(t => t.TaskId === overId);
-      if (overTaskIndex !== -1) {
-        newTasks = arrayMove(newTasks, activeTaskIndex, overTaskIndex);
-      }
-    } else {
-      // Moving between containers
-      const activeTaskForCheck = originalTasks[activeTaskIndex];
-      if (overContainer === 'lit-zone') {
-        const isMandatoryMIT = activeTaskForCheck.priority > 0 && activeTaskForCheck.priority <= 3;
-        if (isMandatoryMIT) {
-          return;
-        }
-      }
+    const activeId = active.id as string;
+    const overId = over.id as string;
 
-      const activeTask = { ...newTasks[activeTaskIndex] };
+    if (activeId === overId) {
+      return;
+    }
+    
+    setTasks((currentTasks) => {
+      const activeTask = currentTasks.find(t => t.TaskId === activeId);
+      if (!activeTask) return currentTasks;
 
-      const mitTaskCount = newTasks.filter(
-        t => (t.isMIT || (t.priority > 0 && t.priority <= 3)) && t.TaskId !== activeId
-      ).length;
-      if (overContainer === 'mit-zone' && mitTaskCount >= 3) {
-        return;
+      const overIsContainer = overId === 'mit' || overId === 'lit';
+      
+      const destinationContainer = overIsContainer 
+        ? overId 
+        : currentTasks.find(t => t.TaskId === overId)?.isMIT ? 'mit' : 'lit';
+
+      if (destinationContainer === undefined) {
+        return currentTasks;
       }
 
-      activeTask.isMIT = overContainer === 'mit-zone';
+      let newTasks = currentTasks.filter(t => t.TaskId !== activeId);
 
-      newTasks.splice(activeTaskIndex, 1);
-
-      const overIsContainer = overId === 'mit-zone' || overId === 'lit-zone';
-      const overTaskIndex = newTasks.findIndex(t => t.TaskId === overId);
-
-      if (!overIsContainer && overTaskIndex !== -1) {
-        newTasks.splice(overTaskIndex, 0, activeTask);
+      const updatedMovedTask = { ...activeTask, isMIT: destinationContainer === 'mit' };
+      
+      if (overIsContainer) {
+        newTasks.push(updatedMovedTask);
       } else {
-        if (overContainer === 'mit-zone') {
-          // Find first non-MIT task and insert before it
-          const firstLitIndex = newTasks.findIndex(t => !t.isMIT && !(t.priority > 0 && t.priority <= 3));
-          if (firstLitIndex !== -1) {
-            newTasks.splice(firstLitIndex, 0, activeTask);
-          } else {
-            newTasks.push(activeTask);
-          }
-        } else {
-          // Dropped on LIT container
-          newTasks.push(activeTask);
-        }
+        const overIndex = newTasks.findIndex(t => t.TaskId === overId);
+        if (overIndex === -1) return currentTasks;
+
+        const { position } = pointerState;
+        const newIndex = position === 'bottom' ? overIndex + 1 : overIndex;
+        newTasks.splice(newIndex, 0, updatedMovedTask);
       }
-    }
 
-    // Recalculate all priorities and update state optimistically
-    const updatedTasksWithPriority = newTasks.map((task, index) => ({
-      ...task,
-      priority: index + 1
-    }));
-
-    setTasks(updatedTasksWithPriority);
-
-    // Persist priority and isMIT changes to the backend
-    const updatePromises = updatedTasksWithPriority
-      .map(task => {
-        const originalTask = originalTasks.find(t => t.TaskId === task.TaskId);
-        if (!originalTask || originalTask.priority !== task.priority || originalTask.isMIT !== task.isMIT) {
-          return updateTask(task.TaskId, {
-            priority: task.priority,
-            isMIT: task.isMIT
-          });
-        }
-        return null;
-      })
-      .filter((p): p is Promise<Task> => p !== null);
-
-    if (updatePromises.length > 0) {
-      Promise.all(updatePromises).catch(() => {
-        // Revert state on failure
-        setTasks(originalTasks);
-        alert('Failed to save the new task order. Please check your connection and try again.');
+      let mitPriority = 1;
+      let litPriority = 1;
+      const updatedTasks = newTasks.map(task => {
+        const priority = task.isMIT ? mitPriority++ : litPriority++;
+        return { ...task, priority };
       });
-    }
+      
+      updatedTasks.forEach(task => {
+        const originalTask = currentTasks.find(t => t.TaskId === task.TaskId);
+        if (!originalTask || task.priority !== originalTask.priority || task.isMIT !== originalTask.isMIT) {
+          updateTask(task.TaskId, { priority: task.priority, isMIT: task.isMIT });
+        }
+      });
+
+      setLastDroppedId(activeId);
+      setTimeout(() => setLastDroppedId(null), 500);
+
+      return updatedTasks;
+    });
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setIsDragSessionActive(false);
+    setPointerState({ overId: null, position: null, y: null, containerId: null });
   };
 
   const allTags = useMemo(() => {
@@ -326,135 +409,65 @@ export const TasksPage: React.FC = () => {
     return Array.from(tags);
   }, [tasks]);
 
-  const mitTasks = tasks
-    .filter(t => t.isMIT || (t.priority > 0 && t.priority <= 3))
-    .sort((a, b) => a.priority - b.priority)
-    .filter(task => {
-      if (!task || typeof task !== 'object' || !task.TaskId) {
-        return false;
-      }
-      return true;
-    });
-  const litTasks = tasks
-    .filter(t => !(t.isMIT || (t.priority > 0 && t.priority <= 3)))
-    .sort((a, b) => a.priority - b.priority)
-    .filter(task => {
-      if (!task || typeof task !== 'object' || !task.TaskId) {
-        return false;
-      }
-      return true;
-    });
-  const activeTask = useMemo(() => tasks.find((task) => task.TaskId === activeId), [activeId, tasks]);
-
   return (
-    <div className="tasks-page-container">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-8 bg-gray-900 text-white min-h-screen">
+      <header className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold text-white">Tasks</h1>
-        <div className="flex gap-4 items-center">
-          <input
-            type="text"
-            placeholder="Search tasks..."
-            className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-          />
-          <div className="flex-grow"></div>
+        <div className="flex items-center space-x-4">
+          <div className="flex-grow">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              className="w-full bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchFilter}
+              onChange={handleSearchFilterChange}
+            />
+          </div>
           <button
-            onClick={handleCreateClick}
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg font-semibold hover:bg-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onClick={() => {
+              setSelectedTask(null);
+              setIsEditModalOpen(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors"
           >
-            Create New Task
+            + New Task
           </button>
         </div>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex gap-4 items-center flex-wrap">
+      </header>
+      
+      <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+        <div className="flex-1 min-w-[300px]">
+          <TagFilterPills
+            selectedTags={tagFilter}
+            onTagClick={handleTagFilterChange}
+          />
+        </div>
+        <div className="flex-1 min-w-[200px]">
           <DropdownFilter
-            title="Status"
             options={STATUS_OPTIONS}
             selectedOptions={statusFilter}
-            onSelectionChange={handleStatusFilterChange}
-          />
-          <select
-            className="bg-gray-800 text-white p-2 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={dueDateFilter}
-            onChange={e => setDueDateFilter(e.target.value)}
-          >
-            <option value="all">All Due Dates</option>
-            <option value="7">Next 7 Days</option>
-            <option value="14">Next 14 Days</option>
-            <option value="30">Next 30 Days</option>
-          </select>
-          <DropdownFilter
-            title="Tags"
-            options={allTags}
-            selectedOptions={tagFilter}
-            onSelectionChange={handleTagFilterChange}
+            onSelectionChange={handleStatusFilterChangeSingle}
+            title="Status"
           />
         </div>
       </div>
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={rectIntersection}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-              <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm mr-2">MIT</span>
-              Most Important Tasks
-            </h2>
-            <DndContainer id="mit-zone" items={mitTasks}>
-              {mitTasks.map(task => (
-                <TaskCard
-                  key={task.TaskId}
-                  task={task}
-                  onUpdate={handleTaskUpdate}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleCardClick}
-                  onDragStart={handleDragStart}
-                  onDragOver={() => {}}
-                  onDrop={() => {}}
-                />
-              ))}
-            </DndContainer>
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-              <span className="bg-gray-600 text-white px-3 py-1 rounded-full text-sm mr-2">LIT</span>
-              Less Important Tasks
-            </h2>
-            <DndContainer id="lit-zone" items={litTasks}>
-              {litTasks.map(task => (
-                <TaskCard
-                  key={task.TaskId}
-                  task={task}
-                  onUpdate={handleTaskUpdate}
-                  onDelete={handleDeleteTask}
-                  onEdit={handleCardClick}
-                  onDragStart={handleDragStart}
-                  onDragOver={() => {}}
-                  onDrop={() => {}}
-                />
-              ))}
-            </DndContainer>
-          </div>
+          <DndContainer id="mit" items={mitTasks} title="MIT Tasks" taskCardProps={taskCardProps} pointerState={pointerState} />
+          <DndContainer id="lit" items={litTasks} title="LIT Tasks" taskCardProps={taskCardProps} pointerState={pointerState} />
         </div>
 
-        <DragOverlay dropAnimation={dropAnimation}>
+        <DragOverlay>
           {activeTask ? (
-            <TaskCard
-              task={activeTask}
-              onUpdate={async () => Promise.resolve()}
-              onDelete={async () => Promise.resolve()}
-              onEdit={() => {}}
-              onDragStart={() => {}}
-              onDragOver={() => {}}
-              onDrop={() => {}}
-            />
+            <TaskCard task={activeTask} isOverlay {...taskCardProps} isMoveIndicatorActive={pointerState.containerId !== null} />
           ) : null}
         </DragOverlay>
       </DndContext>

@@ -8,12 +8,13 @@ export const Auth0ProviderWithHistory: React.FC<PropsWithChildren<{}>> = ({ chil
   const domain = process.env.REACT_APP_AUTH0_DOMAIN;
   const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID;
   const redirectUri = process.env.REACT_APP_AUTH0_CALLBACK_URL;
+  const audience = process.env.REACT_APP_AUTH0_AUDIENCE;
 
   const onRedirectCallback = (appState?: AppState) => {
     navigate(appState?.returnTo || window.location.pathname);
   };
 
-  if (!(domain && clientId && redirectUri)) {
+  if (!(domain && clientId && redirectUri && audience)) {
     return null;
   }
 
@@ -23,6 +24,7 @@ export const Auth0ProviderWithHistory: React.FC<PropsWithChildren<{}>> = ({ chil
       clientId={clientId}
       redirectUri={redirectUri}
       onRedirectCallback={onRedirectCallback}
+      audience={audience}
     >
       {children}
     </Auth0Provider>
