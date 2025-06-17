@@ -163,17 +163,8 @@ export const TasksPage: React.FC = () => {
         currentTasks.map(t => (t.TaskId === selectedTask.TaskId ? { ...t, ...updatedTask } : t))
       );
     } else {
-      // Create new task
-      const litTasks = tasks.filter(task => !task.isMIT);
-      const newPriority = litTasks.length > 0 ? Math.max(...litTasks.map(t => t.priority)) + 1 : 1;
-      
-      const newTaskData = {
-        ...taskData,
-        isMIT: false,
-        priority: newPriority,
-      };
-
-      const newTask = await createTask(newTaskData);
+      // Create new task. The backend will assign the correct priority.
+      const newTask = await createTask(taskData);
       setTasks(currentTasks => [...currentTasks, newTask]);
     }
     setIsEditModalOpen(false);
@@ -205,37 +196,26 @@ export const TasksPage: React.FC = () => {
   const mitTasks = useMemo(() => tasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority), [tasks]);
   const litTasks = useMemo(() => tasks.filter(task => !task.isMIT).sort((a, b) => a.priority - b.priority), [tasks]);
 
+  const findContainer = (taskId: string) => {
+    if (mitTasks.some(t => t.TaskId === taskId)) return { id: 'MIT-container', tasks: mitTasks };
+    if (litTasks.some(t => t.TaskId === taskId)) return { id: 'LIT-container', tasks: litTasks };
+    return null;
+  };
+
   const handleMove = (taskId: string, targetListId: 'MIT' | 'LIT', targetIndex: number) => {
+    const taskToMove = tasks.find(t => t.TaskId === taskId);
+    if (!taskToMove) return;
+
+    // Optimistically update the UI
     setTasks(currentTasks => {
-      const taskToMove = currentTasks.find(t => t.TaskId === taskId);
-      if (!taskToMove) return currentTasks;
-  
-      // Remove the task from its current position
-      const tasksWithoutMoved = currentTasks.filter(t => t.TaskId !== taskId);
-  
-      // Add the task to the target position
-      const newTasks = [...tasksWithoutMoved];
+      const newTasks = currentTasks.filter(t => t.TaskId !== taskId);
       const updatedMovedTask = { ...taskToMove, isMIT: targetListId === 'MIT' };
       newTasks.splice(targetIndex, 0, updatedMovedTask);
-  
-      // Re-calculate priorities for all tasks
-      let mitPriority = 1;
-      let litPriority = 1;
-      const updatedTasks = newTasks.map(task => {
-        const priority = task.isMIT ? mitPriority++ : litPriority++;
-        return { ...task, priority };
-      });
-      
-      // Persist changes
-      updatedTasks.forEach(task => {
-        const originalTask = currentTasks.find(t => t.TaskId === task.TaskId);
-        if (!originalTask || task.priority !== originalTask.priority || task.isMIT !== originalTask.isMIT) {
-          updateTask(task.TaskId, { priority: task.priority, isMIT: task.isMIT });
-        }
-      });
-  
-      return updatedTasks;
+      return newTasks;
     });
+
+    // Tell the backend the task's MIT status has changed
+    updateTask(taskId, { isMIT: targetListId === 'MIT' });
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -328,71 +308,78 @@ export const TasksPage: React.FC = () => {
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
-    setActiveId(null);
-    setIsDragSessionActive(false);
-    setPointerState({ overId: null, position: null, y: null, containerId: null });
-
     const { active, over } = event;
-
     if (!over) {
+      setActiveId(null);
       return;
     }
-
     const activeId = active.id as string;
     const overId = over.id as string;
 
     if (activeId === overId) {
+      setActiveId(null);
       return;
     }
-    
-    setTasks((currentTasks) => {
-      const activeTask = currentTasks.find(t => t.TaskId === activeId);
-      if (!activeTask) return currentTasks;
 
-      const overIsContainer = overId === 'mit' || overId === 'lit';
-      
-      const destinationContainer = overIsContainer 
-        ? overId 
-        : currentTasks.find(t => t.TaskId === overId)?.isMIT ? 'mit' : 'lit';
+    const activeContainer = findContainer(activeId)?.id;
+    let overContainerId = findContainer(overId)?.id;
 
-      if (destinationContainer === undefined) {
-        return currentTasks;
-      }
-
-      let newTasks = currentTasks.filter(t => t.TaskId !== activeId);
-
-      const updatedMovedTask = { ...activeTask, isMIT: destinationContainer === 'mit' };
-      
-      if (overIsContainer) {
-        newTasks.push(updatedMovedTask);
+    if (!overContainerId) {
+      if (over.data.current?.droppableContainer?.id) {
+        overContainerId = over.data.current?.droppableContainer?.id;
       } else {
-        const overIndex = newTasks.findIndex(t => t.TaskId === overId);
-        if (overIndex === -1) return currentTasks;
-
-        const { position } = pointerState;
-        const newIndex = position === 'bottom' ? overIndex + 1 : overIndex;
-        newTasks.splice(newIndex, 0, updatedMovedTask);
+        setActiveId(null);
+        return; // Cannot determine the drop target
       }
+    }
 
-      let mitPriority = 1;
-      let litPriority = 1;
-      const updatedTasks = newTasks.map(task => {
-        const priority = task.isMIT ? mitPriority++ : litPriority++;
-        return { ...task, priority };
-      });
-      
-      updatedTasks.forEach(task => {
-        const originalTask = currentTasks.find(t => t.TaskId === task.TaskId);
-        if (!originalTask || task.priority !== originalTask.priority || task.isMIT !== originalTask.isMIT) {
-          updateTask(task.TaskId, { priority: task.priority, isMIT: task.isMIT });
+    if (activeContainer !== overContainerId) {
+      // Moving between lists
+      const isMovingToMit = overContainerId === 'MIT-container';
+      updateTask(activeId, { isMIT: isMovingToMit });
+
+      // Optimistic UI update
+      setTasks(currentTasks => {
+        const task = currentTasks.find(t => t.TaskId === activeId);
+        if (!task) return currentTasks;
+        const otherTasks = currentTasks.filter(t => t.TaskId !== activeId);
+        const updatedTask = { ...task, isMIT: isMovingToMit };
+
+        // Find the index in the new list
+        const overIndex = otherTasks.findIndex(t => t.TaskId === overId);
+        if (overIndex !== -1) {
+          otherTasks.splice(overIndex, 0, updatedTask);
+        } else {
+          // If dropping on the container, not an item, add to the end
+          if (isMovingToMit) {
+            const lastMitIndex = otherTasks.reduce((last, t, i) => (t.isMIT ? i : last), -1);
+            otherTasks.splice(lastMitIndex + 1, 0, updatedTask);
+          } else {
+            otherTasks.push(updatedTask);
+          }
         }
+        return otherTasks;
       });
+    } else {
+      // Reordering within the same list
+      const activeIndex = tasks.findIndex(t => t.TaskId === activeId);
+      const overIndex = tasks.findIndex(t => t.TaskId === overId);
 
-      setLastDroppedId(activeId);
-      setTimeout(() => setLastDroppedId(null), 500);
+      if (activeIndex !== overIndex) {
+        // Optimistically update the UI
+        setTasks(currentTasks => {
+          const newTasks = Array.from(currentTasks);
+          const [removed] = newTasks.splice(activeIndex, 1);
+          newTasks.splice(overIndex, 0, removed);
+          return newTasks;
+        });
 
-      return updatedTasks;
-    });
+        // Send a single update to the backend. The backend will handle reprioritization.
+        updateTask(activeId, { priority: overIndex + 1 });
+      }
+    }
+
+    setActiveId(null);
   };
 
   const handleDragCancel = () => {

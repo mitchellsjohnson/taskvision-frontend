@@ -8,9 +8,11 @@ interface TagFilterPillsProps {
 }
 
 export const TagFilterPills: React.FC<TagFilterPillsProps> = ({ selectedTags, onTagClick }) => {
+  const sortedTags = [...RESERVED_TAGS].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      {RESERVED_TAGS.map((tag: ReservedTag) => {
+      {sortedTags.map((tag: ReservedTag) => {
         const isSelected = selectedTags.includes(tag.name);
         const colorClasses = getTagColor(tag.name);
 
