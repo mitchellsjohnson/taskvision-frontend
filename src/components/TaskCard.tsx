@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Task } from '../types';
-import { RESERVED_TAGS } from '../constants/tags';
+import { RESERVED_TAGS, DEFAULT_TAGS } from '../constants/tags';
 import { ArrowControls } from './ArrowControls';
+import { PowerControls } from './PowerControls';
 import { Tooltip } from './Tooltip';
+import { ExpandableDescription } from './ExpandableDescription';
+import { Tag } from './Tag';
 
 export interface TaskCardProps {
   task: Task;
@@ -12,16 +14,13 @@ export interface TaskCardProps {
   onUpdate: (taskId: string, updates: Partial<Task>) => void;
   onTagClick?: (tag: string) => void;
   isOverlay?: boolean;
-  isMoveIndicatorActive?: boolean;
-  lastDroppedId?: string | null;
   onOpenEditModal?: (task: Task) => void;
-  isDragSessionActive?: boolean;
   onMove?: (taskId: string, targetListId: 'MIT' | 'LIT', targetIndex: number) => void;
   listId?: 'MIT' | 'LIT';
   index?: number;
   mitListLength?: number;
   litListLength?: number;
-  onEdit?: (taskId: string) => void;
+  flashingTasks?: Set<string>;
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -30,16 +29,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onUpdate,
   onTagClick,
   isOverlay = false,
-  isMoveIndicatorActive = false,
-  lastDroppedId,
   onOpenEditModal,
-  isDragSessionActive = false,
   onMove,
   listId,
   index,
   mitListLength,
   litListLength,
-  onEdit,
+  flashingTasks,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
@@ -52,7 +48,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   }, [isEditing, task.title, task.description]);
 
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const { attributes, listeners, setNodeRef: setDragNodeRef, isDragging } = useDraggable({
     id: task.TaskId,
     data: {
       type: 'Task',
@@ -60,26 +56,46 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     },
   });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+  const { setNodeRef: setDropNodeRef } = useDroppable({
+    id: task.TaskId,
+    data: {
+      type: 'Task',
+      task,
+    },
+  });
+
+  // Combine both refs
+  const setNodeRef = (node: HTMLElement | null) => {
+    setDragNodeRef(node);
+    setDropNodeRef(node);
   };
+
+  // No transform applied - tasks stay in place during drag
+  const style = {};
   
   const isBeingDragged = isDragging && !isOverlay;
-  const isDropTarget = lastDroppedId === task.TaskId;
 
   const getBaseClasses = () => 'p-4 rounded-lg shadow-md border-l-4 transition-all duration-300 ease-in-out transform relative';
 
   const getCardStyleClasses = () => {
+    const isFlashing = flashingTasks?.has(task.TaskId) || false;
+    
     if (isOverlay) {
-      return isMoveIndicatorActive ? 'bg-blue-500/10 border-blue-500' : 'bg-white/10 border-gray-500';
+      return 'bg-gray-700 border-blue-500 shadow-2xl';
     }
-    return `
-      ${!isDragSessionActive ? 'hover:shadow-lg hover:scale-105' : ''}
-      ${isBeingDragged ? 'opacity-50' : 'opacity-100'}
-      ${isDropTarget ? 'flash-animation' : ''}
-      border-gray-500 bg-gray-800
+    
+    const baseClasses = `
+      hover:shadow-lg
+      ${isBeingDragged ? 'opacity-30' : 'opacity-100'}
+      border-gray-500
+      transition-all duration-500 ease-out
     `;
+    
+    const backgroundClass = isFlashing 
+      ? 'bg-blue-400/30' 
+      : 'bg-gray-800';
+    
+    return `${baseClasses} ${backgroundClass}`;
   };
   
   const cardClasses = `${getBaseClasses()} ${getCardStyleClasses()}`;
@@ -109,7 +125,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     <div
       ref={setNodeRef}
       style={style}
-      id={task.TaskId}
+      id={`task-${task.TaskId}`}
       className={cardClasses}
     >
       <div className="relative z-10 flex items-start space-x-4">
@@ -215,7 +231,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               rows={3}
             />
           ) : (
-            task.description && <p className="text-gray-300 mb-4 text-lg" onClick={handleEditClick}>{task.description}</p>
+            task.description && (
+              <div className="mb-4" onClick={handleEditClick}>
+                <ExpandableDescription 
+                  description={task.description} 
+                  className="text-lg cursor-pointer"
+                />
+              </div>
+            )
           )}
           <div className="flex justify-between items-end text-sm text-gray-400">
             <div className="flex flex-col items-start">
@@ -241,36 +264,37 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 </div>
               )}
               {task.tags && task.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
+                <div className="flex flex-wrap gap-2 mt-2" role="list" aria-label="Task tags">
                   {task.tags.map(tag => (
-                    <button
+                    <Tag
                       key={tag}
-                      onClick={() => onTagClick && onTagClick(tag)}
-                      disabled={!onTagClick || isOverlay}
-                      className={`px-2 py-1 rounded-full text-sm font-medium ${getTagColor(
-                        tag
-                      )} ${
-                        onTagClick && !isOverlay
-                          ? 'cursor-pointer hover:opacity-80 transition-opacity'
-                          : 'cursor-default'
-                      }`}
-                    >
-                      {tag}
-                    </button>
+                      label={tag}
+                      type={DEFAULT_TAGS[tag] ? 'default' : 'custom'}
+                      onClick={onTagClick && !isOverlay ? () => onTagClick(tag) : undefined}
+                    />
                   ))}
                 </div>
               )}
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center space-x-2">
               {onMove && listId && index !== undefined && mitListLength !== undefined && litListLength !== undefined && (
-                <ArrowControls
-                  taskId={task.TaskId}
-                  listId={listId}
-                  index={index}
-                  mitListLength={mitListLength}
-                  litListLength={litListLength}
-                  onMove={onMove}
-                />
+                <>
+                  <PowerControls
+                    taskId={task.TaskId}
+                    listId={listId}
+                    mitListLength={mitListLength}
+                    litListLength={litListLength}
+                    onMove={onMove}
+                  />
+                  <ArrowControls
+                    taskId={task.TaskId}
+                    listId={listId}
+                    index={index}
+                    mitListLength={mitListLength}
+                    litListLength={litListLength}
+                    onMove={onMove}
+                  />
+                </>
               )}
               <span className={`px-2 py-1 rounded self-end ${getTaskStatusDetails(task).badgeClass}`}>
                 {task.status}

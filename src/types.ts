@@ -11,4 +11,5 @@ export interface Task {
   UserId: string;
   isMIT: boolean;
   priority: number;
+  position?: number;
 }

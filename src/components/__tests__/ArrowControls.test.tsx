@@ -22,30 +22,26 @@ describe('ArrowControls', () => {
   };
 
   describe('when task is in MIT list', () => {
-    it('shows all valid arrows when in the middle of the list', () => {
+    it('shows up and down arrows when in the middle of the list', () => {
       renderComponent({ listId: 'MIT', index: 1, mitListLength: 3 });
       expect(screen.getByRole('button', { name: /move up/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /move down/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /move to lit at same position/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /move to top of lit/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /move to bottom of lit/i })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /move to mit/i })).not.toBeInTheDocument();
     });
 
-    it('hides up arrow when at the top of the list', () => {
-        renderComponent({ listId: 'MIT', index: 0, mitListLength: 3 });
-        expect(screen.queryByRole('button', { name: /move up/i })).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /move down/i })).toBeInTheDocument();
+    it('hides up arrow when at the top globally (first MIT task)', () => {
+      renderComponent({ listId: 'MIT', index: 0, mitListLength: 3 });
+      expect(screen.queryByRole('button', { name: /move up/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /move down/i })).toBeInTheDocument();
     });
 
-    it('hides down arrow when at the bottom of the list', () => {
-        renderComponent({ listId: 'MIT', index: 2, mitListLength: 3 });
-        expect(screen.getByRole('button', { name: /move up/i })).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /move down/i })).not.toBeInTheDocument();
+    it('shows down arrow when at the bottom of MIT (moves to LIT)', () => {
+      renderComponent({ listId: 'MIT', index: 2, mitListLength: 3 });
+      expect(screen.getByRole('button', { name: /move up/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /move to lit/i })).toBeInTheDocument();
     });
     
-    it('hides up and down arrows when it is the only task', () => {
-      renderComponent({ listId: 'MIT', index: 0, mitListLength: 1 });
+    it('shows only down arrow when it is the only task', () => {
+      renderComponent({ listId: 'MIT', index: 0, mitListLength: 1, litListLength: 0 });
       expect(screen.queryByRole('button', { name: /move up/i })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /move down/i })).not.toBeInTheDocument();
     });
@@ -57,87 +53,58 @@ describe('ArrowControls', () => {
     });
 
     it('calls onMove correctly for moving down in MIT', () => {
-        renderComponent({ taskId: 'task-b', listId: 'MIT', index: 1 });
-        fireEvent.click(screen.getByRole('button', { name: /move down/i }));
-        expect(onMove).toHaveBeenCalledWith('task-b', 'MIT', 2);
+      renderComponent({ taskId: 'task-b', listId: 'MIT', index: 1 });
+      fireEvent.click(screen.getByRole('button', { name: /move down/i }));
+      expect(onMove).toHaveBeenCalledWith('task-b', 'MIT', 2);
     });
       
-    it('calls onMove correctly for moving to LIT (same position)', () => {
-        renderComponent({ taskId: 'task-b', listId: 'MIT', index: 1 });
-        fireEvent.click(screen.getByRole('button', { name: /move to lit at same position/i }));
-        expect(onMove).toHaveBeenCalledWith('task-b', 'LIT', 1);
-    });
-
-    it('calls onMove correctly for moving to top of LIT', () => {
-        renderComponent({ taskId: 'task-b', listId: 'MIT', index: 1 });
-        fireEvent.click(screen.getByRole('button', { name: /move to top of lit/i }));
-        expect(onMove).toHaveBeenCalledWith('task-b', 'LIT', 0);
-    });
-
-    it('calls onMove correctly for moving to bottom of LIT', () => {
-        renderComponent({ taskId: 'task-b', listId: 'MIT', index: 1, litListLength: 5 });
-        fireEvent.click(screen.getByRole('button', { name: /move to bottom of lit/i }));
-        expect(onMove).toHaveBeenCalledWith('task-b', 'LIT', 5);
-    });
-
-    describe('when LIT list is empty', () => {
-      it('shows only the horizontal arrow to LIT', () => {
-        renderComponent({ listId: 'MIT', litListLength: 0 });
-        expect(screen.getByRole('button', { name: /move to lit/i })).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /move to top of lit/i })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /move to bottom of lit/i })).not.toBeInTheDocument();
-      });
-
-      it('calls onMove correctly for moving to empty LIT list', () => {
-        renderComponent({ taskId: 'task-c', listId: 'MIT', litListLength: 0 });
-        fireEvent.click(screen.getByRole('button', { name: /move to lit/i }));
-        expect(onMove).toHaveBeenCalledWith('task-c', 'LIT', 0);
-      });
+    it('calls onMove correctly for moving from MIT to LIT', () => {
+      renderComponent({ taskId: 'task-b', listId: 'MIT', index: 2, mitListLength: 3 });
+      fireEvent.click(screen.getByRole('button', { name: /move to lit/i }));
+      expect(onMove).toHaveBeenCalledWith('task-b', 'LIT', 0);
     });
   });
 
   describe('when task is in LIT list', () => {
-    it('shows all valid arrows when in the middle of the list', () => {
+    it('shows up and down arrows when in the middle of the list', () => {
       renderComponent({ listId: 'LIT', index: 1, litListLength: 3 });
       expect(screen.getByRole('button', { name: /move up/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /move down/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /move to mit at same position/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /move to top of mit/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /move to bottom of mit/i })).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: /move to lit/i })).not.toBeInTheDocument();
     });
 
-    it('calls onMove correctly for moving to MIT (same position)', () => {
+    it('shows up arrow for moving to MIT when at top of LIT', () => {
+      renderComponent({ listId: 'LIT', index: 0, mitListLength: 2 });
+      expect(screen.getByRole('button', { name: /move to mit/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /move down/i })).toBeInTheDocument();
+    });
+
+    it('shows tooltip about bumping when MIT is full', () => {
+      renderComponent({ listId: 'LIT', index: 0, mitListLength: 3 });
+      expect(screen.getByRole('button', { name: /move to mit \(bumps lowest mit to lit\)/i })).toBeInTheDocument();
+    });
+
+    it('hides down arrow when at bottom globally', () => {
+      renderComponent({ listId: 'LIT', index: 2, litListLength: 3, mitListLength: 3 });
+      expect(screen.getByRole('button', { name: /move up/i })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /move down/i })).not.toBeInTheDocument();
+    });
+
+    it('calls onMove correctly for moving up in LIT', () => {
       renderComponent({ taskId: 'task-l', listId: 'LIT', index: 1 });
-      fireEvent.click(screen.getByRole('button', { name: /move to mit at same position/i }));
-      expect(onMove).toHaveBeenCalledWith('task-l', 'MIT', 1);
+      fireEvent.click(screen.getByRole('button', { name: /move up/i }));
+      expect(onMove).toHaveBeenCalledWith('task-l', 'LIT', 0);
     });
 
-    it('calls onMove correctly for moving to top of MIT', () => {
-        renderComponent({ taskId: 'task-l', listId: 'LIT', index: 1 });
-        fireEvent.click(screen.getByRole('button', { name: /move to top of mit/i }));
-        expect(onMove).toHaveBeenCalledWith('task-l', 'MIT', 0);
+    it('calls onMove correctly for moving down in LIT', () => {
+      renderComponent({ taskId: 'task-l', listId: 'LIT', index: 1 });
+      fireEvent.click(screen.getByRole('button', { name: /move down/i }));
+      expect(onMove).toHaveBeenCalledWith('task-l', 'LIT', 2);
     });
 
-    it('calls onMove correctly for moving to bottom of MIT', () => {
-        renderComponent({ taskId: 'task-l', listId: 'LIT', index: 1, mitListLength: 4 });
-        fireEvent.click(screen.getByRole('button', { name: /move to bottom of mit/i }));
-        expect(onMove).toHaveBeenCalledWith('task-l', 'MIT', 4);
-    });
-
-    describe('when MIT list is empty', () => {
-      it('shows only the horizontal arrow to MIT', () => {
-        renderComponent({ listId: 'LIT', mitListLength: 0 });
-        expect(screen.getByRole('button', { name: /move to mit/i })).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /move to top of mit/i })).not.toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /move to bottom of mit/i })).not.toBeInTheDocument();
-      });
-
-      it('calls onMove correctly for moving to empty MIT list', () => {
-        renderComponent({ taskId: 'task-d', listId: 'LIT', mitListLength: 0 });
-        fireEvent.click(screen.getByRole('button', { name: /move to mit/i }));
-        expect(onMove).toHaveBeenCalledWith('task-d', 'MIT', 0);
-      });
+    it('calls onMove correctly for moving from LIT to MIT', () => {
+      renderComponent({ taskId: 'task-l', listId: 'LIT', index: 0, mitListLength: 2 });
+      fireEvent.click(screen.getByRole('button', { name: /move to mit/i }));
+      expect(onMove).toHaveBeenCalledWith('task-l', 'MIT', 2);
     });
   });
 }); 

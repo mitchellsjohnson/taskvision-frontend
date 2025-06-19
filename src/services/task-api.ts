@@ -35,7 +35,15 @@ export const useTaskApi = () => {
   );
 
   const getTasks = useCallback(
-    async (filters: { status?: string[]; tags?: string[]; search?: string }): Promise<Task[]> => {
+    async (filters: { 
+      status?: string[]; 
+      tags?: string[]; 
+      search?: string;
+      dateFilter?: string;
+      startDate?: string;
+      endDate?: string;
+      noDueDate?: boolean;
+    }): Promise<Task[]> => {
       const queryParams = new URLSearchParams();
       if (filters.status && filters.status.length > 0) {
         queryParams.append('status', filters.status.join(','));
@@ -45,6 +53,18 @@ export const useTaskApi = () => {
       }
       if (filters.search) {
         queryParams.append('search', filters.search);
+      }
+      if (filters.dateFilter) {
+        queryParams.append('dateFilter', filters.dateFilter);
+      }
+      if (filters.startDate) {
+        queryParams.append('startDate', filters.startDate);
+      }
+      if (filters.endDate) {
+        queryParams.append('endDate', filters.endDate);
+      }
+      if (filters.noDueDate) {
+        queryParams.append('noDueDate', 'true');
       }
       return authenticatedRequest('GET', `api/tasks?${queryParams.toString()}`);
     },

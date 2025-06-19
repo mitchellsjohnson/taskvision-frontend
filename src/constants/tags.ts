@@ -1,3 +1,36 @@
+import {
+  BoltIcon,
+  UserIcon,
+  LightBulbIcon,
+  UserGroupIcon,
+  ArrowPathIcon,
+  UserCircleIcon,
+  MagnifyingGlassIcon,
+  UsersIcon,
+  AcademicCapIcon,
+  BriefcaseIcon,
+} from '@heroicons/react/24/outline';
+import { ComponentType } from 'react';
+
+export interface DefaultTag {
+  icon: ComponentType<{ className?: string }>;
+  border: string;
+}
+
+export const DEFAULT_TAGS: Record<string, DefaultTag> = {
+  '5-min': { icon: BoltIcon, border: 'border-cyan-400' },
+  'Leader': { icon: UserCircleIcon, border: 'border-rose-400' },
+  'Creative': { icon: LightBulbIcon, border: 'border-yellow-400' },
+  'Customer': { icon: UserGroupIcon, border: 'border-teal-400' },
+  'Follow-up': { icon: ArrowPathIcon, border: 'border-orange-400' },
+  'Personal': { icon: UserIcon, border: 'border-pink-400' },
+  'Research': { icon: MagnifyingGlassIcon, border: 'border-purple-400' },
+  'Team': { icon: UsersIcon, border: 'border-blue-400' },
+  'Training': { icon: AcademicCapIcon, border: 'border-green-400' },
+  'Work': { icon: BriefcaseIcon, border: 'border-indigo-400' },
+};
+
+// Legacy interface for backward compatibility during migration
 export interface ReservedTag {
   name: string;
   color: string;
@@ -5,6 +38,7 @@ export interface ReservedTag {
   text: string;
 }
 
+// Legacy RESERVED_TAGS for backward compatibility - will be removed after migration
 export const RESERVED_TAGS: ReservedTag[] = [
   {
     "name": "personal",
@@ -60,4 +94,13 @@ export const RESERVED_TAGS: ReservedTag[] = [
     "bg": "bg-pink-500",
     "text": "text-pink-100"
   }
-]; 
+];
+
+export const getTagStyles = (tagName: string): { bg: string; text: string } => {
+  const tag = RESERVED_TAGS.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+  if (tag) {
+    return { bg: tag.bg, text: tag.text };
+  }
+  // Default color for non-reserved tags
+  return { bg: 'bg-gray-500', text: 'text-gray-100' };
+}; 

@@ -1,6 +1,6 @@
 import React from 'react';
-import { RESERVED_TAGS, ReservedTag } from '../constants/tags';
-import { getTagColor } from './TaskCard';
+import { DEFAULT_TAGS } from '../constants/tags';
+import { Tag } from './Tag';
 
 interface TagFilterPillsProps {
   selectedTags: string[];
@@ -8,27 +8,31 @@ interface TagFilterPillsProps {
 }
 
 export const TagFilterPills: React.FC<TagFilterPillsProps> = ({ selectedTags, onTagClick }) => {
-  const sortedTags = [...RESERVED_TAGS].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedTags = Object.keys(DEFAULT_TAGS).sort((a, b) => a.localeCompare(b));
 
   return (
     <div className="flex flex-wrap gap-2 mb-4">
-      {sortedTags.map((tag: ReservedTag) => {
-        const isSelected = selectedTags.includes(tag.name);
-        const colorClasses = getTagColor(tag.name);
+      {sortedTags.map((tagName) => {
+        const isSelected = selectedTags.includes(tagName);
 
         return (
-          <button
-            key={tag.name}
-            onClick={() => onTagClick(tag.name)}
+          <div
+            key={tagName}
             className={`
-              px-3 py-1 rounded-full text-base font-medium transition-all duration-200 ease-in-out
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900
-              ${colorClasses}
-              ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-900' : 'hover:opacity-100'}
+              transition-all duration-200 ease-in-out
+              focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 focus-within:ring-blue-500
+              ${isSelected ? 'ring-2 ring-white ring-offset-2 ring-offset-gray-900' : ''}
             `}
           >
-            {tag.name}
-          </button>
+            <Tag
+              label={tagName}
+              type="default"
+              onClick={() => onTagClick(tagName)}
+              className={`
+                ${isSelected ? 'opacity-100' : 'opacity-75 hover:opacity-100'}
+              `}
+            />
+          </div>
         );
       })}
     </div>

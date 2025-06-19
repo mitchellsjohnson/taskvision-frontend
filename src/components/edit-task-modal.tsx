@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { TagInput } from './TagInput';
+import { CharacterCounter } from './CharacterCounter';
 import { Task } from '../types';
+import { TASK_LIMITS, validateTaskField } from '../constants/validation';
 
 interface EditTaskModalProps {
   task: Task | null;
@@ -39,6 +41,14 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
   if (!isOpen) return null;
 
   const handleSave = () => {
+    // Validate field lengths
+    const titleValidation = validateTaskField('title', currentTask.title || '');
+    const descriptionValidation = validateTaskField('description', currentTask.description || '');
+    
+    if (titleValidation.isOverLimit || descriptionValidation.isOverLimit) {
+      return; // Don't save if over limit
+    }
+
     onSave(currentTask);
     onClose(); 
   };
@@ -59,22 +69,38 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
       <div className="bg-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-2xl">
         {/* Editable Fields */}
         <div className="space-y-4">
-          <input
-            type="text"
-            name="title"
-            value={currentTask.title || ''}
-            onChange={handleChange}
-            className="w-full text-2xl font-bold bg-transparent text-white focus:outline-none focus:border-b-2 border-gray-600"
-            placeholder="Task Title"
-          />
-          <textarea
-            name="description"
-            value={currentTask.description || ''}
-            onChange={handleChange}
-            rows={5}
-            className="w-full bg-gray-900/50 text-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Add task details..."
-          />
+          <div>
+            <input
+              type="text"
+              name="title"
+              value={currentTask.title || ''}
+              onChange={handleChange}
+              maxLength={TASK_LIMITS.TITLE_MAX_LENGTH}
+              className="w-full text-2xl font-bold bg-transparent text-white focus:outline-none focus:border-b-2 border-gray-600"
+              placeholder="Task Title"
+            />
+            <CharacterCounter
+              current={(currentTask.title || '').length}
+              max={TASK_LIMITS.TITLE_MAX_LENGTH}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <textarea
+              name="description"
+              value={currentTask.description || ''}
+              onChange={handleChange}
+              maxLength={TASK_LIMITS.DESCRIPTION_MAX_LENGTH}
+              rows={5}
+              className="w-full bg-gray-900/50 text-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Add task details..."
+            />
+            <CharacterCounter
+              current={(currentTask.description || '').length}
+              max={TASK_LIMITS.DESCRIPTION_MAX_LENGTH}
+              className="mt-1"
+            />
+          </div>
           <div className="flex gap-4">
             <div>
               <label htmlFor="dueDate" className="block text-sm font-medium text-gray-400">Due Date</label>
@@ -106,7 +132,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
           {/* Tag Input */}
           <div>
             <label htmlFor="tags" className="block text-sm font-medium text-gray-400 mb-1">Tags</label>
-            <TagInput tags={currentTask.tags || []} onTagsChange={handleTagsChange} className="bg-gray-900/50" />
+            <TagInput tags={currentTask.tags || []} onTagsChange={handleTagsChange} className="bg-gray-700" />
           </div>
         </div>
 
@@ -131,7 +157,15 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({ task, isOpen, onCl
           <button onClick={onClose} className="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded-md">
             Cancel
           </button>
-          <button onClick={handleSave} className="bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded-md">
+          <button 
+            onClick={handleSave} 
+            disabled={
+              validateTaskField('title', currentTask.title || '').isOverLimit ||
+              validateTaskField('description', currentTask.description || '').isOverLimit ||
+              !(currentTask.title || '').trim()
+            }
+            className="bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2 px-4 rounded-md transition-colors"
+          >
             Save Changes
           </button>
         </div>
