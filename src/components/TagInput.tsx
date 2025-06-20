@@ -110,7 +110,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
 
   return (
     <div className="relative">
-      <div className={`flex flex-wrap items-center gap-2 p-3 rounded-md border border-gray-300 dark:border-gray-600 focus-within:border-blue-500 transition-colors min-h-[42px] ${className}`}>
+      <div className={`flex flex-wrap items-center gap-2 p-3 rounded-md border border-gray-600 focus-within:border-blue-500 transition-colors min-h-[42px] bg-gray-700 ${className}`}>
         {tags.map((tag, index) => (
           <div key={index} className="flex items-center">
             <Tag
@@ -136,7 +136,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
           onKeyDown={handleInputKeyDown}
           onFocus={() => inputValue && setShowSuggestions(suggestions.length > 0)}
           placeholder="Add tag..."
-          className="bg-transparent focus:outline-none text-sm p-1 flex-grow text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 min-w-24"
+          className="bg-transparent focus:outline-none text-sm p-1 flex-grow text-white placeholder-gray-400 min-w-24"
           aria-label="Add new tag"
           aria-expanded={showSuggestions}
           aria-haspopup="listbox"
@@ -150,7 +150,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
         <div
           ref={suggestionsRef}
           id="tag-suggestions"
-          className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-700 rounded-md shadow-lg border border-gray-300 dark:border-gray-600 max-h-48 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 bg-gray-700 rounded-md shadow-lg border border-gray-600 max-h-48 overflow-y-auto"
           role="listbox"
           aria-label="Tag suggestions"
         >
@@ -161,7 +161,7 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
               className={`flex items-center px-3 py-2 cursor-pointer transition-colors ${
                 index === selectedSuggestionIndex
                   ? 'bg-blue-600 text-white'
-                  : 'hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-900 dark:text-gray-200'
+                  : 'hover:bg-gray-600 text-gray-200'
               }`}
               role="option"
               aria-selected={index === selectedSuggestionIndex}

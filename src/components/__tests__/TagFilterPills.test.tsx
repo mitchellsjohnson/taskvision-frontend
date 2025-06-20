@@ -51,7 +51,7 @@ describe('TagFilterPills', () => {
     render(<TagFilterPills selectedTags={[]} onTagClick={mockOnTagClick} />);
     
     const firstTagName = Object.keys(DEFAULT_TAGS)[0];
-    const firstTag = screen.getByText(firstTagName);
+    const firstTag = screen.getByLabelText(`Tag: ${firstTagName}`);
     
     expect(firstTag).toHaveAttribute('aria-label', `Tag: ${firstTagName}`);
     expect(firstTag).toHaveAttribute('role', 'button');
@@ -63,8 +63,8 @@ describe('TagFilterPills', () => {
     
     // Check that at least one tag has an icon (SVG element)
     const firstTagName = Object.keys(DEFAULT_TAGS)[0];
-    const firstTagContainer = screen.getByText(firstTagName).closest('span');
-    const icon = firstTagContainer?.querySelector('svg');
+    const firstTagContainer = screen.getByLabelText(`Tag: ${firstTagName}`);
+    const icon = firstTagContainer.querySelector('svg');
     
     expect(icon).toBeInTheDocument();
   });
@@ -94,7 +94,7 @@ describe('TagFilterPills', () => {
     render(<TagFilterPills selectedTags={[]} onTagClick={mockOnTagClick} />);
     
     const firstTagName = Object.keys(DEFAULT_TAGS)[0];
-    const firstTag = screen.getByText(firstTagName);
+    const firstTag = screen.getByLabelText(`Tag: ${firstTagName}`);
     
     expect(firstTag).toHaveClass('opacity-75');
   });
@@ -103,7 +103,7 @@ describe('TagFilterPills', () => {
     const selectedTagName = Object.keys(DEFAULT_TAGS)[0];
     render(<TagFilterPills selectedTags={[selectedTagName]} onTagClick={mockOnTagClick} />);
     
-    const selectedTag = screen.getByText(selectedTagName);
+    const selectedTag = screen.getByLabelText(`Tag: ${selectedTagName}`);
     expect(selectedTag).toHaveClass('opacity-100');
   });
 }); 

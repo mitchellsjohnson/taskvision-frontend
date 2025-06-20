@@ -33,7 +33,7 @@ export const ArrowControls: React.FC<ArrowControlsProps> = ({
     } else {
       // LIT task moving up
       if (index === 0) {
-        // Move to bottom of MIT list (this will handle MIT limit by bumping lowest MIT task to LIT)
+        // Move to end of MIT list (becomes MIT, even if it pushes MIT beyond 3)
         onMove(taskId, 'MIT', mitListLength);
       } else {
         // Move up within LIT
@@ -48,7 +48,7 @@ export const ArrowControls: React.FC<ArrowControlsProps> = ({
     if (listId === 'MIT') {
       // MIT task moving down
       if (index === mitListLength - 1) {
-        // Move to top of LIT list
+        // Move to top of LIT list (becomes LIT)
         onMove(taskId, 'LIT', 0);
       } else {
         // Move down within MIT
@@ -65,20 +65,20 @@ export const ArrowControls: React.FC<ArrowControlsProps> = ({
 
   const getUpTooltip = () => {
     if (listId === 'MIT') {
-      return 'Move up';
+      return 'Move up in MIT';
     } else {
       if (index === 0) {
         return mitListLength >= 3 ? 'Move to MIT (bumps lowest MIT to LIT)' : 'Move to MIT';
       }
-      return 'Move up';
+      return 'Move up in LIT';
     }
   };
 
   const getDownTooltip = () => {
     if (listId === 'MIT') {
-      return index === mitListLength - 1 ? 'Move to LIT' : 'Move down';
+      return index === mitListLength - 1 ? 'Move to LIT' : 'Move down in MIT';
     } else {
-      return 'Move down';
+      return 'Move down in LIT';
     }
   };
 

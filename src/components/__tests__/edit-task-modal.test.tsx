@@ -27,25 +27,25 @@ describe('EditTaskModal', () => {
   });
 
   it('does not render when isOpen is false', () => {
-    render(<EditTaskModal isOpen={false} onClose={mockOnClose} onSave={mockOnSave} task={null} allTags={[]} />);
+    render(<EditTaskModal isOpen={false} onClose={mockOnClose} onSave={mockOnSave} task={null} allTags={[]} mitTaskCount={0} litTaskCount={0} />);
     expect(screen.queryByText('Task Title')).toBeNull();
   });
 
   it('renders in "create" mode with empty fields', () => {
-    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={null} allTags={[]} />);
+    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={null} allTags={[]} mitTaskCount={2} litTaskCount={5} />);
     expect(screen.getByPlaceholderText('Task Title')).toHaveValue('');
     expect(screen.getByPlaceholderText('Add task details...')).toHaveValue('');
   });
 
   it('renders in "edit" mode with pre-filled fields', () => {
-    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={mockTask} allTags={[]} />);
+    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={mockTask} allTags={[]} mitTaskCount={2} litTaskCount={5} />);
     expect(screen.getByPlaceholderText('Task Title')).toHaveValue(mockTask.title);
     expect(screen.getByPlaceholderText('Add task details...')).toHaveValue(mockTask.description);
     expect(screen.getByLabelText('Due Date')).toHaveValue('2023-01-01');
   });
 
   it('calls onSave with updated data when save is clicked', () => {
-    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={mockTask} allTags={[]} />);
+    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={mockTask} allTags={[]} mitTaskCount={2} litTaskCount={5} />);
     
     const titleInput = screen.getByPlaceholderText('Task Title');
     fireEvent.change(titleInput, { target: { value: 'Updated Title' } });
@@ -58,7 +58,7 @@ describe('EditTaskModal', () => {
   });
 
   it('calls onClose when cancel button is clicked', () => {
-    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={mockTask} allTags={[]} />);
+    render(<EditTaskModal isOpen={true} onClose={mockOnClose} onSave={mockOnSave} task={mockTask} allTags={[]} mitTaskCount={2} litTaskCount={5} />);
     const cancelButton = screen.getByText('Cancel');
     fireEvent.click(cancelButton);
     expect(mockOnClose).toHaveBeenCalled();

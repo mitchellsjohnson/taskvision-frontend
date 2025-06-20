@@ -21,7 +21,7 @@ describe('Tag', () => {
       // Check for icon presence (SVG element)
       const icon = tag.querySelector('svg');
       expect(icon).toBeInTheDocument();
-      expect(icon).toHaveClass('w-3', 'h-3', 'text-gray-400');
+      expect(icon).toHaveClass('w-4', 'h-4', 'text-gray-400');
     });
 
     it('renders all default tags with their respective icons', () => {
@@ -187,11 +187,11 @@ describe('Tag', () => {
   });
 
   describe('Dark mode compatibility', () => {
-    it('applies dark mode text classes', () => {
+    it('applies consistent text color', () => {
       render(<Tag label="Leader" type="default" />);
       
       const tag = screen.getByRole('listitem');
-      expect(tag).toHaveClass('text-gray-900', 'dark:text-white');
+      expect(tag).toHaveClass('text-white');
     });
   });
 }); 

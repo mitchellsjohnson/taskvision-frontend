@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Task } from '../types';
 import { RESERVED_TAGS, DEFAULT_TAGS } from '../constants/tags';
-import { ArrowControls } from './ArrowControls';
-import { PowerControls } from './PowerControls';
 import { Tooltip } from './Tooltip';
-import { ExpandableDescription } from './ExpandableDescription';
 import { Tag } from './Tag';
+import { ArrowControls } from './ArrowControls';
+import { cn } from '../lib/utils';
 
 export interface TaskCardProps {
   task: Task;
@@ -22,6 +21,46 @@ export interface TaskCardProps {
   litListLength?: number;
   flashingTasks?: Set<string>;
 }
+
+// Helper function to format date as display string
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString + 'T00:00:00');
+  return date.toLocaleDateString();
+};
+
+// Helper function to get status color
+const getStatusColor = (status: Task['status']) => {
+  const statusColors: { [key in Task['status']]: string } = {
+    'Open': 'text-blue-300',
+    'Completed': 'text-green-300',
+    'Canceled': 'text-red-300',
+    'Waiting': 'text-yellow-300',
+  };
+  return statusColors[status] || statusColors['Open'];
+};
+
+// Helper function to get due date color and icon
+const getDueDateColorAndIcon = (dueDate?: string) => {
+  if (!dueDate) return { color: 'text-gray-400', icon: null };
+  
+  const today = new Date();
+  const date = new Date(dueDate + 'T00:00:00');
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+
+  if (date < today) {
+    return { 
+      color: 'text-red-400', 
+      icon: <span className="inline-block w-2 h-2 bg-red-400 mr-1" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></span>
+    }; // Past due - red triangle
+  } else if (date.getTime() === today.getTime()) {
+    return { 
+      color: 'text-yellow-400', 
+      icon: <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full mr-1"></span>
+    }; // Due today - yellow circle
+  }
+  return { color: 'text-gray-400', icon: null }; // Future or no due date
+};
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
@@ -40,6 +79,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(task.title);
   const [editedDescription, setEditedDescription] = useState(task.description || '');
+  const [isHovered, setIsHovered] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (!isEditing) {
@@ -48,7 +89,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     }
   }, [isEditing, task.title, task.description]);
 
-  const { attributes, listeners, setNodeRef: setDragNodeRef, isDragging } = useDraggable({
+  const { setNodeRef: setDragNodeRef, isDragging, transform, attributes, listeners } = useDraggable({
     id: task.TaskId,
     data: {
       type: 'Task',
@@ -70,35 +111,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     setDropNodeRef(node);
   };
 
-  // No transform applied - tasks stay in place during drag
-  const style = {};
+  // Apply transform for drag feedback
+  const style = transform ? {
+    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+  } : {};
   
-  const isBeingDragged = isDragging && !isOverlay;
-
-  const getBaseClasses = () => 'p-4 rounded-lg shadow-md border-l-4 transition-all duration-300 ease-in-out transform relative';
-
-  const getCardStyleClasses = () => {
-    const isFlashing = flashingTasks?.has(task.TaskId) || false;
-    
-    if (isOverlay) {
-      return 'bg-gray-700 border-blue-500 shadow-2xl';
-    }
-    
-    const baseClasses = `
-      hover:shadow-lg
-      ${isBeingDragged ? 'opacity-30' : 'opacity-100'}
-      border-gray-500
-      transition-all duration-500 ease-out
-    `;
-    
-    const backgroundClass = isFlashing 
-      ? 'bg-blue-400/30' 
-      : 'bg-gray-800';
-    
-    return `${baseClasses} ${backgroundClass}`;
-  };
-  
-  const cardClasses = `${getBaseClasses()} ${getCardStyleClasses()}`;
+  const dueDateColor = getDueDateColorAndIcon(task.dueDate);
 
   const handleSave = () => {
     onUpdate(task.TaskId, { title: editedTitle, description: editedDescription });
@@ -109,9 +127,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     setIsEditing(false);
   };
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditing(true);
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave();
+    } else if (e.key === 'Escape') {
+      handleCancel();
+    }
   };
 
   const handlePencilClick = (e: React.MouseEvent) => {
@@ -126,73 +147,207 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       ref={setNodeRef}
       style={style}
       id={`task-${task.TaskId}`}
-      className={cardClasses}
+      className={cn(
+        "bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-700/50 transition-all duration-500 relative",
+        {
+          'shadow-lg shadow-blue-500/20': isOverlay,
+          'bg-gray-700/30 border-blue-500/50': isDragging,
+          'bg-blue-500/20 border-blue-400/50 shadow-md shadow-blue-500/30': flashingTasks?.has(task.TaskId),
+        }
+      )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      data-testid="task-card"
+      tabIndex={0}
     >
-      <div className="relative z-10 flex items-start space-x-4">
-        {/* Drag Handle and Priority */}
-        <div {...attributes} {...listeners} className="flex-shrink-0 text-gray-500 cursor-grab touch-none">
-          <div className="flex flex-col items-center justify-center pt-1 text-gray-400">
-            <span className="font-bold text-lg">{task.priority}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          </div>
-        </div>
-
-        {/* Task Content */}
-        <div className="flex-grow">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex items-center gap-2">
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editedTitle}
-                  onChange={(e) => setEditedTitle(e.target.value)}
-                  className="bg-gray-700 text-4xl font-bold text-white rounded-md p-1 -m-1 w-full"
-                  autoFocus
-                />
-              ) : (
-                <h3 className="text-4xl font-bold text-white" onClick={handleEditClick}>{task.title}</h3>
-              )}
-              {getTaskStatusDetails(task).icon && !isEditing && <div className="text-lg">{getTaskStatusDetails(task).icon}</div>}
+      <div className="p-3 sm:p-4">
+        <div className="flex items-start gap-3">
+          {/* Visual Drag Handle */}
+          <div 
+            className="flex flex-col items-center justify-center py-1 cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <div className="flex flex-col gap-0.5">
+              <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
+              <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
+              <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
+              <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
+              <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
+              <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
             </div>
-            <div className="flex items-center space-x-2">
+          </div>
+
+          {/* Priority number - Large and prominent */}
+          <div 
+            className={cn(
+              "px-3 py-2 rounded-full text-xl font-bold border-2 flex-shrink-0 shadow-md",
+              task.isMIT 
+                ? "bg-green-600/40 text-green-100 border-green-500/70" 
+                : "bg-blue-600/40 text-blue-100 border-blue-500/70"
+            )}
+          >
+            {task.priority}
+          </div>
+
+          {/* Main Content Area */}
+          <div className="flex-1 min-w-0 flex items-start justify-between">
+            {/* Left content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                {/* Title and list indicator */}
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className={cn(
+                    "text-sm font-medium px-2 py-0.5 rounded shrink-0",
+                    task.isMIT 
+                      ? "bg-green-600/20 text-green-300" 
+                      : "bg-blue-600/20 text-blue-300"
+                  )}>
+                    {task.isMIT ? 'MIT' : 'LIT'}
+                  </span>
+                  
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editedTitle}
+                        onChange={(e) => setEditedTitle(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="bg-gray-700 text-white p-1.5 rounded flex-1 text-3xl font-bold border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        autoFocus
+                      />
+                    ) : (
+                      <h3 className="text-3xl font-bold truncate text-white">{task.title}</h3>
+                    )}
+                    
+                    {/* Expand/Collapse button for details */}
+                    {(task.description || (task.tags && task.tags.length > 0)) && !isEditing && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsExpanded(!isExpanded);
+                        }}
+                        className="text-gray-400 hover:text-white transition-colors p-2 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center shrink-0"
+                        title={isExpanded ? "Hide details" : "Show details"}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            
+            {/* Always visible metadata - due date and status */}
+            <div className="flex items-center gap-2 mb-1.5 text-sm text-gray-400">
+              {task.dueDate && (
+                <span className={`flex items-center ${dueDateColor.color}`}>
+                  {dueDateColor.icon}
+                  Due: {formatDate(task.dueDate)}
+                </span>
+              )}
+              <span className={getStatusColor(task.status)}>
+                {task.status}
+              </span>
+            </div>
+            
+            {/* Expandable details */}
+            {isExpanded && (task.description || (task.tags && task.tags.length > 0)) && (
+              <div className="space-y-2 mb-2">
+                {/* Description */}
+                {task.description && (
+                  <div>
+                    {isEditing ? (
+                      <textarea
+                        value={editedDescription}
+                        onChange={(e) => setEditedDescription(e.target.value)}
+                        className="bg-gray-700 text-white p-1.5 rounded w-full text-sm border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+                        rows={2}
+                        placeholder="Description..."
+                      />
+                    ) : (
+                      <p className="text-sm text-gray-300">{task.description}</p>
+                    )}
+                  </div>
+                )}
+                
+                {/* Tags */}
+                {task.tags && task.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {task.tags.map((tag, index) => (
+                      <Tag
+                        key={index}
+                        label={tag}
+                        type={DEFAULT_TAGS[tag] ? 'default' : 'custom'}
+                        onClick={onTagClick && !isOverlay ? () => onTagClick(tag) : undefined}
+                        className="text-sm"
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Collapsed indicator for tasks with hidden details */}
+            {!isExpanded && (task.description || (task.tags && task.tags.length > 0)) && !isEditing && (
+              <div className="flex items-center gap-1 text-sm text-gray-500 mb-1.5">
+                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                <span>Has details</span>
+              </div>
+            )}
+          </div>
+
+            {/* Action buttons - show on hover or when editing */}
+            <div className={`flex items-center space-x-1.5 transition-opacity duration-200 ${isHovered || isEditing ? 'opacity-100' : 'opacity-0'}`}>
               {isEditing ? (
                 <>
                   <button
                     onClick={handleSave}
-                    className="text-gray-400 hover:text-green-400 transition-colors"
+                    className="text-gray-400 hover:text-green-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Save Changes"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </button>
                   <button
                     onClick={handleCancel}
-                    className="text-gray-400 hover:text-red-400 transition-colors"
+                    className="text-gray-400 hover:text-red-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                     title="Cancel"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </>
               ) : (
                 <>
+                  {/* Arrow Controls for manual reordering */}
+                  {onMove && listId && index !== undefined && mitListLength !== undefined && litListLength !== undefined && (
+                    <ArrowControls
+                      taskId={task.TaskId}
+                      listId={listId}
+                      index={index}
+                      mitListLength={mitListLength}
+                      litListLength={litListLength}
+                      onMove={onMove}
+                    />
+                  )}
+                  
                   <Tooltip text="Edit Task">
                     <button
                       onClick={handlePencilClick}
-                      className="text-gray-400 hover:text-blue-400 transition-colors"
+                      className="text-gray-400 hover:text-blue-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       data-testid="edit-task-button"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L14.732 3.732z" />
                       </svg>
                     </button>
@@ -200,10 +355,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   <Tooltip text="Mark as Completed">
                     <button
                       onClick={() => onUpdate(task.TaskId, { status: 'Completed' })}
-                      className="text-gray-400 hover:text-green-400 transition-colors"
+                      className="text-gray-400 hover:text-green-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       data-testid="complete-task-button"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </button>
@@ -211,10 +366,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   <Tooltip text="Cancel Task">
                     <button
                       onClick={() => onUpdate(task.TaskId, { status: 'Canceled' })}
-                      className="text-gray-400 hover:text-red-400 transition-colors"
+                      className="text-gray-400 hover:text-red-400 transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                       data-testid="cancel-task-button"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
@@ -223,118 +378,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               )}
             </div>
           </div>
-          {isEditing ? (
-            <textarea
-              value={editedDescription}
-              onChange={(e) => setEditedDescription(e.target.value)}
-              className="bg-gray-700 text-gray-300 mb-4 text-lg rounded-md p-1 -m-1 w-full"
-              rows={3}
-            />
-          ) : (
-            task.description && (
-              <div className="mb-4" onClick={handleEditClick}>
-                <ExpandableDescription 
-                  description={task.description} 
-                  className="text-lg cursor-pointer"
-                />
-              </div>
-            )
-          )}
-          <div className="flex justify-between items-end text-sm text-gray-400">
-            <div className="flex flex-col items-start">
-              {task.dueDate && (
-                <div className="flex items-center space-x-2 mb-2">
-                  <span className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                      />
-                    </svg>
-                    {new Date(task.dueDate + 'T00:00:00').toLocaleDateString()}
-                  </span>
-                </div>
-              )}
-              {task.tags && task.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2" role="list" aria-label="Task tags">
-                  {task.tags.map(tag => (
-                    <Tag
-                      key={tag}
-                      label={tag}
-                      type={DEFAULT_TAGS[tag] ? 'default' : 'custom'}
-                      onClick={onTagClick && !isOverlay ? () => onTagClick(tag) : undefined}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center space-x-2">
-              {onMove && listId && index !== undefined && mitListLength !== undefined && litListLength !== undefined && (
-                <>
-                  <PowerControls
-                    taskId={task.TaskId}
-                    listId={listId}
-                    mitListLength={mitListLength}
-                    litListLength={litListLength}
-                    onMove={onMove}
-                  />
-                  <ArrowControls
-                    taskId={task.TaskId}
-                    listId={listId}
-                    index={index}
-                    mitListLength={mitListLength}
-                    litListLength={litListLength}
-                    onMove={onMove}
-                  />
-                </>
-              )}
-              <span className={`px-2 py-1 rounded self-end ${getTaskStatusDetails(task).badgeClass}`}>
-                {task.status}
-              </span>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   );
-};
-
-const getTaskStatusDetails = (task: Task) => {
-  const { status, dueDate } = task;
-
-  const badgeClasses: { [key in Task['status']]: string } = {
-    Completed: 'bg-green-900 text-green-300',
-    Waiting: 'bg-yellow-900 text-yellow-300',
-    Canceled: 'bg-gray-800 text-gray-400 border border-gray-600',
-    Open: 'bg-blue-900 text-blue-300',
-  };
-  const badgeClass = badgeClasses[status] || badgeClasses['Open'];
-
-  let icon = null;
-  if (status === 'Completed') {
-    icon = <span title="Completed">✅</span>;
-  } else if (dueDate) {
-    const today = new Date();
-    const date = new Date(dueDate + 'T00:00:00');
-    today.setHours(0, 0, 0, 0);
-    date.setHours(0, 0, 0, 0);
-
-    if (date < today) {
-      icon = <span title="Overdue">⚠️</span>;
-    } else if (date.getTime() === today.getTime()) {
-      icon = <span title="Due today">📅</span>;
-    }
-  }
-
-  return { icon, badgeClass };
 };
 
 export const getTagColor = (tag: string) => {

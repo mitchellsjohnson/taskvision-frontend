@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TagInput } from '../TagInput';
 
@@ -111,7 +111,16 @@ describe('TagInput', () => {
       await userEvent.type(input, 'cr');
       
       await waitFor(() => {
-        expect(screen.queryByText('Creative')).not.toBeInTheDocument();
+        // The Creative tag should not appear in the suggestions dropdown
+        // but it will still be visible in the selected tags area
+        const suggestionsContainer = screen.queryByRole('listbox');
+        if (suggestionsContainer) {
+          const creativeInSuggestions = within(suggestionsContainer).queryByText('Creative');
+          expect(creativeInSuggestions).not.toBeInTheDocument();
+        } else {
+          // If no suggestions container is shown, that's also valid (no matching suggestions)
+          expect(suggestionsContainer).not.toBeInTheDocument();
+        }
       });
     });
 

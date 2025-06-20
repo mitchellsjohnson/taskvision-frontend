@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 // import { PageLayout } from '../components/page-layout';
 import { EditTaskModal } from '../components/edit-task-modal';
 // import { DarkModeToggle } from '../components/DarkModeToggle';
-import { TaskCard, TaskCardProps } from '../components/TaskCard';
+import { TaskCard } from '../components/TaskCard';
 import { SearchBar } from '../components/SearchBar';
 import { Task } from '../types';
 import {
@@ -15,7 +15,6 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
-  useDroppable,
   defaultDropAnimation,
   DropAnimation,
 } from '@dnd-kit/core';
@@ -32,44 +31,7 @@ import { getDateFilterRanges } from '../utils/dateFilters';
 const STATUS_OPTIONS = ['Open', 'Completed', 'Canceled', 'Waiting'] as const;
 type TaskStatus = (typeof STATUS_OPTIONS)[number];
 
-const DndTaskContainer: React.FC<{
-  id: string;
-  title: string;
-  items: Task[];
-  taskCardProps: Omit<TaskCardProps, 'task' | 'isOverlay'>;
-  dropIndicator: { overItemId: string; position: 'before' | 'after' } | null;
-}> = ({ id, title, items, taskCardProps, dropIndicator }) => {
-  const { setNodeRef } = useDroppable({ id });
 
-  const containerStyle = `p-4 rounded-lg bg-gray-800/50 relative flex flex-col gap-4 min-h-[200px]`;
-  const isOverEmptyContainer = items.length === 0 && dropIndicator?.overItemId === id;
-
-  return (
-    <div ref={setNodeRef} id={id} className={containerStyle}>
-      <h2 className="text-xl font-bold text-white">{title}</h2>
-      <div className="flex flex-col gap-4">
-        {isOverEmptyContainer && <DropIndicator />}
-        {items.map((task, index) => (
-          <React.Fragment key={task.TaskId}>
-            {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
-            <TaskCard 
-              task={task} 
-              {...taskCardProps}
-              listId={id.toUpperCase() as 'MIT' | 'LIT'}
-              index={index}
-            />
-            {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
-          </React.Fragment>
-        ))}
-        {items.length === 0 && !isOverEmptyContainer && (
-            <div className="flex-1 border-2 border-dashed border-gray-700 rounded-lg flex justify-center items-center text-gray-500 min-h-[100px]">
-              Drop tasks here
-            </div>
-          )}
-      </div>
-    </div>
-  );
-};
 
 export const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -162,16 +124,27 @@ export const TasksPage: React.FC = () => {
     setIsEditModalOpen(true);
   };
 
-  const mitTasks = useMemo(() => tasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority), [tasks]);
-  const litTasks = useMemo(() => tasks.filter(task => !task.isMIT).sort((a, b) => a.priority - b.priority), [tasks]);
+  const mitTasks = useMemo(() => {
+    const allMitTasks = tasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority);
+    // Enforce MIT limit: only first 3 tasks can be MIT
+    return allMitTasks.slice(0, 3);
+  }, [tasks]);
+  
+  const litTasks = useMemo(() => {
+    const allMitTasks = tasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority);
+    const allLitTasks = tasks.filter(task => !task.isMIT).sort((a, b) => a.priority - b.priority);
+    
+    // Any MIT tasks beyond the first 3 should be treated as LIT
+    const overflowMitTasks = allMitTasks.slice(3).map(task => ({ ...task, isMIT: false }));
+    
+    return [...overflowMitTasks, ...allLitTasks].sort((a, b) => a.priority - b.priority);
+  }, [tasks]);
   
   // Open tasks for search (excludes completed and canceled)
   const openTasks = useMemo(() => tasks.filter(task => task.status === 'Open' || task.status === 'Waiting'), [tasks]);
 
-  const containers = useMemo(() => [
-      { id: 'mit', title: 'MIT Tasks', items: mitTasks },
-      { id: 'lit', title: 'LIT Tasks', items: litTasks }
-  ], [mitTasks, litTasks]);
+  // Combined tasks for unified list (MIT first, then LIT)
+  const allTasks = useMemo(() => [...mitTasks, ...litTasks], [mitTasks, litTasks]);
 
   const handleMouseMove = (e: MouseEvent) => { pointerY.current = e.clientY; };
   const handleTouchMove = (e: TouchEvent) => { pointerY.current = e.touches[0].clientY; };
@@ -179,14 +152,14 @@ export const TasksPage: React.FC = () => {
   const flashTask = useCallback((taskId: string) => {
     setFlashingTasks(prev => new Set(prev).add(taskId));
     
-    // Remove the flash after animation completes
+    // Remove the flash after animation completes - longer duration for subtle fade
     setTimeout(() => {
       setFlashingTasks(prev => {
         const newSet = new Set(prev);
         newSet.delete(taskId);
         return newSet;
       });
-    }, 650); // 150ms delay + 500ms fade
+    }, 1200); // 1.2 seconds for a gentle, noticeable fade
   }, []);
 
   const sensors = useSensors(
@@ -194,11 +167,18 @@ export const TasksPage: React.FC = () => {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const findContainer = (id: string) => {
-    if (containers.some(c => c.id === id)) {
-      return containers.find(c => c.id === id);
-    }
-    return containers.find(c => c.items.some(i => i.TaskId === id));
+  const findTaskInUnifiedList = (taskId: string) => {
+    const taskIndex = allTasks.findIndex(task => task.TaskId === taskId);
+    if (taskIndex === -1) return null;
+    
+    const task = allTasks[taskIndex];
+    return {
+      task,
+      index: taskIndex,
+      globalIndex: taskIndex,
+      isMIT: task.isMIT,
+      localIndex: task.isMIT ? mitTasks.findIndex(t => t.TaskId === taskId) : litTasks.findIndex(t => t.TaskId === taskId)
+    };
   };
   
   const handleDragStart = (event: DragStartEvent) => {
@@ -224,74 +204,33 @@ export const TasksPage: React.FC = () => {
       return;
     }
 
-    const overContainer = findContainer(overId);
-    if (!overContainer) {
+    const activeTask = findTaskInUnifiedList(activeId);
+    const overTask = findTaskInUnifiedList(overId);
+    
+    if (!activeTask || !overTask) {
       setDropIndicator(null);
       return;
     }
+
+    const overRect = over.rect;
+    const isBelow = (pointerY.current - overRect.top) > (overRect.height / 2);
     
-    const overIsContainer = overContainer.id === overId;
-    if (overIsContainer) {
-        // Check MIT limit - don't allow dropping into MIT if it would exceed 3 tasks
-        if (overContainer.id === 'mit') {
-            const activeContainer = findContainer(activeId);
-            if (activeContainer && activeContainer.id !== 'mit' && overContainer.items.length >= 3) {
-                setDropIndicator(null);
-                return;
-            }
-        }
-
-        if (overContainer.items.length === 0) {
-            setDropIndicator({ overItemId: overId, position: 'before' });
-        } else {
-            const overRect = over.rect;
-            const isBelowMidpoint = (pointerY.current - overRect.top) > (overRect.height / 2);
-            const firstItem = overContainer.items[0];
-            const lastItem = overContainer.items[overContainer.items.length - 1];
-
-            setDropIndicator({
-                overItemId: isBelowMidpoint ? lastItem.TaskId : firstItem.TaskId,
-                position: isBelowMidpoint ? 'after' : 'before',
-            });
-        }
+    // Calculate what the target position would be
+    const targetIndex = isBelow ? overTask.globalIndex + 1 : overTask.globalIndex;
+    
+    // Don't show indicator if dropping in the same position or adjacent
+    if (targetIndex === activeTask.globalIndex || targetIndex === activeTask.globalIndex + 1) {
+        setDropIndicator(null);
         return;
     }
 
-    const overItem = overContainer.items.find(i => i.TaskId === overId);
-    if (overItem) {
-        const overRect = over.rect;
-        const isBelow = (pointerY.current - overRect.top) > (overRect.height / 2);
-        
-        // Don't show indicator if dropping in the same position
-        const activeContainer = findContainer(activeId);
-        if (activeContainer && activeContainer.id === overContainer.id) {
-            const activeIndex = activeContainer.items.findIndex(i => i.TaskId === activeId);
-            const overIndex = overContainer.items.findIndex(i => i.TaskId === overId);
-            
-            // Calculate what the target index would be
-            const targetIndex = isBelow ? overIndex + 1 : overIndex;
-            
-            // If the target index would be the same as current position or adjacent, don't show indicator
-            if (targetIndex === activeIndex || targetIndex === activeIndex + 1) {
-                setDropIndicator(null);
-                return;
-            }
-        }
+    // Allow dropping LIT task into MIT positions even if it would exceed 3 tasks
+    // The handleDragEnd function will handle bumping the lowest MIT task to LIT
 
-        // Check MIT limit - don't allow dropping into MIT if it would exceed 3 tasks
-        if (overContainer.id === 'mit' && activeContainer && activeContainer.id !== 'mit' && overContainer.items.length >= 3) {
-            setDropIndicator(null);
-            return;
-        }
-
-        setDropIndicator({
-            overItemId: overId,
-            position: isBelow ? 'after' : 'before'
-        });
-        return;
-    }
-    
-    setDropIndicator(null);
+    setDropIndicator({
+        overItemId: overId,
+        position: isBelow ? 'after' : 'before'
+    });
   };
   
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
@@ -307,100 +246,88 @@ export const TasksPage: React.FC = () => {
         return;
     }
 
-    const activeContainer = findContainer(active.id as string);
-    if (!activeContainer) {
-        cleanup();
-        return;
-    }
-
-    const overId = dropIndicator?.overItemId || over.id as string;
-    const targetContainer = findContainer(overId);
-    if (!targetContainer) {
-        cleanup();
-        return;
-    }
-
-    const activeItemIndex = activeContainer.items.findIndex(i => i.TaskId === active.id);
-    const movedItem = activeContainer.items[activeItemIndex];
-
-    if (!movedItem) {
-        cleanup();
-        return;
-    }
-
-    // Check MIT limit - prevent drop if it would exceed 3 tasks in MIT
-    if (targetContainer.id === 'mit' && activeContainer.id !== 'mit' && targetContainer.items.length >= 3) {
-        cleanup();
-        return;
-    }
+    const activeTask = findTaskInUnifiedList(active.id as string);
+    const overTask = findTaskInUnifiedList(over.id as string);
     
-    let targetIndex: number | undefined;
-
-    if (dropIndicator) {
-        const indicatorItemIndex = targetContainer.items.findIndex(i => i.TaskId === dropIndicator.overItemId);
-        if (indicatorItemIndex !== -1) {
-            targetIndex = dropIndicator.position === 'after' ? indicatorItemIndex + 1 : indicatorItemIndex;
-        } else if (targetContainer.id === dropIndicator.overItemId) {
-            targetIndex = 0;
-        } else {
-            targetIndex = targetContainer.items.length;
-        }
-    } else {
-        const overIndex = targetContainer.items.findIndex(i => i.TaskId === over.id);
-        targetIndex = overIndex !== -1 ? overIndex : targetContainer.items.length;
-    }
-
-    if (typeof targetIndex !== 'number') {
+    if (!activeTask || !overTask) {
         cleanup();
         return;
     }
 
-    const finalTargetIndex = targetIndex;
+    // Calculate target position
+    let targetGlobalIndex: number;
+    if (dropIndicator) {
+        const dropTask = findTaskInUnifiedList(dropIndicator.overItemId);
+        if (!dropTask) {
+            cleanup();
+            return;
+        }
+        targetGlobalIndex = dropIndicator.position === 'after' ? dropTask.globalIndex + 1 : dropTask.globalIndex;
+    } else {
+        targetGlobalIndex = overTask.globalIndex;
+    }
+
+    // Allow moving LIT task to MIT section even if it would exceed the limit
+    // The overflow handling below will bump the lowest MIT task to LIT
+
+    // MIT section is ALWAYS the first 3 positions (0, 1, 2)
+    // LIT section starts after the MIT section
+    const mitSectionSize = Math.min(mitTasks.length, 3);
+    
+    // Calculate the new MIT status based on target position
+    let newIsMIT: boolean;
+    let newLocalIndex: number;
+    
+    if (targetGlobalIndex <= mitSectionSize) {
+        // Dropping in MIT section (positions 0-2, or within current MIT if less than 3)
+        newIsMIT = true;
+        newLocalIndex = targetGlobalIndex;
+    } else {
+        // Dropping in LIT section
+        newIsMIT = false;
+        newLocalIndex = targetGlobalIndex - mitSectionSize;
+    }
 
     setTasks(currentTasks => {
-      // Create fresh lists from the most current state to avoid stale closures.
-      const oldMitTasks = currentTasks.filter(t => t.isMIT).sort((a, b) => a.priority - b.priority);
-      const oldLitTasks = currentTasks.filter(t => !t.isMIT).sort((a, b) => a.priority - b.priority);
-      
-      let newMitTasks = [...oldMitTasks];
-      let newLitTasks = [...oldLitTasks];
-
-      // Find the correct index in the fresh sorted arrays
-      const freshActiveIndex = activeContainer.id === 'mit' 
-        ? newMitTasks.findIndex(t => t.TaskId === active.id)
-        : newLitTasks.findIndex(t => t.TaskId === active.id);
-
-      if (activeContainer.id === targetContainer.id) {
-        // Same container move - use splice-based approach for clearer logic
-        if (targetContainer.id === 'mit') {
-          const [moved] = newMitTasks.splice(freshActiveIndex, 1);
-          newMitTasks.splice(finalTargetIndex, 0, moved);
-        } else {
-          const [moved] = newLitTasks.splice(freshActiveIndex, 1);
-          newLitTasks.splice(finalTargetIndex, 0, moved);
-        }
-      } else {
-        const sourceList = activeContainer.id === 'mit' ? newMitTasks : newLitTasks;
-        const [moved] = sourceList.splice(freshActiveIndex, 1);
+        const newMitTasks = [...mitTasks];
+        const newLitTasks = [...litTasks];
         
-        const destinationList = targetContainer.id === 'mit' ? newMitTasks : newLitTasks;
-        destinationList.splice(finalTargetIndex, 0, { ...moved, isMIT: targetContainer.id === 'mit' });
-      }
-
-      // Reprioritize both lists completely, just like the backend does.
-      newMitTasks.forEach((task, index) => { task.priority = index; });
-      newLitTasks.forEach((task, index) => { task.priority = index; });
-      
-      return [...newMitTasks, ...newLitTasks];
+        // Remove from current position
+        if (activeTask.isMIT) {
+            newMitTasks.splice(activeTask.localIndex, 1);
+        } else {
+            newLitTasks.splice(activeTask.localIndex, 1);
+        }
+        
+        // Insert at new position
+        const updatedTask = { ...activeTask.task, isMIT: newIsMIT };
+        if (newIsMIT) {
+            newMitTasks.splice(newLocalIndex, 0, updatedTask);
+            // If MIT list now has > 3 tasks, move the last one to LIT
+            if (newMitTasks.length > 3) {
+                const bumpedTask = newMitTasks.pop();
+                if (bumpedTask) {
+                    newLitTasks.unshift({ ...bumpedTask, isMIT: false });
+                }
+            }
+        } else {
+            newLitTasks.splice(newLocalIndex, 0, updatedTask);
+        }
+        
+        // Re-index priorities for both lists (1-based)
+        newMitTasks.forEach((task, index) => { task.priority = index + 1; });
+        newLitTasks.forEach((task, index) => { task.priority = index + 1; });
+        
+        return [...newMitTasks, ...newLitTasks];
     });
 
-    await updateTask(movedItem.TaskId, {
-      isMIT: targetContainer.id === 'mit',
-      position: finalTargetIndex,
+    await updateTask(activeTask.task.TaskId, {
+        isMIT: newIsMIT,
+        position: newLocalIndex,
     });
     
     // Flash the moved task
-    flashTask(movedItem.TaskId);
+    flashTask(activeTask.task.TaskId);
     
     /*
       Do NOT call fetchTasks() immediately here.
@@ -459,9 +386,9 @@ export const TasksPage: React.FC = () => {
         newLit.splice(newIndex, 0, updatedTask);
       }
       
-      // Re-index priorities for both lists
-      newMit.forEach((t, i) => { t.priority = i; });
-      newLit.forEach((t, i) => { t.priority = i; });
+      // Re-index priorities for both lists (1-based)
+      newMit.forEach((t, i) => { t.priority = i + 1; });
+      newLit.forEach((t, i) => { t.priority = i + 1; });
       
       return [...newMit, ...newLit];
     });
@@ -495,9 +422,9 @@ export const TasksPage: React.FC = () => {
   }, [tasks]);
 
   return (
-    <div className="p-4 md:p-8 bg-gray-900 text-white min-h-screen">
+    <div className="p-2 sm:p-3 lg:p-6 bg-gray-900 text-white min-h-screen">
       {/* <DarkModeToggle /> */}
-      <header className="flex justify-center mb-6">
+      <header className="flex justify-center mb-3 sm:mb-4">
         <SearchBar 
           tasks={openTasks}
           onResultClick={(taskId) => {
@@ -509,14 +436,14 @@ export const TasksPage: React.FC = () => {
         />
       </header>
       
-      <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-        <div className="flex-1 min-w-[300px]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3 sm:gap-4">
+        <div className="w-full sm:flex-1 sm:min-w-[300px]">
           <TagFilterPills
             selectedTags={tagFilter}
             onTagClick={handleTagFilterChange}
           />
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
           <DateFilter
             selectedOption={dateFilter}
             onSelectionChange={setDateFilter}
@@ -533,7 +460,7 @@ export const TasksPage: React.FC = () => {
               setSelectedTask(null);
               setIsEditModalOpen(true);
             }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors min-h-[44px] flex-1 sm:flex-none"
           >
             + New Task
           </button>
@@ -547,9 +474,187 @@ export const TasksPage: React.FC = () => {
         onDragEnd={handleDragEnd}
         onDragCancel={handleDragCancel}
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <DndTaskContainer id="mit" items={mitTasks} title="MIT Tasks" taskCardProps={taskCardProps} dropIndicator={dropIndicator} />
-          <DndTaskContainer id="lit" items={litTasks} title="LIT Tasks" taskCardProps={taskCardProps} dropIndicator={dropIndicator} />
+        {/* Mobile: Single Column Layout */}
+        <div className="lg:hidden max-w-4xl mx-auto">
+          {/* Section Headers */}
+          <div className="mb-4 flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-green-600 rounded"></div>
+              <span className="text-sm font-medium text-white">MIT Tasks ({mitTasks.length}/3)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-blue-600 rounded"></div>
+              <span className="text-sm font-medium text-white">LIT Tasks ({litTasks.length})</span>
+            </div>
+          </div>
+
+          {/* Single Unified List */}
+          <div className="space-y-2">
+            {/* MIT Tasks First */}
+            {mitTasks.map((task, index) => (
+              <React.Fragment key={task.TaskId}>
+                {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
+                <TaskCard 
+                  task={task} 
+                  {...taskCardProps}
+                  listId="MIT"
+                  index={index}
+                />
+                {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
+              </React.Fragment>
+            ))}
+            
+            {/* Visual separator between MIT and LIT */}
+            {mitTasks.length > 0 && litTasks.length > 0 && (
+              <div className="relative py-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-600"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-gray-900 px-3 text-gray-400">Less Important Tasks</span>
+                </div>
+              </div>
+            )}
+
+            {/* LIT Tasks */}
+            {litTasks.map((task, index) => (
+              <React.Fragment key={task.TaskId}>
+                {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
+                <TaskCard 
+                  task={task} 
+                  {...taskCardProps}
+                  listId="LIT"
+                  index={index}
+                />
+                {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
+              </React.Fragment>
+            ))}
+
+            {/* Empty State */}
+            {mitTasks.length === 0 && litTasks.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-gray-400 mb-4">
+                  <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-gray-300 mb-2">No tasks yet</h3>
+                <p className="text-gray-500 mb-4">Get started by creating your first task</p>
+                <button
+                  onClick={() => {
+                    setSelectedTask(null);
+                    setIsEditModalOpen(true);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+                >
+                  Create First Task
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop: Two Column Layout */}
+        <div className="hidden lg:block">
+          <div className="grid grid-cols-2 gap-6">
+            {/* MIT Column */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-5 h-5 bg-green-600 rounded"></div>
+                <h2 className="text-xl font-bold text-white">MIT - Most Important Tasks</h2>
+                <span className="text-sm font-medium text-white bg-green-600/20 px-2 py-1 rounded">
+                  {mitTasks.length}/3
+                </span>
+              </div>
+              
+              <div className="space-y-3 min-h-[200px]">
+                {mitTasks.map((task, index) => (
+                  <React.Fragment key={task.TaskId}>
+                    {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
+                    <TaskCard 
+                      task={task} 
+                      {...taskCardProps}
+                      listId="MIT"
+                      index={index}
+                    />
+                    {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
+                  </React.Fragment>
+                ))}
+                
+                {/* MIT Empty State */}
+                {mitTasks.length === 0 && (
+                  <div className="text-center py-8 border-2 border-dashed border-green-600/30 rounded-lg">
+                    <div className="text-green-400/60 mb-2">
+                      <svg className="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                    <p className="text-green-300/60 text-sm">No MIT tasks yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* LIT Column */}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-5 h-5 bg-blue-600 rounded"></div>
+                <h2 className="text-xl font-bold text-white">LIT - Less Important Tasks</h2>
+                <span className="text-sm font-medium text-white bg-blue-600/20 px-2 py-1 rounded">
+                  {litTasks.length}
+                </span>
+              </div>
+              
+              <div className="space-y-3 min-h-[200px]">
+                {litTasks.map((task, index) => (
+                  <React.Fragment key={task.TaskId}>
+                    {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
+                    <TaskCard 
+                      task={task} 
+                      {...taskCardProps}
+                      listId="LIT"
+                      index={index}
+                    />
+                    {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
+                  </React.Fragment>
+                ))}
+                
+                {/* LIT Empty State */}
+                {litTasks.length === 0 && (
+                  <div className="text-center py-8 border-2 border-dashed border-blue-600/30 rounded-lg">
+                    <div className="text-blue-400/60 mb-2">
+                      <svg className="mx-auto h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4v16m8-8H4" />
+                      </svg>
+                    </div>
+                    <p className="text-blue-300/60 text-sm">No LIT tasks yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Empty State - when both columns are empty */}
+          {mitTasks.length === 0 && litTasks.length === 0 && (
+            <div className="text-center py-12 mt-8">
+              <div className="text-gray-400 mb-4">
+                <svg className="mx-auto h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">No tasks yet</h3>
+              <p className="text-gray-500 mb-4">Get started by creating your first task</p>
+              <button
+                onClick={() => {
+                  setSelectedTask(null);
+                  setIsEditModalOpen(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              >
+                Create First Task
+              </button>
+            </div>
+          )}
         </div>
 
         <DragOverlay dropAnimation={dropAnimation}>
@@ -564,6 +669,8 @@ export const TasksPage: React.FC = () => {
         task={selectedTask}
         onSave={handleSaveTask}
         allTags={allTags}
+        mitTaskCount={mitTasks.length}
+        litTaskCount={litTasks.length}
       />
     </div>
   );

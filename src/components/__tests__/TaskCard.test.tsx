@@ -58,20 +58,46 @@ describe('TaskCard', () => {
   it('renders task title, description, and priority', () => {
     renderTaskCard();
     expect(screen.getByText('Test Task')).toBeInTheDocument();
-    expect(screen.getByText('This is a test description.')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
+    
+    // Description is hidden by default, need to expand first
+    expect(screen.getByText('Has details')).toBeInTheDocument();
+    
+    // Click to expand details
+    const expandButton = screen.getByTitle('Show details');
+    fireEvent.click(expandButton);
+    
+    // Now description should be visible
+    expect(screen.getByText('This is a test description.')).toBeInTheDocument();
   });
 
-  it('renders task tags', () => {
+  it('renders task tags when expanded', () => {
     renderTaskCard();
+    
+    // Tags are hidden by default, need to expand first
+    expect(screen.getByText('Has details')).toBeInTheDocument();
+    
+    // Click to expand details
+    const expandButton = screen.getByTitle('Show details');
+    fireEvent.click(expandButton);
+    
+    // Now tags should be visible - but they use the Tag component, so look for the tag labels
     expect(screen.getByText('test')).toBeInTheDocument();
     expect(screen.getByText('react')).toBeInTheDocument();
   });
 
-  it('calls onOpenEditModal when edit button is clicked', () => {
+  it('opens edit modal when edit button is clicked', () => {
     renderTaskCard();
+
+    // First expand to see the description and action buttons
+    const expandButton = screen.getByTitle('Show details');
+    fireEvent.click(expandButton);
+
+    // Click the edit button to open the modal
     const editButton = screen.getByTestId('edit-task-button');
     fireEvent.click(editButton);
+
+    // Verify that onOpenEditModal was called with the task
     expect(mockOnOpenEditModal).toHaveBeenCalledWith(mockTask);
   });
 
@@ -89,29 +115,31 @@ describe('TaskCard', () => {
     expect(mockOnUpdate).toHaveBeenCalledWith('task-1', { status: 'Canceled' });
   });
   
-  it('allows inline editing of title and description', () => {
+  it('allows expanding and collapsing task details', () => {
     renderTaskCard();
 
-    // Enter editing mode
-    fireEvent.click(screen.getByText('Test Task'));
+    // Initially details should be collapsed
+    expect(screen.getByText('Has details')).toBeInTheDocument();
+    expect(screen.queryByText('This is a test description.')).not.toBeInTheDocument();
 
-    const titleInput = screen.getByDisplayValue('Test Task');
-    const descriptionInput = screen.getByDisplayValue('This is a test description.');
+    // Click to expand details
+    const expandButton = screen.getByTitle('Show details');
+    fireEvent.click(expandButton);
 
-    expect(titleInput).toBeInTheDocument();
-    expect(descriptionInput).toBeInTheDocument();
+    // Now details should be visible
+    expect(screen.getByText('This is a test description.')).toBeInTheDocument();
+    expect(screen.getByText('test')).toBeInTheDocument();
+    expect(screen.getByText('react')).toBeInTheDocument();
 
-    // Edit values
-    fireEvent.change(titleInput, { target: { value: 'Updated Title' } });
-    fireEvent.change(descriptionInput, { target: { value: 'Updated Description' } });
+    // Button should now show "Hide details"
+    const hideButton = screen.getByTitle('Hide details');
+    expect(hideButton).toBeInTheDocument();
 
-    // Save changes
-    const saveButton = screen.getByTitle('Save Changes');
-    fireEvent.click(saveButton);
+    // Click to collapse details
+    fireEvent.click(hideButton);
 
-    expect(mockOnUpdate).toHaveBeenCalledWith('task-1', {
-      title: 'Updated Title',
-      description: 'Updated Description',
-    });
+    // Details should be hidden again
+    expect(screen.getByText('Has details')).toBeInTheDocument();
+    expect(screen.queryByText('This is a test description.')).not.toBeInTheDocument();
   });
 }); 
