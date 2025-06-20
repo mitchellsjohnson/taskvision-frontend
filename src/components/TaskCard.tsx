@@ -213,11 +213,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="bg-gray-700 text-white p-1.5 rounded flex-1 text-3xl font-bold border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        className="bg-gray-700 text-white p-1.5 rounded flex-1 text-2xl font-bold border border-gray-600 focus:border-blue-500 focus:outline-none"
                         autoFocus
                       />
                     ) : (
-                      <h3 className="text-3xl font-bold truncate text-white">{task.title}</h3>
+                      <h3 className="text-2xl font-bold text-white break-words">{task.title}</h3>
                     )}
                     
                     {/* Expand/Collapse button for details */}
