@@ -160,8 +160,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       data-testid="task-card"
       tabIndex={0}
     >
-      <div className="p-3 sm:p-4">
-        <div className="flex items-start gap-3">
+      <div className="p-2 sm:p-3">
+                  <div className="flex items-start gap-2">
           {/* Visual Drag Handle */}
           <div 
             className="flex flex-col items-center justify-center py-1 cursor-grab active:cursor-grabbing"
@@ -217,7 +217,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         autoFocus
                       />
                     ) : (
-                      <h3 className="text-2xl font-bold text-white break-words">{task.title}</h3>
+                      <h3 className="text-2xl font-bold text-white leading-tight line-clamp-2">{task.title}</h3>
                     )}
                     
                     {/* Expand/Collapse button for details */}
@@ -246,7 +246,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </div>
             
             {/* Always visible metadata - due date and status */}
-            <div className="flex items-center gap-2 mb-1.5 text-sm text-gray-400">
+            <div className="flex items-center gap-2 mb-1 text-sm text-gray-400">
               {task.dueDate && (
                 <span className={`flex items-center ${dueDateColor.color}`}>
                   {dueDateColor.icon}
@@ -260,7 +260,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             
             {/* Expandable details */}
             {isExpanded && (task.description || (task.tags && task.tags.length > 0)) && (
-              <div className="space-y-2 mb-2">
+              <div className="space-y-1 mb-1">
                 {/* Description */}
                 {task.description && (
                   <div>
@@ -285,7 +285,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       <Tag
                         key={index}
                         label={tag}
-                        type={DEFAULT_TAGS[tag] ? 'default' : 'custom'}
+                        type={DEFAULT_TAGS[tag] || DEFAULT_TAGS[tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()] ? 'default' : 'custom'}
                         onClick={onTagClick && !isOverlay ? () => onTagClick(tag) : undefined}
                         className="text-sm"
                       />
@@ -295,13 +295,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </div>
             )}
             
-            {/* Collapsed indicator for tasks with hidden details */}
-            {!isExpanded && (task.description || (task.tags && task.tags.length > 0)) && !isEditing && (
-              <div className="flex items-center gap-1 text-sm text-gray-500 mb-1.5">
-                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
-                <span>Has details</span>
-              </div>
-            )}
+
           </div>
 
             {/* Action buttons - show on hover or when editing */}

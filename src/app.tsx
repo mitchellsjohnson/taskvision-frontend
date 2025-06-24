@@ -19,6 +19,9 @@ import { MobileNavBar } from './components/navigation/mobile/mobile-nav-bar';
 import { SettingsPage } from './pages/settings-page';
 import { Auth0ViewsLegacyPage } from './pages/auth0-views-legacy-page';
 import { DashboardPage } from './pages/dashboard-page';
+import { TVAgentPage } from './pages/tvagent-page';
+import WellnessPage from './pages/wellness-page';
+import DeleteWellnessDataPage from './pages/delete-wellness-data';
 
 const ProtectedSettingsPage = withAuthenticationRequired(SettingsPage, {
   onRedirecting: () => (
@@ -51,6 +54,9 @@ export const App: React.FC = () => {
             <Route path="/public" element={<PublicPage />} />
             <Route path="/protected" element={<ProtectedRoute component={ProtectedPage} />} />
             <Route path="/tasks" element={<ProtectedRoute component={TasksPage} />} />
+            <Route path="/tvagent" element={<ProtectedRoute component={TVAgentPage} />} />
+            <Route path="/wellness" element={<ProtectedRoute component={WellnessPage} />} />
+            <Route path="/deleteMyWellnessData" element={<ProtectedRoute component={DeleteWellnessDataPage} />} />
             <Route path="/dashboard" element={<ProtectedRoute component={DashboardPage} />} />
             <Route
               path="/admin"

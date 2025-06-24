@@ -61,7 +61,7 @@ describe('TaskCard', () => {
     expect(screen.getByText('1')).toBeInTheDocument();
     
     // Description is hidden by default, need to expand first
-    expect(screen.getByText('Has details')).toBeInTheDocument();
+    expect(screen.queryByText('This is a test description.')).not.toBeInTheDocument();
     
     // Click to expand details
     const expandButton = screen.getByTitle('Show details');
@@ -75,7 +75,8 @@ describe('TaskCard', () => {
     renderTaskCard();
     
     // Tags are hidden by default, need to expand first
-    expect(screen.getByText('Has details')).toBeInTheDocument();
+    expect(screen.queryByText('test')).not.toBeInTheDocument();
+    expect(screen.queryByText('react')).not.toBeInTheDocument();
     
     // Click to expand details
     const expandButton = screen.getByTitle('Show details');
@@ -89,11 +90,7 @@ describe('TaskCard', () => {
   it('opens edit modal when edit button is clicked', () => {
     renderTaskCard();
 
-    // First expand to see the description and action buttons
-    const expandButton = screen.getByTitle('Show details');
-    fireEvent.click(expandButton);
-
-    // Click the edit button to open the modal
+    // Click the edit button to open the modal (action buttons are visible on hover)
     const editButton = screen.getByTestId('edit-task-button');
     fireEvent.click(editButton);
 
@@ -119,8 +116,9 @@ describe('TaskCard', () => {
     renderTaskCard();
 
     // Initially details should be collapsed
-    expect(screen.getByText('Has details')).toBeInTheDocument();
     expect(screen.queryByText('This is a test description.')).not.toBeInTheDocument();
+    expect(screen.queryByText('test')).not.toBeInTheDocument();
+    expect(screen.queryByText('react')).not.toBeInTheDocument();
 
     // Click to expand details
     const expandButton = screen.getByTitle('Show details');
@@ -139,7 +137,8 @@ describe('TaskCard', () => {
     fireEvent.click(hideButton);
 
     // Details should be hidden again
-    expect(screen.getByText('Has details')).toBeInTheDocument();
     expect(screen.queryByText('This is a test description.')).not.toBeInTheDocument();
+    expect(screen.queryByText('test')).not.toBeInTheDocument();
+    expect(screen.queryByText('react')).not.toBeInTheDocument();
   });
 }); 

@@ -105,7 +105,8 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
   };
 
   const getTagType = (tag: string): 'default' | 'custom' => {
-    return DEFAULT_TAGS[tag] ? 'default' : 'custom';
+    const capitalizedTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+    return DEFAULT_TAGS[tag] || DEFAULT_TAGS[capitalizedTag] ? 'default' : 'custom';
   };
 
   return (

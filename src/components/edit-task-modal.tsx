@@ -12,6 +12,7 @@ interface EditTaskModalProps {
   allTags: string[];
   mitTaskCount?: number;
   litTaskCount?: number;
+  defaultValues?: Partial<Task>;
 }
 
 export const EditTaskModal: React.FC<EditTaskModalProps> = ({ 
@@ -21,7 +22,8 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
   onSave, 
   allTags,
   mitTaskCount = 0,
-  litTaskCount = 0 
+  litTaskCount = 0,
+  defaultValues 
 }) => {
   const [currentTask, setCurrentTask] = useState<Partial<Task>>({});
   const [selectedList, setSelectedList] = useState<'MIT' | 'LIT'>('MIT');
@@ -40,21 +42,43 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
         setSelectedList(task.isMIT ? 'MIT' : 'LIT');
         setPriorityNumber(task.priority || 1);
       } else {
-        // Creating new task - default to MIT priority 1
-        setCurrentTask({
+        // Creating new task - default to MIT priority 1, merge with default values
+        const baseTask: Partial<Task> = {
           title: '',
           description: '',
-          status: 'Open',
+          status: 'Open' as const,
           dueDate: '',
           isMIT: true,
           priority: 1,
           tags: [],
-        });
-        setSelectedList('MIT');
-        setPriorityNumber(1);
+        };
+        
+        const newTask = { ...baseTask, ...defaultValues };
+        
+        // Format due date if provided - should already be in YYYY-MM-DD format from wellness module
+        if (newTask.dueDate && typeof newTask.dueDate === 'string') {
+          // If it's already in YYYY-MM-DD format, keep it as is
+          if (/^\d{4}-\d{2}-\d{2}$/.test(newTask.dueDate)) {
+            // Already in correct format, no conversion needed
+          } else {
+            // Convert other string formats to YYYY-MM-DD
+            try {
+              const date = new Date(newTask.dueDate);
+              if (!isNaN(date.getTime())) {
+                newTask.dueDate = date.toISOString().split('T')[0];
+              }
+            } catch {
+              // Keep original value if parsing fails
+            }
+          }
+        }
+        
+        setCurrentTask(newTask);
+        setSelectedList(newTask.isMIT ? 'MIT' : 'LIT');
+        setPriorityNumber(newTask.priority || 1);
       }
     }
-  }, [task, isOpen]);
+  }, [task, isOpen, defaultValues]);
 
   if (!isOpen) return null;
 

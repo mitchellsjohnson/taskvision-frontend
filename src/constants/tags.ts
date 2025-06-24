@@ -10,6 +10,7 @@ import {
   AcademicCapIcon,
   BriefcaseIcon,
   HeartIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { ComponentType } from 'react';
 
@@ -30,6 +31,7 @@ export const DEFAULT_TAGS: Record<string, DefaultTag> = {
   'Training': { icon: AcademicCapIcon, border: 'border-green-400' },
   'Work': { icon: BriefcaseIcon, border: 'border-indigo-400' },
   'Gratitude': { icon: HeartIcon, border: 'border-red-400' },
+  'Wellness': { icon: SparklesIcon, border: 'border-emerald-400' },
 };
 
 // Legacy interface for backward compatibility during migration
