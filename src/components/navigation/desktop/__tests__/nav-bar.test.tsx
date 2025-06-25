@@ -18,13 +18,16 @@ jest.mock('../nav-bar-tabs', () => ({
   NavBarTabs: () => <div data-testid="nav-bar-tabs">Tabs</div>,
 }));
 jest.mock('../nav-bar-buttons', () => ({
-  NavBarButtons: () => <div data-testid="nav-bar-buttons">Buttons</div>,
-}));
-jest.mock('../../../buttons/login-button', () => ({
-  LoginButton: () => <button data-testid="login-button">Log In</button>,
-}));
-jest.mock('../../../buttons/logout-button', () => ({
-  LogoutButton: () => <button data-testid="logout-button">Log Out</button>,
+  NavBarButtons: () => {
+    const mockedUseAuth0 = require('@auth0/auth0-react').useAuth0;
+    const { isAuthenticated } = mockedUseAuth0();
+    return (
+      <div data-testid="nav-bar-buttons">
+        {!isAuthenticated && <button data-testid="login-button">Log In</button>}
+        {isAuthenticated && <button data-testid="logout-button">Log Out</button>}
+      </div>
+    );
+  },
 }));
 
 const renderNavBar = () => {

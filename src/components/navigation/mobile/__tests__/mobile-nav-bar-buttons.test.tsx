@@ -16,10 +16,6 @@ jest.mock('../../../buttons/login-button', () => ({
 jest.mock('../../../buttons/logout-button', () => ({
   LogoutButton: () => <button data-testid="logout-button">Log Out</button>,
 }));
-jest.mock('../../../buttons/signup-button', () => ({
-    SignupButton: () => <button data-testid="signup-button">Sign Up</button>,
-}));
-
 
 describe('MobileNavBarButtons', () => {
   afterEach(() => {
@@ -27,11 +23,10 @@ describe('MobileNavBarButtons', () => {
   });
 
   describe('when unauthenticated', () => {
-    it('renders the login and signup buttons', () => {
+    it('renders the login button', () => {
       mockedUseAuth0.mockReturnValueOnce({ isAuthenticated: false });
       render(<MobileNavBarButtons />);
       expect(screen.getByTestId('login-button')).toBeInTheDocument();
-      expect(screen.getByTestId('signup-button')).toBeInTheDocument();
       expect(screen.queryByTestId('logout-button')).not.toBeInTheDocument();
     });
   });
@@ -45,7 +40,6 @@ describe('MobileNavBarButtons', () => {
       render(<MobileNavBarButtons />);
       expect(screen.getByTestId('logout-button')).toBeInTheDocument();
       expect(screen.queryByTestId('login-button')).not.toBeInTheDocument();
-      expect(screen.queryByTestId('signup-button')).not.toBeInTheDocument();
     });
   });
 }); 
