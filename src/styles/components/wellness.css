@@ -550,41 +550,59 @@
     align-self: center;
   }
 
+  /* Mobile grid - much more compact */
+  .wellness-tracker-grid {
+    grid-template-columns: 140px repeat(7, minmax(35px, 1fr));
+    gap: 0.5px;
+  }
+
   .wellness-grid-header,
   .wellness-grid-row {
-    grid-template-columns: 225px repeat(7, minmax(50px, 1fr)); /* Increased proportionally from 180px to 225px */
+    grid-template-columns: 140px repeat(7, minmax(35px, 1fr));
   }
 
   .wellness-grid-cell {
-    padding: 0.5rem;
-    min-height: 60px;
+    padding: 0.25rem;
+    min-height: 45px;
+    font-size: 0.75rem;
+  }
+
+  .wellness-practice-cell {
+    padding: 0.5rem 0.25rem;
   }
 
   .wellness-practice-info {
     flex-direction: column;
     text-align: center;
-    gap: 0.25rem;
+    gap: 0.125rem;
+  }
+
+  .wellness-practice-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .wellness-practice-icon svg {
-    width: 1rem;
-    height: 1rem;
+    width: 0.875rem;
+    height: 0.875rem;
   }
 
   .wellness-practice-name {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.125rem;
+    margin-bottom: 0.125rem;
+    line-height: 1.1;
   }
 
   .wellness-status-indicator {
-    font-size: 0.8rem;
+    font-size: 0.5rem;
   }
 
   .wellness-status-circle {
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
   }
 
   .wellness-practice-description {
@@ -592,12 +610,45 @@
   }
 
   .wellness-practice-progress {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.4rem;
+    font-size: 0.5rem;
+    padding: 0.125rem 0.25rem;
+    line-height: 1;
+  }
+
+  .wellness-day-header {
+    gap: 0.125rem;
+  }
+
+  .wellness-day-name {
+    font-size: 0.625rem;
+    font-weight: 500;
+  }
+
+  .wellness-day-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .wellness-cell-content {
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.125rem;
   }
 
   .wellness-cell-icon {
-    font-size: 1.25rem;
+    font-size: 1rem;
+  }
+
+  .wellness-cell-action-container {
+    min-width: 16px;
+    height: 16px;
+  }
+
+  .wellness-cell-action {
+    font-size: 0.625rem;
+    min-width: 16px;
+    height: 16px;
+    padding: 0.125rem;
   }
 
   .wellness-chart-container {
@@ -610,5 +661,77 @@
 
   .wellness-score-value {
     font-size: 1.5rem;
+  }
+}
+
+/* Portrait mode - even more compact */
+@media (max-width: 480px) and (orientation: portrait) {
+  .wellness-tracker-grid {
+    grid-template-columns: 120px repeat(7, minmax(30px, 1fr));
+  }
+
+  .wellness-grid-header,
+  .wellness-grid-row {
+    grid-template-columns: 120px repeat(7, minmax(30px, 1fr));
+  }
+
+  .wellness-grid-cell {
+    min-height: 40px;
+    padding: 0.125rem;
+  }
+
+  .wellness-practice-name {
+    font-size: 0.5rem;
+  }
+
+  .wellness-practice-progress {
+    font-size: 0.45rem;
+  }
+
+  .wellness-day-name {
+    font-size: 0.5rem;
+  }
+
+  .wellness-day-number {
+    font-size: 0.75rem;
+  }
+
+  .wellness-cell-icon {
+    font-size: 0.875rem;
+  }
+
+  .wellness-cell-action {
+    font-size: 0.5rem;
+    min-width: 14px;
+    height: 14px;
+  }
+}
+
+/* Very small screens - minimal layout */
+@media (max-width: 360px) {
+  .wellness-tracker-grid {
+    grid-template-columns: 100px repeat(7, minmax(28px, 1fr));
+  }
+
+  .wellness-grid-header,
+  .wellness-grid-row {
+    grid-template-columns: 100px repeat(7, minmax(28px, 1fr));
+  }
+
+  .wellness-practice-name {
+    font-size: 0.45rem;
+    line-height: 1.0;
+  }
+
+  .wellness-practice-progress {
+    font-size: 0.4rem;
+  }
+
+  .wellness-day-name {
+    font-size: 0.45rem;
+  }
+
+  .wellness-day-number {
+    font-size: 0.625rem;
   }
 } 

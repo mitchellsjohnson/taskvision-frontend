@@ -44,15 +44,17 @@ describe('NavBar', () => {
   });
 
   describe('when unauthenticated', () => {
+    beforeEach(() => {
+      mockedUseAuth0.mockReturnValue({ isAuthenticated: false });
+    });
+
     it('renders the login button', () => {
-      mockedUseAuth0.mockReturnValueOnce({ isAuthenticated: false });
       renderNavBar();
       expect(screen.getByTestId('login-button')).toBeInTheDocument();
       expect(screen.queryByTestId('logout-button')).not.toBeInTheDocument();
     });
 
     it('does not render the settings button', () => {
-      mockedUseAuth0.mockReturnValueOnce({ isAuthenticated: false });
       renderNavBar();
       expect(screen.queryByTitle('Settings')).not.toBeInTheDocument();
     });

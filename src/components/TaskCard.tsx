@@ -217,7 +217,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         autoFocus
                       />
                     ) : (
-                      <h3 className="text-2xl font-bold text-white leading-tight line-clamp-2">{task.title}</h3>
+                      <h3 className="text-xl font-bold text-white leading-tight">{task.title}</h3>
                     )}
                     
                     {/* Expand/Collapse button for details */}
