@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTVAgentV2Api, TVAgentV2Response, ConversationThread } from '../services/tvagent-v2-api';
 import { useTVAgentApi, TVAgentResponse } from '../services/tvagent-api';
 import { ThreadSidebar } from '../components/tvagent/ThreadSidebar';
+import { CorsDebugger } from '../components/CorsDebugger';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface ChatMessage {
   id: string;
@@ -13,15 +15,25 @@ interface ChatMessage {
 }
 
 export const TVAgentPage: React.FC = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Initialize state from location state or default values
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    return location.state?.messages || [];
+  });
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isListening, setIsListening] = useState(false);
   const [speechSupported, setSpeechSupported] = useState(false);
-  const [activeThread, setActiveThread] = useState<ConversationThread | null>(null);
+  const [activeThread, setActiveThread] = useState<ConversationThread | null>(() => {
+    return location.state?.activeThread || null;
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [conversationTitle, setConversationTitle] = useState('');
+  const [conversationTitle, setConversationTitle] = useState(() => {
+    return location.state?.conversationTitle || '';
+  });
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [titleInputValue, setTitleInputValue] = useState('');
   const [titleUpdateCounter, setTitleUpdateCounter] = useState(0);
@@ -65,8 +77,26 @@ export const TVAgentPage: React.FC = () => {
     }
   }, [getThreadMessages]);
 
+  // Update location state when relevant state changes
+  useEffect(() => {
+    navigate(location.pathname, {
+      replace: true,
+      state: {
+        messages,
+        activeThread,
+        conversationTitle
+      }
+    });
+  }, [messages, activeThread, conversationTitle, navigate, location.pathname]);
+
   // Load active thread and conversation history on component mount
   useEffect(() => {
+    // Skip loading if we already have state from navigation
+    if (location.state?.messages?.length > 0 && location.state?.activeThread) {
+      setIsLoadingHistory(false);
+      return;
+    }
+
     const loadActiveThread = async () => {
       try {
         const thread = await getActiveThread();

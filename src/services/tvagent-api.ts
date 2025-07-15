@@ -1,7 +1,10 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { useCallback, useMemo } from 'react';
 
-const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
+// Use proxy in development, full URL in production
+const API_SERVER_URL = process.env.NODE_ENV === 'development' 
+  ? '' // Use proxy
+  : process.env.REACT_APP_API_SERVER_URL;
 
 export interface TVAgentResponse {
   success: boolean;
@@ -36,14 +39,24 @@ export const useTVAgentApi = () => {
         body: body ? JSON.stringify(body) : undefined
       };
 
-      const response = await fetch(`${API_SERVER_URL}/${endpoint}`, config);
+      const url = API_SERVER_URL ? `${API_SERVER_URL}/${endpoint}` : `/${endpoint}`;
+      
+      try {
+        const response = await fetch(url, config);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.message || errorData.error || `API request failed: ${response.statusText}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+          throw new Error(errorData.message || errorData.error || `API request failed: ${response.statusText}`);
+        }
+
+        return response.json();
+      } catch (error) {
+        // Enhanced error handling for CORS and network issues
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          throw new Error('Network error: Unable to connect to the API server. This might be due to CORS policy or network connectivity issues.');
+        }
+        throw error;
       }
-
-      return response.json();
     },
     [getAccessTokenSilently]
   );

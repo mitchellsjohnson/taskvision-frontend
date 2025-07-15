@@ -49,6 +49,7 @@
     ],
     "plugins": []
   },
+  "proxy": "https://api.taskvision.ai",
   "browserslist": {
     "production": [
       ">0.2%",
