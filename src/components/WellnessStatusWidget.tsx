@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth0 } from '@auth0/auth0-react';
 import { WellnessPractice, PracticeInstance } from '../types';
@@ -14,6 +14,11 @@ interface PracticeStatus {
   weeklyTarget: number;
   hasJournal: boolean;
   journalEntry?: string;
+}
+
+interface JournalEntry {
+  practiceId: string;
+  content: string;
 }
 
 const PRACTICE_DISPLAY_NAMES: Record<WellnessPractice, string> = {
@@ -65,7 +70,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     };
   };
 
-  const fetchWellnessStatus = useCallback(async () => {
+  const fetchWellnessStatus = async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -110,11 +115,11 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessTokenSilently, API_SERVER_URL, journalEntries]);
+  };
 
   useEffect(() => {
     fetchWellnessStatus();
-  }, [fetchWellnessStatus]);
+  }, [journalEntries]);
 
   const handlePracticeToggle = async (practice: WellnessPractice) => {
     try {

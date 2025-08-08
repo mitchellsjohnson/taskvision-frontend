@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { useTaskApi } from '../services/task-api';
 
 interface TaskOverviewSummaryProps {
   onRefresh?: () => void;
@@ -20,48 +19,61 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user, getAccessTokenSilently } = useAuth0();
+  const { getTasks } = useTaskApi();
 
-  const fetchTaskSummary = useCallback(async () => {
-    if (!user) return;
+  const getWeekDateRange = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Monday-based week
     
-    setIsLoading(true);
-    setError(null);
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - mondayOffset);
     
+    return {
+      weekStart: monday.toISOString().split('T')[0],
+      today: today.toISOString().split('T')[0]
+    };
+  };
+
+  const fetchTaskSummary = async () => {
     try {
-      const accessToken = await getAccessTokenSilently();
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_SERVER_URL}/tasks`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      const tasks = response.data;
-      const activeTasks = tasks.filter((task: any) => task.status === 'Open' || task.status === 'Waiting');
-      const completedTasks = tasks.filter((task: any) => task.status === 'Completed');
-      const overdueTasks = activeTasks.filter((task: any) => {
-        if (!task.dueDate) return false;
-        return new Date(task.dueDate) < new Date();
-      });
-
+      setIsLoading(true);
+      setError(null);
+      
+      const { weekStart, today } = getWeekDateRange();
+      
+      // Fetch all tasks to calculate summary
+      const [openTasks, completedTasks] = await Promise.all([
+        getTasks({ status: ['Open'] }),
+        getTasks({ status: ['Completed'], startDate: weekStart })
+      ]);
+      
+      // Calculate overdue count
+      const overdueCount = openTasks.filter(task => 
+        task.dueDate && task.dueDate < today
+      ).length;
+      
+      // Calculate completed this week count
+      const completedThisWeek = completedTasks.filter(task => 
+        task.completedDate && task.completedDate >= weekStart + 'T00:00:00'
+      ).length;
+      
       setSummary({
-        totalOpen: activeTasks.length,
-        overdueCount: overdueTasks.length,
-        completedThisWeek: completedTasks.length,
+        totalOpen: openTasks.length,
+        overdueCount,
+        completedThisWeek
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load task summary');
+      console.error('Error fetching task summary:', err);
+      setError('Failed to load task summary');
     } finally {
       setIsLoading(false);
     }
-  }, [user, getAccessTokenSilently]);
+  };
 
   useEffect(() => {
     fetchTaskSummary();
-  }, [fetchTaskSummary]);
+  }, []);
 
   if (isLoading) {
     return (

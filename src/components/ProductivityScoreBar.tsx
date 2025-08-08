@@ -99,7 +99,7 @@ export const ProductivityScoreBar: React.FC<ProductivityScoreBarProps> = ({ onRe
 
   useEffect(() => {
     fetchProductivityMetrics();
-  }, [fetchProductivityMetrics]);
+  }, []);
 
   const handleRetry = () => {
     setRetryCount(0);

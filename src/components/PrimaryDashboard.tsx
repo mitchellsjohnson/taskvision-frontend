@@ -8,39 +8,64 @@ import { ProductivityScoreBar } from './ProductivityScoreBar';
 import { RecentActivityFeed } from './RecentActivityFeed';
 
 interface PrimaryDashboardProps {
-  onDataUpdate?: (data: any) => void;
-  cachedData?: any;
+  onDataUpdate: (data: any) => void;
+  cachedData: any;
+}
+
+interface PrimaryDashboardData {
+  lastRefresh: number;
 }
 
 export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({ 
   onDataUpdate, 
   cachedData 
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<PrimaryDashboardData | null>(cachedData);
+  const [isLoading, setIsLoading] = useState(!cachedData);
   const [error, setError] = useState<string | null>(null);
 
+  // Handle data refresh from individual widgets
   const handleDataRefresh = useCallback(() => {
-    setIsLoading(true);
+    const refreshData = {
+      lastRefresh: Date.now(),
+    };
+    
+    setData(refreshData);
+    
+    // Clear loading state after data is updated
+    setIsLoading(false);
     setError(null);
     
-    // Simulate data refresh
-    setTimeout(() => {
-      setIsLoading(false);
-      if (onDataUpdate) {
-        const refreshData = {
-          lastRefresh: Date.now(),
-        };
-        onDataUpdate(refreshData);
-      }
-    }, 1000);
+    onDataUpdate(refreshData);
   }, [onDataUpdate]);
 
-  // Auto-refresh when cached data changes
+  // Listen for tab switch events to trigger refresh with debounce
   useEffect(() => {
-    if (cachedData) {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleTabSwitch = (event: CustomEvent) => {
+      if (event.detail.activeTab === 'dashboard') {
+        // Debounce rapid tab switches
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          handleDataRefresh();
+        }, 300);
+      }
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleTabSwitch as EventListener);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleTabSwitch as EventListener);
+    };
+  }, [handleDataRefresh]);
+
+  // Initial data load
+  useEffect(() => {
+    if (!cachedData) {
       handleDataRefresh();
     }
-  }, [cachedData, handleDataRefresh]);
+  }, [cachedData]);
 
   return (
     <div className="primary-dashboard">
