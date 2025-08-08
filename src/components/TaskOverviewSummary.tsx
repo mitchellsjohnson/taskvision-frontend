@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTaskApi } from '../services/task-api';
 import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
 
@@ -21,22 +20,7 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { getTasks } = useTaskApi();
   const { user, getAccessTokenSilently } = useAuth0();
-
-  const getWeekDateRange = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
-    const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Monday-based week
-    
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - mondayOffset);
-    
-    return {
-      weekStart: monday.toISOString().split('T')[0],
-      today: today.toISOString().split('T')[0]
-    };
-  };
 
   const fetchTaskSummary = useCallback(async () => {
     if (!user) return;
@@ -58,7 +42,6 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
       const tasks = response.data;
       const activeTasks = tasks.filter((task: any) => task.status === 'Open' || task.status === 'Waiting');
       const completedTasks = tasks.filter((task: any) => task.status === 'Completed');
-      const mitTasks = tasks.filter((task: any) => task.isMIT);
       const overdueTasks = activeTasks.filter((task: any) => {
         if (!task.dueDate) return false;
         return new Date(task.dueDate) < new Date();
