@@ -62,7 +62,7 @@ export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({
     if (!cachedData) {
       handleDataRefresh();
     }
-  }, [cachedData]);
+  }, [cachedData, handleDataRefresh]);
 
   return (
     <div className="primary-dashboard">

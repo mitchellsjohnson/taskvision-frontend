@@ -96,8 +96,8 @@ export const ProductivityScoreBar: React.FC<ProductivityScoreBarProps> = ({ onRe
       setRetryCount(attempt + 1);
     }
   }, []);
-
   // eslint-disable-next-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     fetchProductivityMetrics();
   }, []);
