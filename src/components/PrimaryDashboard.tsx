@@ -20,7 +20,7 @@ export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({
   onDataUpdate, 
   cachedData 
 }) => {
-  const [data, setData] = useState<PrimaryDashboardData | null>(cachedData);
+  // Removed unused data state - now using cachedData directly
   const [isLoading, setIsLoading] = useState(!cachedData);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,13 +30,11 @@ export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({
       lastRefresh: Date.now(),
     };
     
-    setData(refreshData);
-    
     // Clear loading state after data is updated
     setIsLoading(false);
     setError(null);
     
-    onDataUpdate(refreshData);
+    onDataUpdate?.(refreshData);
   }, [onDataUpdate]);
 
   // Listen for tab switch events to trigger refresh with debounce
@@ -63,6 +61,7 @@ export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({
   // Initial data load
   useEffect(() => {
     if (!cachedData) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       handleDataRefresh();
     }
   }, [cachedData]);

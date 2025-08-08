@@ -15,7 +15,6 @@ const WellnessPage: React.FC = () => {
     createPracticeInstance,
     updatePracticeInstance,
     getWeeklyScores,
-    getWellnessStatus,
   } = useWellnessApi();
 
   const { getTasks, createTask, updateTask } = useTaskApi();
