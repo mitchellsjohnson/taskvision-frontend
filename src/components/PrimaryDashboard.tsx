@@ -8,12 +8,8 @@ import { ProductivityScoreBar } from './ProductivityScoreBar';
 import { RecentActivityFeed } from './RecentActivityFeed';
 
 interface PrimaryDashboardProps {
-  onDataUpdate: (data: any) => void;
-  cachedData: any;
-}
-
-interface PrimaryDashboardData {
-  lastRefresh: number;
+  onDataUpdate?: (data: any) => void;
+  cachedData?: any;
 }
 
 export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({ 
