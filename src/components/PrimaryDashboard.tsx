@@ -12,9 +12,7 @@ interface PrimaryDashboardProps {
   cachedData: any;
 }
 
-interface PrimaryDashboardData {
-  lastRefresh: number;
-}
+// Removed unused PrimaryDashboardData interface
 
 export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({ 
   onDataUpdate, 
@@ -59,9 +57,9 @@ export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({
   }, [handleDataRefresh]);
 
   // Initial data load
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!cachedData) {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       handleDataRefresh();
     }
   }, [cachedData]);

@@ -71,8 +71,8 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchTaskSummary();
   }, []);
 

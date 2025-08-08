@@ -97,8 +97,8 @@ export const ProductivityScoreBar: React.FC<ProductivityScoreBarProps> = ({ onRe
     }
   }, []);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     fetchProductivityMetrics();
   }, []);
 
