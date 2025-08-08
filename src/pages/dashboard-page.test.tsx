@@ -2,14 +2,29 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { DashboardPage } from './dashboard-page';
 
+// Mock the DashboardTabs component to avoid complex dependencies
+jest.mock('../components/DashboardTabs', () => ({
+  DashboardTabs: ({ defaultTab }: { defaultTab?: string }) => (
+    <div data-testid="dashboard-tabs">
+      <button role="tab" aria-selected={defaultTab === 'dashboard'}>
+        Dashboard
+      </button>
+      <button role="tab" aria-selected={defaultTab === 'wellness'}>
+        Wellness
+      </button>
+    </div>
+  ),
+}));
+
 describe('DashboardPage', () => {
-  it('should render the page title', () => {
+  it('should render the dashboard tabs', () => {
     render(<DashboardPage />);
-    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-tabs')).toBeInTheDocument();
   });
 
-  it('should render the page description', () => {
+  it('should render dashboard tab with correct default selection', () => {
     render(<DashboardPage />);
-    expect(screen.getByText('This is the dashboard.')).toBeInTheDocument();
+    const dashboardTab = screen.getByRole('tab', { name: /dashboard/i });
+    expect(dashboardTab).toHaveAttribute('aria-selected', 'true');
   });
 }); 

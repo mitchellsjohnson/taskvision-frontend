@@ -4,6 +4,17 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+// Mock window.dispatchEvent to prevent event-related hangs  
+beforeEach(() => {
+  jest.spyOn(window, 'dispatchEvent').mockImplementation(() => true);
+});
+
+afterEach(() => {
+  // Clean up all mocks
+  jest.restoreAllMocks();
+  jest.clearAllMocks();
+});
+
 // Mock Auth0
 jest.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({

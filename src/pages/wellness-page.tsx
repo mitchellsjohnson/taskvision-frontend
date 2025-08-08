@@ -24,7 +24,7 @@ const WellnessPage: React.FC = () => {
   const [currentWeek, setCurrentWeek] = useState<string>('');
   const [currentWeekPractices, setCurrentWeekPractices] = useState<PracticeInstance[]>([]);
   const [weeklyScores, setWeeklyScores] = useState<WeeklyWellnessScore[]>([]);
-  const [currentScore, setCurrentScore] = useState<number>(0);
+  const [viewedWeekScore, setViewedWeekScore] = useState<number>(0);
   const [lastWeekScore, setLastWeekScore] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -77,7 +77,11 @@ const WellnessPage: React.FC = () => {
 
       setCurrentWeekPractices(practices);
       setWeeklyScores(scores);
-      setCurrentScore(status.currentScore);
+
+      // Calculate score for the currently viewed week (not necessarily current week)
+      const viewedWeekScoreData = scores.find(s => s.weekStart === currentWeek);
+      const viewedWeekScore = viewedWeekScoreData?.score || 0;
+      setViewedWeekScore(viewedWeekScore);
 
       // Calculate last week score
       const currentWeekStart = new Date(currentWeek + 'T00:00:00');
@@ -164,13 +168,14 @@ const WellnessPage: React.FC = () => {
     }
 
     // Refresh scores and status
-    const [scores, status] = await Promise.all([
-      getWeeklyScores(12),
-      getWellnessStatus(),
-    ]);
+    const scores = await getWeeklyScores(12);
     
     setWeeklyScores(scores);
-    setCurrentScore(status.currentScore);
+
+    // Calculate score for the currently viewed week (not necessarily current week)
+    const viewedWeekScoreData = scores.find(s => s.weekStart === currentWeek);
+    const viewedWeekScore = viewedWeekScoreData?.score || 0;
+    setViewedWeekScore(viewedWeekScore);
 
     // Calculate last week score
     const currentWeekStart = new Date(currentWeek + 'T00:00:00');
@@ -355,13 +360,13 @@ const WellnessPage: React.FC = () => {
           {/* Current Week Score */}
           <div className="wellness-current-score">
             <div className="wellness-score-display">
-              <span className="wellness-score-label">Current Week Score:</span>
-              <span className="wellness-score-value">{Math.round(currentScore)}/100</span>
+                              <span className="wellness-score-label">Week Score:</span>
+              <span className="wellness-score-value">{Math.round(viewedWeekScore)}/100</span>
               {lastWeekScore > 0 && (
                 <span className={`wellness-score-change ${
-                  currentScore >= lastWeekScore ? 'positive' : 'negative'
+                  viewedWeekScore >= lastWeekScore ? 'positive' : 'negative'
                 }`}>
-                  ({currentScore >= lastWeekScore ? '+' : ''}{Math.round(currentScore - lastWeekScore)})
+                  ({viewedWeekScore >= lastWeekScore ? '+' : ''}{Math.round(viewedWeekScore - lastWeekScore)})
                 </span>
               )}
             </div>
@@ -391,7 +396,7 @@ const WellnessPage: React.FC = () => {
               <div className="wellness-tracker-title-left">
                 <h2>Weekly Tracker</h2>
                 <div className="wellness-tracker-score">
-                  Score: <span className="wellness-score-highlight">{Math.round(currentScore)}/100</span>
+                  Score: <span className="wellness-score-highlight">{Math.round(viewedWeekScore)}/100</span>
                 </div>
               </div>
               <div className="wellness-week-navigation">

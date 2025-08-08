@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { TagInput } from './TagInput';
 import { CharacterCounter } from './CharacterCounter';
 import { Task } from '../types';
@@ -31,6 +32,9 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // Prevent body scroll when modal is open
+      document.body.classList.add('modal-open');
+      
       if (task) {
         // Editing existing task - use current values
         setCurrentTask({
@@ -77,10 +81,16 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
         setSelectedList(newTask.isMIT ? 'MIT' : 'LIT');
         setPriorityNumber(newTask.priority || 1);
       }
+    } else {
+      // Remove body scroll prevention when modal closes
+      document.body.classList.remove('modal-open');
     }
+    
+    // Cleanup function to ensure body scroll is restored
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
   }, [task, isOpen, defaultValues]);
-
-  if (!isOpen) return null;
 
   const handleSave = () => {
     // Validate field lengths
@@ -100,6 +110,12 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
 
     onSave(taskData);
     onClose(); 
+  };
+
+  const handleOutsideClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
   };
 
   const handleTagsChange = (newTags: string[]) => {
@@ -128,9 +144,14 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
   // Calculate max priority for current list
   const maxPriority = selectedList === 'MIT' ? 3 : Math.max(10, litTaskCount + 1);
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-2xl">
+  // Don't render modal if not open
+  if (!isOpen) {
+    return null;
+  }
+
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={handleOutsideClick}>
+      <div className="bg-gray-800 p-6 rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4" onClick={e => e.stopPropagation()}>
         {/* Editable Fields */}
         <div className="space-y-4">
           <div>
@@ -298,6 +319,7 @@ export const EditTaskModal: React.FC<EditTaskModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

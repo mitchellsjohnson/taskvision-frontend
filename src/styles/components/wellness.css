@@ -2,7 +2,8 @@
 .wellness-page {
   min-height: 100vh;
   padding: 2rem;
-  background: linear-gradient(135deg, #f8fdff 0%, #f0f9ff 100%);
+  background: var(--wellness-gradient);
+  color: var(--wellness-text-primary);
 }
 
 .wellness-page-container {
@@ -20,22 +21,22 @@
   align-items: flex-start;
   gap: 2rem;
   padding: 2rem;
-  background: white;
+  background: var(--wellness-bg-secondary);
   border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--wellness-border);
 }
 
 .wellness-title-section h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--wellness-text-primary);
   margin: 0 0 0.5rem 0;
 }
 
 .wellness-page-subtitle {
   font-size: 1.1rem;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   margin: 0;
   max-width: 400px;
 }
@@ -54,14 +55,14 @@
 
 .wellness-score-label {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   font-weight: 500;
 }
 
 .wellness-score-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #10a37f;
+  color: var(--wellness-accent);
 }
 
 .wellness-score-change {
@@ -70,36 +71,36 @@
 }
 
 .wellness-score-change.positive {
-  color: #059669;
+  color: var(--success-text);
 }
 
 .wellness-score-change.negative {
-  color: #dc2626;
+  color: var(--error-text);
 }
 
 .wellness-score-subtitle {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--text-muted);
 }
 
 /* Chart Section */
 .wellness-chart-section {
-  background: white;
+  background: var(--wellness-bg-secondary);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--wellness-border);
 }
 
 .wellness-section-header h2 {
   font-size: 2rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--wellness-text-primary);
   margin: 0 0 0.5rem 0;
 }
 
 .wellness-section-header p {
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   margin: 0 0 1.5rem 0;
 }
 
@@ -110,17 +111,17 @@
 }
 
 .wellness-chart-tooltip {
-  background: white;
-  border: 1px solid #e5e7eb;
+  background: var(--wellness-bg-secondary);
+  border: 1px solid var(--wellness-border);
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .wellness-tooltip-title {
   font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 4px 0;
+  color: var(--wellness-text-primary);
+  margin-bottom: 4px;
   font-size: 0.875rem;
 }
 
@@ -130,16 +131,16 @@
 }
 
 .wellness-tooltip-label {
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
 }
 
 .wellness-tooltip-value {
-  color: #10a37f;
+  color: var(--wellness-accent);
   font-weight: 600;
 }
 
 .wellness-tooltip-current {
-  color: #059669;
+  color: var(--success-text);
   font-size: 0.75rem;
   font-weight: 600;
   margin: 0;
@@ -150,8 +151,8 @@
   align-items: center;
   justify-content: center;
   height: 300px;
-  background: #f9fafb;
-  border: 2px dashed #d1d5db;
+  background: var(--wellness-bg-tertiary);
+  border: 2px dashed var(--wellness-border);
   border-radius: 12px;
 }
 
@@ -164,28 +165,29 @@
   font-size: 3rem;
   display: block;
   margin-bottom: 1rem;
+  opacity: 0.6;
 }
 
 .wellness-chart-empty-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   margin: 0 0 0.5rem 0;
 }
 
 .wellness-chart-empty-subtitle {
-  color: #9ca3af;
+  color: var(--text-muted);
   margin: 0;
   max-width: 300px;
 }
 
 /* Tracker Section */
 .wellness-tracker-section {
-  background: white;
+  background: var(--wellness-bg-secondary);
   border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--wellness-border);
 }
 
 .wellness-tracker-title {
@@ -203,12 +205,12 @@
 
 .wellness-tracker-score {
   font-size: 1rem;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   font-weight: 500;
 }
 
 .wellness-score-highlight {
-  color: #10a37f;
+  color: var(--wellness-accent);
   font-weight: 700;
   font-size: 1.1rem;
 }
@@ -223,9 +225,9 @@
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #6b7280;
+  border: 1px solid var(--wellness-border);
+  background: var(--wellness-bg-secondary);
+  color: var(--wellness-text-secondary);
   font-size: 1.25rem;
   display: flex;
   align-items: center;
@@ -235,8 +237,8 @@
 }
 
 .wellness-nav-button:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: var(--hover-bg);
+  border-color: var(--border-accent);
 }
 
 .wellness-nav-button:disabled {
@@ -246,7 +248,7 @@
 
 .wellness-current-week {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--wellness-text-primary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -255,7 +257,7 @@
 
 .wellness-current-indicator {
   font-size: 0.75rem;
-  color: #10a37f;
+  color: var(--wellness-accent);
   font-weight: 500;
 }
 
@@ -263,7 +265,7 @@
 .wellness-tracker-grid {
   display: grid;
   gap: 1px;
-  background: #e5e7eb;
+  background: var(--wellness-border);
   border-radius: 8px;
   overflow: hidden;
   grid-template-columns: 375px repeat(7, 1fr);
@@ -280,7 +282,7 @@
 }
 
 .wellness-grid-cell {
-  background: white;
+  background: var(--wellness-bg-secondary);
   padding: 0.75rem;
   display: flex;
   align-items: center;
@@ -294,32 +296,32 @@
 
 .wellness-practice-header {
   font-weight: 600;
-  color: #1f2937;
-  background: #f9fafb;
+  color: var(--wellness-text-primary);
+  background: var(--wellness-bg-tertiary);
   justify-content: flex-start;
 }
 
 .wellness-day-header {
   flex-direction: column;
   gap: 0.25rem;
-  background: #f9fafb;
+  background: var(--wellness-bg-tertiary);
 }
 
 .wellness-day-name {
   font-size: 1.25rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
 }
 
 .wellness-day-number {
   font-size: 1.875rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--wellness-text-primary);
 }
 
 .wellness-practice-cell {
   justify-content: flex-start;
-  background: #fafafa;
+  background: var(--bg-secondary);
 }
 
 .wellness-practice-info {
@@ -331,7 +333,7 @@
 
 .wellness-practice-icon {
   flex-shrink: 0;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -346,7 +348,7 @@
 
 .wellness-practice-name {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--wellness-text-primary);
   font-size: 1.4rem;
   margin-bottom: 0.2rem;
   display: flex;
@@ -373,7 +375,7 @@
 
 .wellness-practice-description {
   font-size: 1.25rem;
-  color: #6b7280;
+  color: var(--wellness-text-secondary);
   line-height: 1.4;
   margin-bottom: 0.25rem;
 }
@@ -381,8 +383,8 @@
 .wellness-practice-progress {
   font-size: 1rem;
   font-weight: 600;
-  color: #059669;
-  background: #ecfdf5;
+  color: var(--success-text);
+  background: var(--success-bg);
   padding: 0.25rem 0.5rem;
   border-radius: 12px;
   display: inline-block;
@@ -395,11 +397,11 @@
   position: relative;
   cursor: pointer;
   transition: all 0.2s;
-  background: #fefefe;
+  background: var(--wellness-bg-secondary);
 }
 
 .wellness-practice-day.wellness-interactive:hover {
-  background: #f3f4f6;
+  background: var(--hover-bg);
   transform: scale(1.02);
 }
 
@@ -442,36 +444,37 @@
   justify-content: center;
   min-width: 20px;
   height: 20px;
+  color: var(--wellness-text-secondary);
 }
 
 .wellness-cell-action:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--hover-bg);
   transform: scale(1.1);
 }
 
 /* Cell Status Styles */
 .wellness-status-empty {
-  background: #fefefe;
+  background: var(--wellness-bg-secondary);
 }
 
 .wellness-status-incomplete {
-  background: #fefefe;
-  border-left: 4px solid #e5e7eb;
+  background: var(--wellness-bg-secondary);
+  border-left: 4px solid var(--wellness-border);
 }
 
 .wellness-status-completed {
-  background: #dcfce7;
-  border-left: 4px solid #22c55e;
+  background: var(--success-bg);
+  border-left: 4px solid var(--success-border);
 }
 
 .wellness-status-linked {
-  background: #dbeafe;
-  border-left: 4px solid #3b82f6;
+  background: var(--info-bg);
+  border-left: 4px solid var(--info-border);
 }
 
 .wellness-status-completed-linked {
-  background: #d1fae5;
-  border-left: 4px solid #10b981;
+  background: var(--success-bg);
+  border-left: 4px solid var(--success-border);
 }
 
 /* Error States */
@@ -518,220 +521,76 @@
   background: #b91c1c;
 }
 
-/* Mobile Responsive */
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .wellness-tracker-grid {
+    grid-template-columns: 250px repeat(7, 1fr);
+  }
+  
+  .wellness-practice-name {
+    font-size: 1.2rem;
+  }
+  
+  .wellness-practice-description {
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 768px) {
   .wellness-page {
     padding: 1rem;
   }
-
+  
   .wellness-header {
     flex-direction: column;
-    align-items: stretch;
-    gap: 1.5rem;
-  }
-
-  .wellness-current-score {
-    text-align: left;
-  }
-
-  .wellness-tracker-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .wellness-tracker-title-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .wellness-week-navigation {
-    align-self: center;
-  }
-
-  /* Mobile grid - much more compact */
-  .wellness-tracker-grid {
-    grid-template-columns: 140px repeat(7, minmax(35px, 1fr));
-    gap: 0.5px;
-  }
-
-  .wellness-grid-header,
-  .wellness-grid-row {
-    grid-template-columns: 140px repeat(7, minmax(35px, 1fr));
-  }
-
-  .wellness-grid-cell {
-    padding: 0.25rem;
-    min-height: 45px;
-    font-size: 0.75rem;
-  }
-
-  .wellness-practice-cell {
-    padding: 0.5rem 0.25rem;
-  }
-
-  .wellness-practice-info {
-    flex-direction: column;
     text-align: center;
-    gap: 0.125rem;
   }
-
-  .wellness-practice-icon {
-    width: 20px;
-    height: 20px;
+  
+  .wellness-current-score {
+    text-align: center;
+    min-width: auto;
   }
-
-  .wellness-practice-icon svg {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-
-  .wellness-practice-name {
-    font-size: 0.625rem;
-    flex-direction: column;
-    gap: 0.125rem;
-    margin-bottom: 0.125rem;
-    line-height: 1.1;
-  }
-
-  .wellness-status-indicator {
-    font-size: 0.5rem;
-  }
-
-  .wellness-status-circle {
-    width: 12px;
-    height: 12px;
-    font-size: 8px;
-  }
-
-  .wellness-practice-description {
-    display: none;
-  }
-
-  .wellness-practice-progress {
-    font-size: 0.5rem;
-    padding: 0.125rem 0.25rem;
-    line-height: 1;
-  }
-
-  .wellness-day-header {
-    gap: 0.125rem;
-  }
-
-  .wellness-day-name {
-    font-size: 0.625rem;
-    font-weight: 500;
-  }
-
-  .wellness-day-number {
+  
+  .wellness-tracker-grid {
+    grid-template-columns: 200px repeat(7, 1fr);
     font-size: 0.875rem;
-    font-weight: 600;
   }
-
-  .wellness-cell-content {
-    flex-direction: column;
-    gap: 0.125rem;
-    padding: 0.125rem;
-  }
-
-  .wellness-cell-icon {
+  
+  .wellness-practice-name {
     font-size: 1rem;
   }
-
-  .wellness-cell-action-container {
-    min-width: 16px;
-    height: 16px;
+  
+  .wellness-practice-description {
+    font-size: 0.875rem;
   }
-
-  .wellness-cell-action {
-    font-size: 0.625rem;
-    min-width: 16px;
-    height: 16px;
-    padding: 0.125rem;
-  }
-
-  .wellness-chart-container {
-    padding: 0.5rem;
-  }
-
-  .wellness-page-title {
-    font-size: 2rem !important;
-  }
-
-  .wellness-score-value {
+  
+  .wellness-day-number {
     font-size: 1.5rem;
   }
 }
 
-/* Portrait mode - even more compact */
-@media (max-width: 480px) and (orientation: portrait) {
-  .wellness-tracker-grid {
-    grid-template-columns: 120px repeat(7, minmax(30px, 1fr));
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .wellness-chart-empty {
+    border-width: 3px;
   }
-
-  .wellness-grid-header,
-  .wellness-grid-row {
-    grid-template-columns: 120px repeat(7, minmax(30px, 1fr));
-  }
-
-  .wellness-grid-cell {
-    min-height: 40px;
-    padding: 0.125rem;
-  }
-
-  .wellness-practice-name {
-    font-size: 0.5rem;
-  }
-
-  .wellness-practice-progress {
-    font-size: 0.45rem;
-  }
-
-  .wellness-day-name {
-    font-size: 0.5rem;
-  }
-
-  .wellness-day-number {
-    font-size: 0.75rem;
-  }
-
-  .wellness-cell-icon {
-    font-size: 0.875rem;
-  }
-
-  .wellness-cell-action {
-    font-size: 0.5rem;
-    min-width: 14px;
-    height: 14px;
+  
+  .wellness-status-completed,
+  .wellness-status-linked,
+  .wellness-status-completed-linked {
+    border-left-width: 6px;
   }
 }
 
-/* Very small screens - minimal layout */
-@media (max-width: 360px) {
-  .wellness-tracker-grid {
-    grid-template-columns: 100px repeat(7, minmax(28px, 1fr));
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .wellness-practice-day.wellness-interactive:hover,
+  .wellness-cell-action:hover {
+    transform: none;
   }
-
-  .wellness-grid-header,
-  .wellness-grid-row {
-    grid-template-columns: 100px repeat(7, minmax(28px, 1fr));
-  }
-
-  .wellness-practice-name {
-    font-size: 0.45rem;
-    line-height: 1.0;
-  }
-
-  .wellness-practice-progress {
-    font-size: 0.4rem;
-  }
-
-  .wellness-day-name {
-    font-size: 0.45rem;
-  }
-
-  .wellness-day-number {
-    font-size: 0.625rem;
+  
+  .wellness-nav-button,
+  .wellness-cell-action {
+    transition: none;
   }
 } 

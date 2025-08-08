@@ -8,7 +8,7 @@ export const LoginButton: React.FC = () => {
     await loginWithRedirect({
       prompt: 'login',
       appState: {
-        returnTo: '/profile'
+        returnTo: '/dashboard'
       }
     });
   };

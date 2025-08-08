@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useTVAgentV2Api, TVAgentV2Response, ConversationThread } from '../services/tvagent-v2-api';
 import { useTVAgentApi, TVAgentResponse } from '../services/tvagent-api';
 import { ThreadSidebar } from '../components/tvagent/ThreadSidebar';
-import { CorsDebugger } from '../components/CorsDebugger';
+
 import { useLocation, useNavigate } from 'react-router-dom';
 
 interface ChatMessage {
@@ -132,7 +132,7 @@ export const TVAgentPage: React.FC = () => {
     };
 
     loadActiveThread();
-  }, [getActiveThread, loadThreadMessages]);
+  }, [getActiveThread, loadThreadMessages, location.state?.activeThread, location.state?.messages?.length]);
 
   const handleThreadSelect = async (threadId: string) => {
     try {

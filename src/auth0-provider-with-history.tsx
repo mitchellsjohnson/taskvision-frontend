@@ -11,7 +11,7 @@ export const Auth0ProviderWithHistory: React.FC<PropsWithChildren<{}>> = ({ chil
   const audience = process.env.REACT_APP_AUTH0_AUDIENCE;
 
   const onRedirectCallback = (appState?: AppState) => {
-    navigate(appState?.returnTo || window.location.pathname);
+    navigate(appState?.returnTo || '/dashboard');
   };
 
   if (!(domain && clientId && redirectUri && audience)) {

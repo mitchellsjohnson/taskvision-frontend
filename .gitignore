@@ -44,3 +44,7 @@ terraform.rc
 # Production
 /build
 /dist 
+# Log files
+*.log
+frontend.log
+backend.log

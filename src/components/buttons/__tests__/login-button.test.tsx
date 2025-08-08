@@ -30,7 +30,7 @@ describe('LoginButton', () => {
     expect(mockLoginWithRedirect).toHaveBeenCalledWith({
       prompt: 'login',
       appState: {
-        returnTo: '/profile'
+        returnTo: '/dashboard'
       }
     });
   });

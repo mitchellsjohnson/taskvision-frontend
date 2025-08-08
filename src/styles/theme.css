@@ -32,22 +32,192 @@
   --gray-900: '#111827';
 
   --yellow-mandarine-gradient: linear-gradient(153.07deg, var(--yellow) -2.47%, var(--mandarine) 102.78%);
-
   --mandarine-orange-gradient: linear-gradient(153.07deg, var(--mandarine) -2.47%, var(--orange) 102.78%);
-
   --pink-yellow-gradient: linear-gradient(153.07deg, var(--pink) -2.47%, var(--yellow) 102.78%);
-
   --pink-indigo-gradient: linear-gradient(153.07deg, var(--pink) -2.47%, var(--indigo) 102.78%);
-
   --indigo-aqua-gradient: linear-gradient(153.07deg, var(--indigo) -2.47%, var(--aqua) 102.78%);
-
   --blue-aqua-gradient: linear-gradient(153.07deg, var(--blue) -2.47%, var(--aqua) 102.78%);
-
   --aqua-emerald-gradient: linear-gradient(153.07deg, var(--aqua) -2.47%, var(--emerald) 102.78%);
-
   --emerald-yellow-gradient: linear-gradient(153.07deg, var(--emerald) -2.47%, var(--yellow) 102.78%);
 
   --font-primary: 'Inter', sans-serif;
   --font-secondary: 'Space Grotesk', sans-serif;
   --font-mono: 'Fira Code', monospace;
+
+  /* === UNIFIED THEME SYSTEM === */
+  
+  /* Light Mode - Base Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-accent: #f0f9ff;
+  
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-inverse: #ffffff;
+  
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --border-accent: #9ca3af;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Semantic Colors - Light Mode */
+  --success-bg: #dcfce7;
+  --success-border: #22c55e;
+  --success-text: #15803d;
+  
+  --warning-bg: #fef3c7;
+  --warning-border: #f59e0b;
+  --warning-text: #d97706;
+  
+  --error-bg: #fef2f2;
+  --error-border: #ef4444;
+  --error-text: #dc2626;
+  
+  --info-bg: #dbeafe;
+  --info-border: #3b82f6;
+  --info-text: #1d4ed8;
+  
+  /* Wellness Module Colors - Light Mode */
+  --wellness-bg-primary: #f8fdff;
+  --wellness-bg-secondary: #ffffff;
+  --wellness-bg-tertiary: #f9fafb;
+  --wellness-accent: #10a37f;
+  --wellness-accent-light: #34d399;
+  --wellness-text-primary: #1f2937;
+  --wellness-text-secondary: #6b7280;
+  --wellness-border: #e5e7eb;
+  --wellness-gradient: linear-gradient(135deg, #f8fdff 0%, #f0f9ff 100%);
+  
+  /* TVAgent Module Colors - Light Mode */
+  --tvagent-bg-primary: #ffffff;
+  --tvagent-bg-secondary: #f9fafb;
+  --tvagent-bg-tertiary: #f3f4f6;
+  --tvagent-bg-chat: #ffffff;
+  --tvagent-bg-message-user: #f0f9ff;
+  --tvagent-bg-message-agent: #f8fafc;
+  --tvagent-bg-sidebar: #ffffff;
+  --tvagent-text-primary: #1f2937;
+  --tvagent-text-secondary: #6b7280;
+  --tvagent-text-muted: #9ca3af;
+  --tvagent-border: #e5e7eb;
+  --tvagent-accent: #10a37f;
+  --tvagent-accent-hover: rgba(16, 163, 127, 0.1);
+  
+  /* Dashboard Module Colors - Light Mode */
+  --dashboard-bg-primary: #ffffff;
+  --dashboard-bg-secondary: #f9fafb;
+  --dashboard-bg-tertiary: #f3f4f6;
+  --dashboard-text-primary: #1f2937;
+  --dashboard-text-secondary: #6b7280;
+  --dashboard-text-muted: #9ca3af;
+  --dashboard-border: #e5e7eb;
+  --dashboard-tab-active: #3b82f6;
+  --dashboard-tab-active-bg: #ffffff;
+  --dashboard-tab-hover: #f9fafb;
+  
+  /* Interactive States - Light Mode */
+  --hover-bg: #f3f4f6;
+  --active-bg: #e5e7eb;
+  --focus-ring: #3b82f6;
+  --focus-ring-offset: #ffffff;
+}
+
+.dark {
+  /* Dark Mode - Base Colors */
+  --bg-primary: #1f2937;
+  --bg-secondary: #111827;
+  --bg-tertiary: #0f172a;
+  --bg-accent: #1e293b;
+  
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-inverse: #1f2937;
+  
+  --border-primary: #374151;
+  --border-secondary: #4b5563;
+  --border-accent: #6b7280;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  
+  /* Semantic Colors - Dark Mode */
+  --success-bg: rgba(34, 197, 94, 0.1);
+  --success-border: #10b981;
+  --success-text: #34d399;
+  
+  --warning-bg: rgba(245, 158, 11, 0.1);
+  --warning-border: #f59e0b;
+  --warning-text: #fbbf24;
+  
+  --error-bg: rgba(239, 68, 68, 0.1);
+  --error-border: #ef4444;
+  --error-text: #f87171;
+  
+  --info-bg: rgba(59, 130, 246, 0.1);
+  --info-border: #3b82f6;
+  --info-text: #60a5fa;
+  
+  /* Wellness Module Colors - Dark Mode */
+  --wellness-bg-primary: #0f172a;
+  --wellness-bg-secondary: #1e293b;
+  --wellness-bg-tertiary: #111827;
+  --wellness-accent: #34d399;
+  --wellness-accent-light: #10b981;
+  --wellness-text-primary: #f9fafb;
+  --wellness-text-secondary: #d1d5db;
+  --wellness-border: #374151;
+  --wellness-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  
+  /* TVAgent Module Colors - Dark Mode */
+  --tvagent-bg-primary: #1f2937;
+  --tvagent-bg-secondary: #111827;
+  --tvagent-bg-tertiary: #0f172a;
+  --tvagent-bg-chat: #1e293b;
+  --tvagent-bg-message-user: #1e3a5f;
+  --tvagent-bg-message-agent: #374151;
+  --tvagent-bg-sidebar: #111827;
+  --tvagent-text-primary: #f9fafb;
+  --tvagent-text-secondary: #d1d5db;
+  --tvagent-text-muted: #9ca3af;
+  --tvagent-border: #374151;
+  --tvagent-accent: #34d399;
+  --tvagent-accent-hover: rgba(52, 211, 153, 0.1);
+  
+  /* Dashboard Module Colors - Dark Mode */
+  --dashboard-bg-primary: #1f2937;
+  --dashboard-bg-secondary: #111827;
+  --dashboard-bg-tertiary: #0f172a;
+  --dashboard-text-primary: #f9fafb;
+  --dashboard-text-secondary: #d1d5db;
+  --dashboard-text-muted: #9ca3af;
+  --dashboard-border: #374151;
+  --dashboard-tab-active: #60a5fa;
+  --dashboard-tab-active-bg: #1e293b;
+  --dashboard-tab-hover: #374151;
+  
+  /* Interactive States - Dark Mode */
+  --hover-bg: #374151;
+  --active-bg: #4b5563;
+  --focus-ring: #60a5fa;
+  --focus-ring-offset: #1f2937;
+}
+
+/* Global Transition for Theme Changes */
+*,
+*::before,
+*::after {
+  /* Reduced transitions to prevent blinking */
+  transition: background-color 0.1s ease, border-color 0.1s ease, color 0.1s ease;
+}
+
+/* Disable transitions on theme change to prevent flash */
+.theme-transitioning * {
+  transition: none !important;
 }

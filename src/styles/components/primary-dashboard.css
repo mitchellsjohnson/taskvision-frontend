@@ -1,0 +1,1048 @@
+/* Primary Dashboard Layout */
+.primary-dashboard {
+  margin: 0;
+  padding: 1.5rem;
+  background: var(--dashboard-bg-primary);
+  min-height: 100vh;
+  /* Reduced transition to prevent blinking */
+  transition: background-color 0.15s ease;
+}
+
+.dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-row {
+  display: flex;
+  width: 100%;
+  gap: 1.25rem;
+}
+
+.dashboard-row.mit-lit-row {
+  /* Side-by-side layout for MIT/LIT */
+  flex-direction: row;
+}
+
+.dashboard-widget {
+  flex: 1;
+  background: var(--dashboard-bg-secondary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--dashboard-border);
+  /* Reduced transition to prevent blinking */
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.dashboard-widget:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  /* Reduced transform to prevent modal positioning issues */
+  transform: translateY(-1px);
+}
+
+.dashboard-widget.full-width {
+  width: 100%;
+}
+
+/* Widget Common Styles */
+.widget-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.widget-content {
+  color: var(--dashboard-text-secondary);
+}
+
+.widget-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--dashboard-border);
+  font-size: 0.875rem;
+  color: var(--dashboard-text-tertiary);
+}
+
+.refresh-button {
+  background: none;
+  border: none;
+  color: var(--dashboard-accent);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.refresh-button:hover {
+  background: var(--dashboard-accent-bg);
+  transform: rotate(90deg);
+}
+
+/* MIT Task List Widget */
+.mit-task-list-widget .widget-title {
+  color: var(--dashboard-accent);
+}
+
+.mit-task-list-widget .task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mit-task-list-widget .task-item {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--dashboard-accent);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Reduced transition to prevent blinking */
+  transition: background-color 0.1s ease, transform 0.1s ease;
+}
+
+/* Dark mode styling for all MIT tasks */
+.dark .mit-task-list-widget .task-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mit-task-list-widget .task-item.clickable {
+  cursor: pointer;
+}
+
+.mit-task-list-widget .task-item:hover {
+  background: var(--dashboard-hover-bg);
+  /* Reduced transform to prevent modal positioning issues */
+  transform: translateX(2px);
+}
+
+.mit-task-list-widget .task-item.clickable:focus {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+.mit-task-list-widget .task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.mit-task-list-widget .task-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--dashboard-text-primary);
+}
+
+.mit-task-list-widget .due-date-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.mit-task-list-widget .due-date-badge.overdue {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.mit-task-list-widget .due-date-badge.today {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.mit-task-list-widget .due-date-badge.upcoming {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+/* Dark mode adjustments for badges */
+.dark .mit-task-list-widget .due-date-badge.overdue {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.dark .mit-task-list-widget .due-date-badge.today {
+  background: #78350f;
+  color: #fbbf24;
+}
+
+.dark .mit-task-list-widget .due-date-badge.upcoming {
+  background: #0c4a6e;
+  color: #7dd3fc;
+}
+
+.mit-task-list-widget .task-description {
+  font-size: 0.9rem;
+  color: var(--dashboard-text-secondary);
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+}
+
+.mit-task-list-widget .task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.mit-task-list-widget .task-tag {
+  padding: 0.125rem 0.5rem;
+  background: var(--dashboard-tag-bg);
+  color: var(--dashboard-tag-text);
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.mit-task-list-widget .empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--dashboard-text-tertiary);
+}
+
+.mit-task-list-widget .task-count {
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+}
+
+/* LIT Task List Widget */
+.lit-task-list-widget {
+  /* Inherit most styles from MIT widget */
+}
+
+.lit-task-list-widget .widget-title {
+  color: var(--dashboard-text-primary);
+}
+
+.lit-task-list-widget .task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lit-task-list-widget .task-item {
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid var(--dashboard-secondary-accent);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Reduced transition to prevent blinking */
+  transition: background-color 0.1s ease, transform 0.1s ease;
+}
+
+/* Dark mode styling for all LIT tasks */
+.dark .lit-task-list-widget .task-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lit-task-list-widget .task-item.clickable {
+  cursor: pointer;
+}
+
+.lit-task-list-widget .task-item:hover {
+  background: var(--dashboard-hover-bg);
+  /* Reduced transform to prevent modal positioning issues */
+  transform: translateX(2px);
+}
+
+.lit-task-list-widget .task-item.clickable:focus {
+  outline: 2px solid var(--dashboard-secondary-accent);
+  outline-offset: 2px;
+}
+
+/* Ensure LIT task list inherits all text styles from MIT */
+.lit-task-list-widget .task-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.lit-task-list-widget .task-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--dashboard-text-primary);
+}
+
+.lit-task-list-widget .due-date-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.lit-task-list-widget .due-date-badge.overdue {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.lit-task-list-widget .due-date-badge.today {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.lit-task-list-widget .due-date-badge.upcoming {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+/* Dark mode adjustments for LIT badges */
+.dark .lit-task-list-widget .due-date-badge.overdue {
+  background: #7f1d1d;
+  color: #fca5a5;
+}
+
+.dark .lit-task-list-widget .due-date-badge.today {
+  background: #78350f;
+  color: #fbbf24;
+}
+
+.dark .lit-task-list-widget .due-date-badge.upcoming {
+  background: #0c4a6e;
+  color: #7dd3fc;
+}
+
+.lit-task-list-widget .task-description {
+  font-size: 0.9rem;
+  color: var(--dashboard-text-secondary);
+  margin: 0.5rem 0 0 0;
+  line-height: 1.4;
+}
+
+.lit-task-list-widget .task-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.lit-task-list-widget .task-tag {
+  padding: 0.125rem 0.5rem;
+  background: var(--dashboard-tag-bg);
+  color: var(--dashboard-tag-text);
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.lit-task-list-widget .empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--dashboard-text-tertiary);
+}
+
+.lit-task-list-widget .task-count {
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+}
+
+/* Scheduled Tasks Widget */
+.scheduled-tasks-widget .task-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.scheduled-tasks-widget .task-group {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.scheduled-tasks-widget .group-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  background: var(--dashboard-bg-tertiary);
+  color: var(--dashboard-text-primary);
+  border-left: 4px solid var(--dashboard-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.scheduled-tasks-widget .overdue-group .group-title {
+  background: var(--dashboard-error-bg);
+  color: var(--dashboard-error-text);
+}
+
+.scheduled-tasks-widget .today-group .group-title {
+  background: var(--dashboard-warning-bg);
+  color: var(--dashboard-warning-text);
+}
+
+.scheduled-tasks-widget .week-group .group-title {
+  background: var(--dashboard-info-bg);
+  color: var(--dashboard-info-text);
+}
+
+.scheduled-tasks-widget .task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scheduled-tasks-widget .task-item {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  /* Reduced transition to prevent blinking */
+  transition: background-color 0.1s ease;
+}
+
+/* Dark mode styling for all scheduled tasks */
+.dark .scheduled-tasks-widget .task-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.scheduled-tasks-widget .task-item.clickable {
+  cursor: pointer;
+}
+
+.scheduled-tasks-widget .task-item:hover {
+  background: var(--dashboard-hover-bg);
+}
+
+.scheduled-tasks-widget .task-item.clickable:focus {
+  outline: 2px solid var(--dashboard-accent);
+  outline-offset: 2px;
+}
+
+.scheduled-tasks-widget .task-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.scheduled-tasks-widget .task-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 0;
+  color: var(--dashboard-text-primary);
+  flex: 1;
+}
+
+.scheduled-tasks-widget .task-due-date {
+  font-size: 0.8rem;
+  color: var(--dashboard-text-tertiary);
+}
+
+.scheduled-tasks-widget .mit-badge {
+  background: var(--dashboard-accent);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+/* Wellness Status Widget */
+.wellness-status-widget .practices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Upcoming Tasks Widget */
+.upcoming-tasks-content {
+  width: 100%;
+}
+
+.upcoming-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.upcoming-task-item {
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background-color 0.1s ease;
+  cursor: pointer;
+}
+
+/* Dark mode styling for all upcoming tasks */
+.dark .upcoming-task-item {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.upcoming-task-item:hover {
+  background: var(--dashboard-hover-bg);
+}
+
+.upcoming-task-item.overdue {
+  border-left: 4px solid var(--dashboard-error);
+}
+
+.upcoming-task-item.today {
+  border-left: 4px solid var(--dashboard-warning);
+}
+
+.upcoming-task-item .task-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.upcoming-task-item .task-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.upcoming-task-item .task-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--dashboard-text-primary);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upcoming-task-item .task-mit-badge {
+  background: var(--dashboard-accent);
+  color: white;
+  padding: 0.125rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.upcoming-task-item .task-due-date {
+  font-size: 0.8rem;
+  color: var(--dashboard-text-tertiary);
+}
+
+.upcoming-task-item .due-date.overdue {
+  color: var(--dashboard-error-text);
+  font-weight: 500;
+}
+
+.upcoming-task-item .due-date.today {
+  color: var(--dashboard-warning-text);
+  font-weight: 500;
+}
+
+.upcoming-task-item .overdue-icon {
+  font-size: 0.7rem;
+}
+
+/* Wellness Status Widget */
+.wellness-status-widget .practice-item {
+  background: var(--wellness-bg-secondary);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+}
+
+.wellness-status-widget .practice-item:hover {
+  background: var(--wellness-hover-bg);
+  transform: translateY(-2px);
+}
+
+.wellness-status-widget .practice-toggle {
+  background: none;
+  border: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.wellness-status-widget .practice-toggle:hover {
+  background: var(--wellness-accent-bg);
+}
+
+.wellness-status-widget .practice-toggle.completed {
+  background: var(--wellness-success-bg);
+}
+
+.wellness-status-widget .practice-icon {
+  font-size: 1.5rem;
+}
+
+.wellness-status-widget .practice-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--wellness-text-primary);
+  text-align: center;
+}
+
+.wellness-status-widget .journal-indicator {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  font-size: 0.8rem;
+}
+
+.wellness-status-widget .practice-progress {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wellness-status-widget .progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--wellness-progress-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.wellness-status-widget .progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.wellness-status-widget .progress-bar.progress-complete .progress-fill {
+  background: var(--wellness-success);
+}
+
+.wellness-status-widget .progress-bar.progress-on-track .progress-fill {
+  background: var(--wellness-warning);
+}
+
+.wellness-status-widget .progress-bar.progress-behind .progress-fill {
+  background: var(--wellness-error);
+}
+
+.wellness-status-widget .progress-text {
+  font-size: 0.8rem;
+  color: var(--wellness-text-secondary);
+  white-space: nowrap;
+}
+
+/* Journal Modal */
+.wellness-status-widget .journal-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.wellness-status-widget .journal-content {
+  background: var(--wellness-bg-primary);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.wellness-status-widget .journal-content h4 {
+  margin: 0 0 1rem 0;
+  color: var(--wellness-text-primary);
+}
+
+.wellness-status-widget .journal-input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--wellness-border);
+  border-radius: 8px;
+  background: var(--wellness-bg-secondary);
+  color: var(--wellness-text-primary);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 100px;
+}
+
+.wellness-status-widget .journal-input:focus {
+  outline: none;
+  border-color: var(--wellness-accent);
+  box-shadow: 0 0 0 2px var(--wellness-accent-bg);
+}
+
+.wellness-status-widget .journal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.wellness-status-widget .character-count {
+  font-size: 0.8rem;
+  color: var(--wellness-text-tertiary);
+}
+
+.wellness-status-widget .save-button,
+.wellness-status-widget .cancel-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wellness-status-widget .save-button {
+  background: var(--wellness-accent);
+  color: white;
+  margin-left: 0.5rem;
+}
+
+.wellness-status-widget .save-button:hover {
+  background: var(--wellness-accent-hover);
+}
+
+.wellness-status-widget .cancel-button {
+  background: var(--wellness-bg-tertiary);
+  color: var(--wellness-text-secondary);
+}
+
+.wellness-status-widget .cancel-button:hover {
+  background: var(--wellness-hover-bg);
+}
+
+/* Task Overview Summary Widget */
+.task-overview-summary-widget .summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.task-overview-summary-widget .summary-item {
+  text-align: center;
+  padding: 1rem;
+  background: var(--dashboard-bg-tertiary);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.task-overview-summary-widget .summary-item:hover {
+  background: var(--dashboard-hover-bg);
+  transform: translateY(-2px);
+}
+
+.task-overview-summary-widget .summary-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--dashboard-accent);
+  margin-bottom: 0.5rem;
+}
+
+.task-overview-summary-widget .summary-item.overdue .summary-number {
+  color: var(--dashboard-error);
+}
+
+.task-overview-summary-widget .summary-item.completed .summary-number {
+  color: var(--dashboard-success);
+}
+
+.task-overview-summary-widget .summary-label {
+  font-size: 0.9rem;
+  color: var(--dashboard-text-secondary);
+  font-weight: 500;
+}
+
+/* Productivity Score Widget */
+.productivity-score-widget .widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.productivity-score-widget .week-range {
+  font-size: 0.85rem;
+  color: var(--dashboard-text-tertiary);
+  font-weight: normal;
+}
+
+.productivity-score-widget .score-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.productivity-score-widget .score-circle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.productivity-score-widget .score-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.productivity-score-widget .score-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.productivity-score-widget .score-label {
+  font-size: 0.8rem;
+  color: var(--dashboard-text-secondary);
+  font-weight: 500;
+}
+
+.productivity-score-widget .score-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.productivity-score-widget .breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: var(--dashboard-bg-tertiary);
+  border-radius: 6px;
+}
+
+.productivity-score-widget .breakdown-label {
+  font-size: 0.9rem;
+  color: var(--dashboard-text-secondary);
+  font-weight: 500;
+}
+
+.productivity-score-widget .breakdown-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--dashboard-text-primary);
+}
+
+/* Loading and Error States */
+.widget-content.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.widget-content.error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.widget-content.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--dashboard-text-tertiary);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--dashboard-bg-tertiary);
+  border-top: 3px solid var(--dashboard-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.retry-button {
+  background: var(--dashboard-accent);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+}
+
+.retry-button:hover {
+  background: var(--dashboard-accent-hover);
+  transform: translateY(-1px);
+}
+
+.retry-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Dashboard Loading/Error States */
+.dashboard-loading,
+.dashboard-error {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--dashboard-bg-secondary);
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--dashboard-border);
+  z-index: 100;
+}
+
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dashboard-loading .loading-spinner {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+}
+
+.dashboard-error {
+  background: var(--dashboard-error-bg);
+  border-color: var(--dashboard-error);
+  color: var(--dashboard-error-text);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .primary-dashboard {
+    padding: 1rem;
+  }
+  
+  .dashboard-grid {
+    gap: 1rem;
+  }
+  
+  .dashboard-row {
+    gap: 1rem;
+  }
+  
+  .dashboard-row.mit-lit-row {
+    /* Stack MIT/LIT vertically on mobile */
+    flex-direction: column;
+  }
+  
+  .dashboard-widget {
+    padding: 1rem;
+  }
+  
+  .widget-title {
+    font-size: 1.1rem;
+  }
+  
+  .task-overview-summary-widget .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .task-overview-summary-widget .summary-number {
+    font-size: 2rem;
+  }
+  
+  .wellness-status-widget .practices-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .productivity-score-widget .score-breakdown {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .wellness-status-widget .practices-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .scheduled-tasks-widget .task-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .dashboard-widget {
+    border-width: 2px;
+  }
+  
+  .mit-task-list-widget .task-item {
+    border-left-width: 6px;
+  }
+  
+  .refresh-button:focus,
+  .retry-button:focus {
+    outline: 2px solid var(--dashboard-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-widget,
+  .task-item,
+  .practice-item,
+  .summary-item,
+  .refresh-button,
+  .retry-button {
+    transition: none;
+  }
+  
+  .loading-spinner {
+    animation: none;
+  }
+  
+  .dashboard-widget:hover,
+  .task-item:hover,
+  .practice-item:hover,
+  .summary-item:hover {
+    transform: none;
+  }
+}
+
+/* Prevent body scroll when modal is open */
+.modal-open {
+  overflow: hidden;
+}

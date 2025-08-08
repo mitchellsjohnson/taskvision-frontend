@@ -16,7 +16,7 @@
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
     "@types/react-router-dom": "^5.3.3",
-    "axios": "^0.27.2",
+    "axios": "^1.11.0",
     "bootstrap": "^5.2.2",
     "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
@@ -49,7 +49,7 @@
     ],
     "plugins": []
   },
-  "proxy": "https://api.taskvision.ai",
+  "proxy": "http://localhost:6060",
   "browserslist": {
     "production": [
       ">0.2%",

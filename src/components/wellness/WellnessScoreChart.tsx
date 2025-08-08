@@ -10,6 +10,7 @@ import {
 } from 'recharts';
 import { WeeklyWellnessScore } from '../../types';
 import { useWellnessApi } from '../../services/wellness-api';
+import { useTheme } from '../../contexts/theme-context';
 
 interface WellnessScoreChartProps {
   data: WeeklyWellnessScore[];
@@ -30,9 +31,19 @@ const WellnessScoreChart: React.FC<WellnessScoreChartProps> = ({
   className = '',
 }) => {
   const { getWeekStart } = useWellnessApi();
+  const { isDarkMode } = useTheme();
   
   // Get current week for highlighting (using timezone-aware function)
   const currentWeek = getWeekStart(new Date());
+
+  // Dynamic theme colors
+  const theme = {
+    gridColor: isDarkMode ? '#374151' : '#e5e7eb',
+    textColor: isDarkMode ? '#d1d5db' : '#6b7280',
+    lineColor: isDarkMode ? '#34d399' : '#10a37f',
+    dotColor: isDarkMode ? '#10b981' : '#059669',
+    strokeColor: isDarkMode ? '#1f2937' : '#ffffff',
+  };
 
   // Transform data for chart
   const chartData: ChartDataPoint[] = data
@@ -109,17 +120,17 @@ const WellnessScoreChart: React.FC<WellnessScoreChartProps> = ({
           data={chartData}
           margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+          <CartesianGrid strokeDasharray="3 3" stroke={theme.gridColor} />
           <XAxis 
             dataKey="weekLabel"
-            stroke="#6b7280"
+            stroke={theme.textColor}
             fontSize={12}
             tickLine={false}
             axisLine={false}
           />
           <YAxis 
             domain={[0, 100]}
-            stroke="#6b7280"
+            stroke={theme.textColor}
             fontSize={12}
             tickLine={false}
             axisLine={false}
@@ -129,7 +140,7 @@ const WellnessScoreChart: React.FC<WellnessScoreChartProps> = ({
           <Line
             type="monotone"
             dataKey="score"
-            stroke="#10a37f"
+            stroke={theme.lineColor}
             strokeWidth={3}
             dot={(props: any) => {
               const isCurrentWeek = props.payload?.isCurrentWeek;
@@ -138,15 +149,15 @@ const WellnessScoreChart: React.FC<WellnessScoreChartProps> = ({
                   cx={props.cx}
                   cy={props.cy}
                   r={isCurrentWeek ? 6 : 4}
-                  fill={isCurrentWeek ? '#059669' : '#10a37f'}
-                  stroke="#ffffff"
+                  fill={isCurrentWeek ? theme.dotColor : theme.lineColor}
+                  stroke={theme.strokeColor}
                   strokeWidth={2}
                   className={onWeekClick ? 'cursor-pointer hover:r-6' : ''}
                   onClick={() => onWeekClick && handlePointClick(props.payload)}
                 />
               );
             }}
-            activeDot={{ r: 6, fill: '#059669' }}
+            activeDot={{ r: 6, fill: theme.dotColor }}
           />
         </LineChart>
       </ResponsiveContainer>

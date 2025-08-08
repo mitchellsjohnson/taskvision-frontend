@@ -1,7 +1,7 @@
 /* task-page.css */
 
-.mit-grid__title,
-.lit-list__title {
+/* Remove the problematic white text rule that affects dashboard LIT widgets */
+.mit-grid__title {
   color: var(--white) !important;
 }
 

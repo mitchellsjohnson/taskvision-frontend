@@ -1,0 +1,241 @@
+/* Dashboard Tabs Styles */
+.dashboard-tabs-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+}
+
+/* Tab Navigation */
+.dashboard-tabs-nav {
+  display: flex;
+  border-bottom: 1px solid var(--dashboard-border);
+  background-color: var(--dashboard-bg-primary);
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.dashboard-tab {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.dashboard-tab:hover {
+  color: var(--dashboard-text-primary);
+  background-color: var(--dashboard-tab-hover);
+}
+
+.dashboard-tab:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+
+.dashboard-tab.active {
+  color: var(--dashboard-text-primary);
+  border-bottom-color: var(--dashboard-tab-active);
+  background-color: var(--dashboard-tab-active-bg);
+}
+
+.dashboard-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--dashboard-tab-active-bg);
+}
+
+/* Tab Content */
+.dashboard-tabs-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-tab-panel {
+  width: 100%;
+  height: 100%;
+  padding: 0 1rem;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.dashboard-tab-panel.hidden {
+  display: none;
+}
+
+.dashboard-tab-panel.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Placeholder Styles */
+.primary-dashboard-placeholder,
+.wellness-dashboard-placeholder {
+  padding: 2rem;
+  background-color: var(--dashboard-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--dashboard-border);
+}
+
+.primary-dashboard-placeholder h2,
+.wellness-dashboard-placeholder h2 {
+  margin-bottom: 1rem;
+  color: var(--dashboard-text-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.primary-dashboard-placeholder p,
+.wellness-dashboard-placeholder p {
+  margin-bottom: 1rem;
+  color: var(--dashboard-text-secondary);
+  line-height: 1.6;
+}
+
+.primary-dashboard-placeholder ul,
+.wellness-dashboard-placeholder ul {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--dashboard-text-secondary);
+}
+
+.primary-dashboard-placeholder li,
+.wellness-dashboard-placeholder li {
+  margin-bottom: 0.5rem;
+}
+
+.cache-info {
+  font-size: 0.875rem;
+  color: var(--success-text);
+  font-style: italic;
+  margin-top: 1rem;
+  padding: 0.5rem;
+  background-color: var(--success-bg);
+  border-radius: 4px;
+  border: 1px solid var(--success-border);
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .dashboard-tabs-container {
+    padding: 0.75rem;
+  }
+
+  .dashboard-tabs-nav {
+    flex-direction: column;
+    padding: 0;
+    border-bottom: none;
+    background-color: var(--dashboard-bg-secondary);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+
+  .dashboard-tab {
+    width: 100%;
+    text-align: left;
+    padding: 0.625rem 1rem;
+    border-bottom: 1px solid var(--dashboard-border);
+    border-radius: 0;
+    font-size: 0.9rem;
+  }
+
+  .dashboard-tab:last-child {
+    border-bottom: none;
+  }
+
+  .dashboard-tab.active {
+    background-color: var(--dashboard-tab-active);
+    color: var(--text-inverse);
+    border-bottom-color: transparent;
+  }
+
+  .dashboard-tab.active::after {
+    display: none;
+  }
+
+  .dashboard-tab:hover {
+    background-color: var(--hover-bg);
+  }
+
+  .dashboard-tab.active:hover {
+    background-color: var(--dashboard-tab-active);
+    opacity: 0.9;
+  }
+
+  .dashboard-tabs-content {
+    padding: 0;
+  }
+
+  .dashboard-tab-panel {
+    padding: 0;
+  }
+
+  .primary-dashboard-placeholder,
+  .wellness-dashboard-placeholder {
+    padding: 1.5rem;
+    margin: 0;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .dashboard-tab {
+    border: 2px solid transparent;
+  }
+
+  .dashboard-tab:focus {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+
+  .dashboard-tab.active {
+    border-color: var(--dashboard-tab-active);
+    background-color: var(--dashboard-tab-active-bg);
+    color: var(--dashboard-text-primary);
+  }
+
+  .dashboard-tabs-nav {
+    border-bottom-color: var(--dashboard-border);
+    border-bottom-width: 3px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-tab {
+    transition: none;
+  }
+
+  .dashboard-tab-panel {
+    animation: none;
+  }
+
+  @keyframes fadeIn {
+    from, to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

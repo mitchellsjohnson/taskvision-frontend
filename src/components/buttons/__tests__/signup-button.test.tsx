@@ -29,7 +29,7 @@ describe('SignupButton', () => {
 
     expect(mockLoginWithRedirect).toHaveBeenCalledWith({
       appState: {
-        returnTo: '/profile'
+        returnTo: '/dashboard'
       },
       authorizationParams: {
         prompt: 'login',

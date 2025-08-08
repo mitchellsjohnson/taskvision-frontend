@@ -22,6 +22,7 @@ import { DashboardPage } from './pages/dashboard-page';
 import { TVAgentPage } from './pages/tvagent-page';
 import WellnessPage from './pages/wellness-page';
 import DeleteWellnessDataPage from './pages/delete-wellness-data';
+import { DarkModeToggle } from './components/DarkModeToggle';
 
 const ProtectedSettingsPage = withAuthenticationRequired(SettingsPage, {
   onRedirecting: () => (
@@ -47,6 +48,7 @@ export const App: React.FC = () => {
       <div className="page-layout">
         <NavBar />
         <MobileNavBar />
+        <DarkModeToggle />
         <main className="page-layout__main">
           <Routes>
             <Route path="/" element={<HomePage />} />

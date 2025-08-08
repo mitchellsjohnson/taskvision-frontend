@@ -21,7 +21,8 @@ export type WellnessPractice =
   | 'Kindness'
   | 'Social Outreach'
   | 'Novelty Challenge'
-  | 'Savoring Reflection';
+  | 'Savoring Reflection'
+  | 'Exercise';
 
 export interface PracticeInstance {
   id: string;
