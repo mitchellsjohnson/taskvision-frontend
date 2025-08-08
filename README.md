@@ -226,3 +226,4 @@ export const DEFAULT_TAGS: Record<string, DefaultTag> = {
 
 *This tag system represents a significant step forward in making TaskVision more accessible, usable, and professional while maintaining the powerful organizational features users expect.*
 
+# Force build trigger
