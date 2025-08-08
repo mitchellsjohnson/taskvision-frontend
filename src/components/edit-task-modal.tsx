@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { TagInput } from './TagInput';
 import { CharacterCounter } from './CharacterCounter';

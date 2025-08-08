@@ -73,7 +73,7 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
 
   useEffect(() => {
     fetchTaskSummary();
-  }, []);
+  }, [fetchTaskSummary]);
 
   if (isLoading) {
     return (

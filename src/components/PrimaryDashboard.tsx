@@ -20,52 +20,31 @@ export const PrimaryDashboard: React.FC<PrimaryDashboardProps> = ({
   onDataUpdate, 
   cachedData 
 }) => {
-  const [data, setData] = useState<PrimaryDashboardData | null>(cachedData);
-  const [isLoading, setIsLoading] = useState(!cachedData);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Handle data refresh from individual widgets
   const handleDataRefresh = useCallback(() => {
-    const refreshData = {
-      lastRefresh: Date.now(),
-    };
-    
-    setData(refreshData);
-    
-    // Clear loading state after data is updated
-    setIsLoading(false);
+    setIsLoading(true);
     setError(null);
     
-    onDataUpdate(refreshData);
+    // Simulate data refresh
+    setTimeout(() => {
+      setIsLoading(false);
+      if (onDataUpdate) {
+        const refreshData = {
+          lastRefresh: Date.now(),
+        };
+        onDataUpdate(refreshData);
+      }
+    }, 1000);
   }, [onDataUpdate]);
 
-  // Listen for tab switch events to trigger refresh with debounce
+  // Auto-refresh when cached data changes
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    
-    const handleTabSwitch = (event: CustomEvent) => {
-      if (event.detail.activeTab === 'dashboard') {
-        // Debounce rapid tab switches
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          handleDataRefresh();
-        }, 300);
-      }
-    };
-
-    window.addEventListener('dashboardTabSwitch', handleTabSwitch as EventListener);
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('dashboardTabSwitch', handleTabSwitch as EventListener);
-    };
-  }, [handleDataRefresh]);
-
-  // Initial data load
-  useEffect(() => {
-    if (!cachedData) {
+    if (cachedData) {
       handleDataRefresh();
     }
-  }, [cachedData]);
+  }, [cachedData, handleDataRefresh]);
 
   return (
     <div className="primary-dashboard">
