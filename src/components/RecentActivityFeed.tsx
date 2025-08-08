@@ -200,7 +200,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ onRefres
     return (
       <div className="recent-activity-content">
         <div className="activity-list">
-          {data.activities.map((activity) => (
+          {(data.activities || []).map((activity) => (
             <div key={activity.id} className="activity-item">
               <div className="activity-icon" aria-hidden="true">
                 {getActivityIcon(activity.type)}
