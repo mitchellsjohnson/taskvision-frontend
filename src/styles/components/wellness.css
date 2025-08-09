@@ -821,26 +821,53 @@
   align-items: center;
 }
 
-.wellness-journal {
+/* Journal Indicator in Top Right Corner */
+.wellness-journal-corner {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  z-index: 10;
+}
+
+.wellness-journal-indicator {
   background: none;
   border: none;
-  font-size: 0.8rem;
   cursor: pointer;
-  padding: 0.1rem;
-  border-radius: 2px;
-  transition: opacity 0.2s ease;
+  padding: 2px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.wellness-journal.has-journal {
+.wellness-journal-indicator.has-journal {
+  color: #8b4513;
   opacity: 1;
-  filter: brightness(1.2);
+  background: rgba(139, 69, 19, 0.1);
 }
 
-.wellness-journal.no-journal {
-  opacity: 0.5;
+.wellness-journal-indicator.no-journal {
+  color: #666;
+  opacity: 0.6;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.wellness-journal:hover {
+.wellness-journal-indicator:hover {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.15);
+  background: rgba(139, 69, 19, 0.2);
+}
+
+.wellness-journal-indicator svg {
+  transition: transform 0.2s ease;
+}
+
+.wellness-journal-indicator:hover svg {
+  transform: rotate(-5deg);
+}
+
+/* Ensure wellness cells have relative positioning for absolute journal indicator */
+.wellness-grid-cell.wellness-practice-day {
+  position: relative;
 } 

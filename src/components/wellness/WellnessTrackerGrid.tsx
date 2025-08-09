@@ -392,22 +392,6 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
   const getCellActions = (cellData: CellData) => {
     const actions = [];
     
-    // Add journal indicator/button for completed practices
-    if (cellData.instance?.completed && onJournalEdit) {
-      const hasJournal = hasJournalEntry?.(cellData.date, cellData.practice) || false;
-      
-      actions.push(
-        <button
-          key="journal"
-          className={`wellness-cell-action wellness-journal ${hasJournal ? 'has-journal' : 'no-journal'}`}
-          onClick={(e) => handleJournalClick(cellData, e)}
-          title={hasJournal ? "Edit journal entry" : "Add journal entry"}
-        >
-          📝
-        </button>
-      );
-    }
-    
     // Add task link or create button
     if (cellData.instance?.linkedTaskId) {
       actions.push(
@@ -434,6 +418,25 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
     }
     
     return <div className="wellness-cell-actions">{actions}</div>;
+  };
+
+  // Get journal indicator for top right corner
+  const getJournalIndicator = (cellData: CellData) => {
+    if (!cellData.instance?.completed || !onJournalEdit) return null;
+    
+    const hasJournal = hasJournalEntry?.(cellData.date, cellData.practice) || false;
+    
+    return (
+      <button
+        className={`wellness-journal-indicator ${hasJournal ? 'has-journal' : 'no-journal'}`}
+        onClick={(e) => handleJournalClick(cellData, e)}
+        title={hasJournal ? "Edit journal entry" : "Add journal entry"}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>
+        </svg>
+      </button>
+    );
   };
 
   return (
@@ -485,6 +488,7 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
           {practiceRow.map((cellData, dayIndex) => {
             const status = getCellStatus(cellData);
             const actionButton = getCellActions(cellData);
+            const journalIndicator = getJournalIndicator(cellData);
             
             return (
               <div
@@ -496,6 +500,11 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
                 title={`${cellData.practice} - ${cellData.dayOfWeek} ${cellData.dayNumber}`}
               >
                 <div className="wellness-cell-content">
+                  {journalIndicator && (
+                    <div className="wellness-journal-corner">
+                      {journalIndicator}
+                    </div>
+                  )}
                   <span className="wellness-cell-icon">{getCellIcon(cellData)}</span>
                   <div className="wellness-cell-action-container">
                     {actionButton}
