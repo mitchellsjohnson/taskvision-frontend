@@ -594,3 +594,103 @@
     transition: none;
   }
 } 
+
+/* Wellness Widget Enhancements */
+.wellness-status-widget .widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.wellness-status-widget .week-navigation {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wellness-status-widget .week-nav-btn {
+  background: var(--dashboard-bg-secondary);
+  border: 1px solid var(--dashboard-border);
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  color: var(--dashboard-text-primary);
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.2s ease;
+}
+
+.wellness-status-widget .week-nav-btn:hover {
+  background: var(--dashboard-bg-tertiary);
+}
+
+.wellness-status-widget .week-display {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--dashboard-text-secondary);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+  min-width: 80px;
+  text-align: center;
+}
+
+.wellness-status-widget .week-display:hover {
+  background: var(--dashboard-bg-secondary);
+}
+
+.wellness-status-widget .current-week-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--dashboard-bg-tertiary);
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid var(--dashboard-accent);
+}
+
+.wellness-status-widget .score-label {
+  font-size: 0.9rem;
+  color: var(--dashboard-text-secondary);
+}
+
+.wellness-status-widget .score-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dashboard-accent);
+}
+
+.wellness-status-widget .practice-indicators {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.wellness-status-widget .completed-today-indicator {
+  color: #4ade80;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.wellness-status-widget .practice-toggle.view-only {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.wellness-status-widget .practice-toggle.view-only:hover {
+  transform: none;
+}
+
+.wellness-status-widget .journal-modal .week-indicator {
+  font-size: 0.8rem;
+  color: var(--dashboard-text-secondary);
+  font-weight: normal;
+}
+
+.wellness-status-widget .journal-input[readonly] {
+  background-color: var(--dashboard-bg-secondary);
+  opacity: 0.8;
+  cursor: default;
+} 

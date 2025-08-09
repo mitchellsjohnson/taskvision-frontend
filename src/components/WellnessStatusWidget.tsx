@@ -44,17 +44,19 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
   const [showJournalFor, setShowJournalFor] = useState<WellnessPractice | null>(null);
   const [journalContent, setJournalContent] = useState('');
   const [journalEntries, setJournalEntries] = useState<Record<string, string>>({});
+  const [currentWeekOffset, setCurrentWeekOffset] = useState(0); // 0 = current week, -1 = last week, etc.
+  const [weeklyScore, setWeeklyScore] = useState<number>(0);
   const { getAccessTokenSilently } = useAuth0();
 
   const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
 
-  const getWeekDateRange = () => {
+  const getWeekDateRange = (weekOffset: number = 0) => {
     const today = new Date();
     const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
     const mondayOffset = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convert to Monday-based week
     
     const monday = new Date(today);
-    monday.setDate(today.getDate() - mondayOffset);
+    monday.setDate(today.getDate() - mondayOffset + (weekOffset * 7));
     
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
@@ -62,7 +64,8 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     return {
       weekStart: monday.toISOString().split('T')[0],
       weekEnd: sunday.toISOString().split('T')[0],
-      today: today.toISOString().split('T')[0]
+      today: today.toISOString().split('T')[0],
+      isCurrentWeek: weekOffset === 0
     };
   };
 
@@ -72,7 +75,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       setError(null);
       
       const accessToken = await getAccessTokenSilently();
-      const { weekStart, weekEnd, today } = getWeekDateRange();
+      const { weekStart, weekEnd, today } = getWeekDateRange(currentWeekOffset);
       
       // Fetch practice instances for current week
       const response = await axios.get(`${API_SERVER_URL}/api/wellness/practices`, {
@@ -81,6 +84,23 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       });
       
       const practices: PracticeInstance[] = response.data.data;
+      
+      // Fetch weekly score for this week
+      try {
+        const scoreResponse = await axios.get(`${API_SERVER_URL}/api/wellness/scores`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { startDate: weekStart, endDate: weekEnd, weeks: 1 }
+        });
+        
+        if (scoreResponse.data && scoreResponse.data.length > 0) {
+          setWeeklyScore(scoreResponse.data[0].score || 0);
+        } else {
+          setWeeklyScore(0);
+        }
+      } catch (scoreErr) {
+        console.warn('Could not fetch weekly score:', scoreErr);
+        setWeeklyScore(0);
+      }
       
       // Calculate status for each practice
       const statuses: PracticeStatus[] = Object.entries(PRACTICE_DISPLAY_NAMES).map(([practice, displayName]) => {
@@ -111,11 +131,27 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessTokenSilently, API_SERVER_URL, journalEntries]);
+  }, [getAccessTokenSilently, API_SERVER_URL, journalEntries, currentWeekOffset]);
 
   useEffect(() => {
     fetchWellnessStatus();
   }, [fetchWellnessStatus]);
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setCurrentWeekOffset(prev => direction === 'prev' ? prev - 1 : prev + 1);
+  };
+
+  const goToCurrentWeek = () => {
+    setCurrentWeekOffset(0);
+  };
+
+  const getWeekDisplayText = () => {
+    if (currentWeekOffset === 0) return 'This Week';
+    if (currentWeekOffset === -1) return 'Last Week';
+    if (currentWeekOffset === 1) return 'Next Week';
+    if (currentWeekOffset < 0) return `${Math.abs(currentWeekOffset)} weeks ago`;
+    return `${currentWeekOffset} weeks ahead`;
+  };
 
   const handlePracticeToggle = async (practice: WellnessPractice) => {
     try {
@@ -124,6 +160,16 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       const practiceStatus = practiceStatuses.find(p => p.practice === practice);
       
       if (!practiceStatus) return;
+      
+      // For non-current weeks, only allow viewing journals
+      if (currentWeekOffset !== 0) {
+        if (practiceStatus.hasJournal) {
+          setShowJournalFor(practice);
+          const practiceId = `${today}-${practice}`;
+          setJournalContent(journalEntries[practiceId] || '');
+        }
+        return;
+      }
       
       if (practiceStatus.completedToday) {
         // If already completed, show journal option
@@ -231,16 +277,45 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
 
   return (
     <div className="wellness-status-widget">
-      <h3 className="widget-title">Wellness Status</h3>
+      <div className="widget-header">
+        <h3 className="widget-title">Wellness Status</h3>
+        <div className="week-navigation">
+          <button 
+            className="week-nav-btn"
+            onClick={() => navigateWeek('prev')}
+            aria-label="Previous week"
+          >
+            ‹
+          </button>
+          <span className="week-display" onClick={currentWeekOffset !== 0 ? goToCurrentWeek : undefined}>
+            {getWeekDisplayText()}
+          </span>
+          <button 
+            className="week-nav-btn"
+            onClick={() => navigateWeek('next')}
+            aria-label="Next week"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+      
+      {currentWeekOffset === 0 && (
+        <div className="current-week-score">
+          <span className="score-label">This Week:</span>
+          <span className="score-value">{weeklyScore}/10</span>
+        </div>
+      )}
+      
       <div className="widget-content">
         <div className="practices-grid">
           {practiceStatuses.map((status) => (
             <div key={status.practice} className="practice-item">
               <div className="practice-header">
                 <button
-                  className={`practice-toggle ${status.completedToday ? 'completed' : 'pending'}`}
+                  className={`practice-toggle ${status.completedToday ? 'completed' : 'pending'} ${currentWeekOffset !== 0 ? 'view-only' : ''}`}
                   onClick={() => handlePracticeToggle(status.practice)}
-                  aria-label={`Toggle ${PRACTICE_DISPLAY_NAMES[status.practice]}`}
+                  aria-label={`${currentWeekOffset === 0 ? 'Toggle' : 'View'} ${PRACTICE_DISPLAY_NAMES[status.practice]}`}
                 >
                   <span className="practice-icon">
                     {getPracticeIcon(status.practice, status.completedToday)}
@@ -248,9 +323,14 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
                   <span className="practice-name">
                     {PRACTICE_DISPLAY_NAMES[status.practice]}
                   </span>
-                  {status.hasJournal && (
-                    <span className="journal-indicator" title="Has journal entry">📝</span>
-                  )}
+                  <div className="practice-indicators">
+                    {status.completedToday && currentWeekOffset === 0 && (
+                      <span className="completed-today-indicator" title="Completed today">✓</span>
+                    )}
+                    {status.hasJournal && (
+                      <span className="journal-indicator" title="Has journal entry">📝</span>
+                    )}
+                  </div>
                 </button>
               </div>
               
@@ -271,30 +351,40 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
           ))}
         </div>
         
-        {/* Journal Input Modal */}
+        {/* Journal Input/View Modal */}
         {showJournalFor && (
           <div className="journal-modal">
             <div className="journal-content">
-              <h4>Reflection for {PRACTICE_DISPLAY_NAMES[showJournalFor]}</h4>
+              <h4>
+                {currentWeekOffset === 0 ? 'Reflection' : 'Past Reflection'} for {PRACTICE_DISPLAY_NAMES[showJournalFor]}
+                {currentWeekOffset !== 0 && (
+                  <span className="week-indicator"> ({getWeekDisplayText()})</span>
+                )}
+              </h4>
               <textarea
                 value={journalContent}
-                onChange={(e) => setJournalContent(e.target.value)}
-                placeholder="How did this practice make you feel? What did you learn?"
+                onChange={currentWeekOffset === 0 ? (e) => setJournalContent(e.target.value) : undefined}
+                placeholder={currentWeekOffset === 0 ? "How did this practice make you feel? What did you learn?" : "No journal entry for this practice"}
                 maxLength={300}
                 rows={4}
-                autoFocus
+                autoFocus={currentWeekOffset === 0}
                 className="journal-input"
+                readOnly={currentWeekOffset !== 0}
               />
               <div className="journal-actions">
-                <span className="character-count">
-                  {journalContent.length}/300
-                </span>
-                <button 
-                  className="save-button"
-                  onClick={handleJournalSave}
-                >
-                  Save
-                </button>
+                {currentWeekOffset === 0 && (
+                  <span className="character-count">
+                    {journalContent.length}/300
+                  </span>
+                )}
+                {currentWeekOffset === 0 && (
+                  <button 
+                    className="save-button"
+                    onClick={handleJournalSave}
+                  >
+                    Save
+                  </button>
+                )}
                 <button 
                   className="cancel-button"
                   onClick={() => {
@@ -302,7 +392,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
                     setJournalContent('');
                   }}
                 >
-                  Cancel
+                  {currentWeekOffset === 0 ? 'Cancel' : 'Close'}
                 </button>
               </div>
             </div>
@@ -311,7 +401,10 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
         
         <div className="widget-footer">
           <span className="weekly-summary">
-            Week Progress: {practiceStatuses.filter(p => p.completedToday).length}/7 today
+            {currentWeekOffset === 0 
+              ? `Today: ${practiceStatuses.filter(p => p.completedToday).length}/7 completed`
+              : `Week total: ${practiceStatuses.reduce((sum, p) => sum + p.weeklyProgress, 0)} practices`
+            }
           </span>
           <button 
             className="refresh-button"
