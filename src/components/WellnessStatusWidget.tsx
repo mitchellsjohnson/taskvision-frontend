@@ -20,11 +20,11 @@ interface PracticeStatus {
 
 const PRACTICE_DISPLAY_NAMES: Record<WellnessPractice, string> = {
   'Gratitude': 'Gratitude',
-  'Meditation': 'Mindful Pause',
+  'Meditation': 'Meditation',
   'Kindness': 'Kindness',
-  'Social Outreach': 'Social',
-  'Novelty Challenge': 'Novelty',
-  'Savoring Reflection': 'Reflection',
+  'Social Outreach': 'Social Outreach',
+  'Novelty Challenge': 'Novelty Challenge',
+  'Savoring Reflection': 'Savoring Reflection',
   'Exercise': 'Exercise',
 };
 
