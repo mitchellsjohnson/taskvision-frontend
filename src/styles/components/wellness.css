@@ -716,3 +716,131 @@
 .wellness-status-widget .score-change.negative {
   color: #f87171;
 } 
+
+/* Journal Modal Styles */
+.journal-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.journal-content {
+  background: var(--dashboard-bg-primary);
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  border: 1px solid var(--dashboard-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.journal-content h4 {
+  margin: 0 0 1rem 0;
+  color: var(--dashboard-text-primary);
+  font-size: 1.2rem;
+}
+
+.journal-date {
+  font-size: 0.9rem;
+  color: var(--dashboard-text-secondary);
+  font-weight: normal;
+}
+
+.journal-input {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  border: 1px solid var(--dashboard-border);
+  border-radius: 6px;
+  background: var(--dashboard-bg-secondary);
+  color: var(--dashboard-text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-bottom: 1rem;
+}
+
+.journal-input:focus {
+  outline: none;
+  border-color: var(--dashboard-accent);
+  box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2);
+}
+
+.journal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.character-count {
+  font-size: 0.8rem;
+  color: var(--dashboard-text-secondary);
+}
+
+.save-button, .cancel-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.save-button {
+  background: var(--dashboard-accent);
+  color: white;
+}
+
+.save-button:hover {
+  background: #a0522d;
+}
+
+.cancel-button {
+  background: var(--dashboard-bg-tertiary);
+  color: var(--dashboard-text-secondary);
+}
+
+.cancel-button:hover {
+  background: var(--dashboard-bg-secondary);
+}
+
+/* Wellness Grid Cell Actions */
+.wellness-cell-actions {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.wellness-journal {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.1rem;
+  border-radius: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.wellness-journal.has-journal {
+  opacity: 1;
+  filter: brightness(1.2);
+}
+
+.wellness-journal.no-journal {
+  opacity: 0.5;
+}
+
+.wellness-journal:hover {
+  opacity: 1;
+  transform: scale(1.1);
+} 

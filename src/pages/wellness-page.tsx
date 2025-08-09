@@ -38,6 +38,14 @@ const WellnessPage: React.FC = () => {
   const [mitTaskCount, setMitTaskCount] = useState<number>(0);
   const [litTaskCount, setLitTaskCount] = useState<number>(0);
 
+  // Journal Modal State
+  const [showJournalFor, setShowJournalFor] = useState<{
+    date: string;
+    practice: WellnessPractice;
+  } | null>(null);
+  const [journalContent, setJournalContent] = useState('');
+  const [journalEntries, setJournalEntries] = useState<Record<string, string>>({});
+
   // Initialize current week
   useEffect(() => {
     // Get current date in Eastern Time
@@ -130,7 +138,12 @@ const WellnessPage: React.FC = () => {
       p => p.date === date && p.practice === practice
     );
 
+    let wasJustCompleted = false;
+
     if (existingPractice) {
+      // Check if we're marking as completed for the first time
+      wasJustCompleted = !existingPractice.completed && completed;
+      
       // Update existing practice
       const updated = await updatePracticeInstance(date, practice, { completed });
       
@@ -147,6 +160,7 @@ const WellnessPage: React.FC = () => {
         
         // Then update it to completed if needed
         if (completed) {
+          wasJustCompleted = true;
           const updated = await updatePracticeInstance(date, practice, { completed: true });
           setCurrentWeekPractices(prev => [...prev, updated]);
         } else {
@@ -163,6 +177,13 @@ const WellnessPage: React.FC = () => {
           throw error; // Re-throw other errors
         }
       }
+    }
+
+    // If practice was just completed, show journal modal
+    if (wasJustCompleted) {
+      setShowJournalFor({ date, practice });
+      const practiceId = `${date}-${practice}`;
+      setJournalContent(journalEntries[practiceId] || '');
     }
 
     // Refresh scores and status
@@ -190,6 +211,38 @@ const WellnessPage: React.FC = () => {
     setPendingWellnessLink({ date, practice });
     setSelectedTask(null);
     setIsTaskModalOpen(true);
+  };
+
+  // Handle journal save
+  const handleJournalSave = () => {
+    if (!showJournalFor) return;
+    
+    const practiceId = `${showJournalFor.date}-${showJournalFor.practice}`;
+    
+    // Store journal entry locally (in production, this would be saved to backend)
+    const updatedEntries = { ...journalEntries };
+    if (journalContent.trim()) {
+      updatedEntries[practiceId] = journalContent.trim();
+    } else {
+      delete updatedEntries[practiceId];
+    }
+    
+    setJournalEntries(updatedEntries);
+    setShowJournalFor(null);
+    setJournalContent('');
+  };
+
+  // Handle journal edit for existing practice
+  const handleJournalEdit = (date: string, practice: WellnessPractice) => {
+    setShowJournalFor({ date, practice });
+    const practiceId = `${date}-${practice}`;
+    setJournalContent(journalEntries[practiceId] || '');
+  };
+
+  // Check if practice has journal entry
+  const hasJournalEntry = (date: string, practice: WellnessPractice) => {
+    const practiceId = `${date}-${practice}`;
+    return Boolean(journalEntries[practiceId]);
   };
 
   // Handle task opening
@@ -420,7 +473,7 @@ const WellnessPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <p>Click cells to mark practices complete • ➕ to add tasks • 🔗 to view linked tasks</p>
+            <p>Click cells to mark practices complete • ➕ to add tasks • 🔗 to view linked tasks • 📝 to add/edit journal entries</p>
           </div>
           
           {currentWeek && (
@@ -430,6 +483,8 @@ const WellnessPage: React.FC = () => {
               onPracticeUpdate={handlePracticeUpdate}
               onCreateTask={handleCreateTask}
               onOpenTask={handleOpenTask}
+              onJournalEdit={handleJournalEdit}
+              hasJournalEntry={hasJournalEntry}
               loading={isLoading}
               className="wellness-main-grid"
             />
@@ -458,6 +513,47 @@ const WellnessPage: React.FC = () => {
               : undefined
           }
         />
+
+        {/* Journal Modal */}
+        {showJournalFor && (
+          <div className="journal-modal">
+            <div className="journal-content">
+              <h4>
+                Reflection for {showJournalFor.practice}
+                <span className="journal-date"> ({new Date(showJournalFor.date).toLocaleDateString()})</span>
+              </h4>
+              <textarea
+                value={journalContent}
+                onChange={(e) => setJournalContent(e.target.value)}
+                placeholder="How did this practice make you feel? What did you learn? (Optional)"
+                maxLength={300}
+                rows={4}
+                autoFocus
+                className="journal-input"
+              />
+              <div className="journal-actions">
+                <span className="character-count">
+                  {journalContent.length}/300
+                </span>
+                <button 
+                  className="save-button"
+                  onClick={handleJournalSave}
+                >
+                  Save
+                </button>
+                <button 
+                  className="cancel-button"
+                  onClick={() => {
+                    setShowJournalFor(null);
+                    setJournalContent('');
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

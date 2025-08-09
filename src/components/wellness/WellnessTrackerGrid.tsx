@@ -7,6 +7,8 @@ interface WellnessTrackerGridProps {
   onPracticeUpdate: (date: string, practice: WellnessPractice, completed: boolean) => Promise<void>;
   onCreateTask: (date: string, practice: WellnessPractice) => void;
   onOpenTask: (taskId: string) => void;
+  onJournalEdit?: (date: string, practice: WellnessPractice) => void;
+  hasJournalEntry?: (date: string, practice: WellnessPractice) => boolean;
   loading?: boolean;
   className?: string;
 }
@@ -93,6 +95,8 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
   onPracticeUpdate,
   onCreateTask,
   onOpenTask,
+  onJournalEdit,
+  hasJournalEntry,
   loading = false,
   className = '',
 }) => {
@@ -336,6 +340,14 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
     onOpenTask(taskId);
   };
 
+  // Handle journal click
+  const handleJournalClick = (cellData: CellData, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (onJournalEdit) {
+      onJournalEdit(cellData.date, cellData.practice);
+    }
+  };
+
   // Get cell status
   const getCellStatus = (cellData: CellData) => {
     const key = `${cellData.date}-${cellData.practice}`;
@@ -378,9 +390,27 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
 
   // Get cell actions
   const getCellActions = (cellData: CellData) => {
-    // Always show either plus button or link button
+    const actions = [];
+    
+    // Add journal indicator/button for completed practices
+    if (cellData.instance?.completed && onJournalEdit) {
+      const hasJournal = hasJournalEntry?.(cellData.date, cellData.practice) || false;
+      
+      actions.push(
+        <button
+          key="journal"
+          className={`wellness-cell-action wellness-journal ${hasJournal ? 'has-journal' : 'no-journal'}`}
+          onClick={(e) => handleJournalClick(cellData, e)}
+          title={hasJournal ? "Edit journal entry" : "Add journal entry"}
+        >
+          📝
+        </button>
+      );
+    }
+    
+    // Add task link or create button
     if (cellData.instance?.linkedTaskId) {
-      return (
+      actions.push(
         <button
           key="open-task"
           className="wellness-cell-action wellness-open-task"
@@ -391,7 +421,7 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
         </button>
       );
     } else {
-      return (
+      actions.push(
         <button
           key="add-task"
           className="wellness-cell-action wellness-add-task"
@@ -402,6 +432,8 @@ const WellnessTrackerGrid: React.FC<WellnessTrackerGridProps> = ({
         </button>
       );
     }
+    
+    return <div className="wellness-cell-actions">{actions}</div>;
   };
 
   return (
