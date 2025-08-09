@@ -603,13 +603,13 @@
   margin-bottom: 1rem;
 }
 
-.wellness-status-widget .week-navigation {
+.wellness-status-widget .date-navigation {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.wellness-status-widget .week-nav-btn {
+.wellness-status-widget .date-nav-btn {
   background: var(--dashboard-bg-secondary);
   border: 1px solid var(--dashboard-border);
   border-radius: 4px;
@@ -620,11 +620,11 @@
   transition: background-color 0.2s ease;
 }
 
-.wellness-status-widget .week-nav-btn:hover {
+.wellness-status-widget .date-nav-btn:hover {
   background: var(--dashboard-bg-tertiary);
 }
 
-.wellness-status-widget .week-display {
+.wellness-status-widget .date-display {
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--dashboard-text-secondary);
@@ -636,19 +636,28 @@
   text-align: center;
 }
 
-.wellness-status-widget .week-display:hover {
+.wellness-status-widget .date-display:hover {
   background: var(--dashboard-bg-secondary);
 }
 
-.wellness-status-widget .current-week-score {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.wellness-status-widget .week-score-display {
   background: var(--dashboard-bg-tertiary);
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-radius: 6px;
   margin-bottom: 1rem;
   border-left: 4px solid var(--dashboard-accent);
+}
+
+.wellness-status-widget .week-range {
+  font-size: 0.8rem;
+  color: var(--dashboard-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.wellness-status-widget .score-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .wellness-status-widget .score-label {
@@ -693,4 +702,17 @@
   background-color: var(--dashboard-bg-secondary);
   opacity: 0.8;
   cursor: default;
+} 
+
+.wellness-status-widget .score-change {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.wellness-status-widget .score-change.positive {
+  color: #4ade80;
+}
+
+.wellness-status-widget .score-change.negative {
+  color: #f87171;
 } 
