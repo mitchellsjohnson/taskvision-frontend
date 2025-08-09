@@ -34,7 +34,7 @@ const PRACTICE_TARGETS: Record<WellnessPractice, { daily: boolean; weeklyTarget:
   'Kindness': { daily: false, weeklyTarget: 2 },
   'Social Outreach': { daily: false, weeklyTarget: 2 },
   'Novelty Challenge': { daily: false, weeklyTarget: 2 },
-  'Savoring Reflection': { daily: true, weeklyTarget: 7 },
+  'Savoring Reflection': { daily: false, weeklyTarget: 1 }, // Weekly practice, not daily
   'Exercise': { daily: true, weeklyTarget: 7 },
 };
 
@@ -169,6 +169,116 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       month: 'short', 
       day: 'numeric' 
     });
+  };
+
+  // Calculate practice status for weekly indicators (G/R/Complete)
+  const getPracticeStatus = (practice: WellnessPractice): 'complete' | 'at-risk' => {
+    const target = PRACTICE_TARGETS[practice].weeklyTarget;
+    const completed = practiceStatuses.find(p => p.practice === practice)?.weeklyProgress || 0;
+    
+    // If target is met, it's complete (green)
+    if (completed >= target) return 'complete';
+    
+    // Calculate how many days have passed in the week
+    const { weekStart } = getDateInfo(currentDateOffset);
+    const today = new Date();
+    const weekStartDate = new Date(weekStart + 'T00:00:00');
+    const daysPassed = Math.max(0, Math.floor((today.getTime() - weekStartDate.getTime()) / (1000 * 60 * 60 * 24))) + 1;
+    const daysPassedInWeek = Math.min(daysPassed, 7);
+    
+    // For daily practices (7x/week), need to be on track
+    if (target === 7) {
+      // If significantly behind, show at-risk
+      if (completed < daysPassedInWeek - 2) return 'at-risk';
+      return 'complete'; // Otherwise show as on track (green)
+    }
+    
+    // For weekly practices (2x/week or 1x/week)
+    if (target === 2) {
+      // If past mid-week with no progress, at-risk
+      if (daysPassedInWeek >= 5 && completed === 0) return 'at-risk';
+      return 'complete'; // Otherwise on track
+    }
+    
+    // For 1x/week practices
+    if (target === 1) {
+      // If near end of week with no progress, at-risk
+      if (daysPassedInWeek >= 6 && completed === 0) return 'at-risk';
+      return 'complete'; // Otherwise on track
+    }
+    
+    return 'complete';
+  };
+
+  // Get status indicator for practice (G/R)
+  const getStatusIndicator = (practice: WellnessPractice): React.ReactNode => {
+    const status = getPracticeStatus(practice);
+    const getIndicatorProps = () => {
+      switch (status) {
+        case 'complete': return { letter: 'G', color: '#22c55e', bgColor: '#dcfce7' };
+        case 'at-risk': return { letter: 'R', color: '#ef4444', bgColor: '#fecaca' };
+        default: return { letter: 'G', color: '#22c55e', bgColor: '#dcfce7' };
+      }
+    };
+    
+    const { letter, color, bgColor } = getIndicatorProps();
+    
+    return (
+      <span 
+        className="wellness-status-circle"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '16px',
+          height: '16px',
+          borderRadius: '50%',
+          backgroundColor: bgColor,
+          color: color,
+          fontSize: '10px',
+          fontWeight: '600',
+          border: `1px solid ${color}`,
+          marginLeft: '4px'
+        }}
+        title={`Status: ${status === 'complete' ? 'Complete (G)' : 'At Risk (R)'}`}
+      >
+        {letter}
+      </span>
+    );
+  };
+
+  // Get completion indicator (✓ Complete)
+  const getCompletionIndicator = (practice: WellnessPractice): React.ReactNode => {
+    const target = PRACTICE_TARGETS[practice].weeklyTarget;
+    const completed = practiceStatuses.find(p => p.practice === practice)?.weeklyProgress || 0;
+    const isComplete = completed >= target;
+    
+    if (isComplete) {
+      return (
+        <span 
+          className="wellness-completion-badge"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1px 4px',
+            borderRadius: '8px',
+            backgroundColor: '#dcfce7',
+            color: '#166534',
+            fontSize: '8px',
+            fontWeight: '700',
+            border: '1px solid #22c55e',
+            marginLeft: '4px',
+            textTransform: 'uppercase'
+          }}
+          title="Weekly target achieved!"
+        >
+          ✓ Complete
+        </span>
+      );
+    }
+    
+    return null;
   };
 
   const handlePracticeToggle = async (practice: WellnessPractice) => {
@@ -339,6 +449,8 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
                   </span>
                   <span className="practice-name">
                     {PRACTICE_DISPLAY_NAMES[status.practice]}
+                    {getStatusIndicator(status.practice)}
+                    {getCompletionIndicator(status.practice)}
                   </span>
                   <div className="practice-indicators">
                     {status.completedToday && (
