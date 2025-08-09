@@ -525,7 +525,7 @@ const WellnessPage: React.FC = () => {
               <textarea
                 value={journalContent}
                 onChange={(e) => setJournalContent(e.target.value)}
-                placeholder="How did this practice make you feel? What did you learn? (Optional)"
+                placeholder="Journal the details... (Optional)"
                 maxLength={300}
                 rows={4}
                 autoFocus

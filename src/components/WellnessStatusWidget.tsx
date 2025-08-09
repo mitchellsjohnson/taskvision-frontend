@@ -385,7 +385,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
               <textarea
                 value={journalContent}
                 onChange={currentDateOffset === 0 ? (e) => setJournalContent(e.target.value) : undefined}
-                placeholder={currentDateOffset === 0 ? "How did this practice make you feel? What did you learn?" : "No journal entry for this practice"}
+                placeholder={currentDateOffset === 0 ? "Journal the details..." : "No journal entry for this practice"}
                 maxLength={300}
                 rows={4}
                 autoFocus={currentDateOffset === 0}
