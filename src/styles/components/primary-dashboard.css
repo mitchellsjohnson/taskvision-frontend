@@ -90,6 +90,50 @@
   transform: rotate(90deg);
 }
 
+/* Widget Headers with Add Task Buttons */
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.add-task-button {
+  background: var(--dashboard-accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.add-task-button:hover {
+  background: #a0522d;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.add-task-button:active {
+  transform: translateY(0);
+}
+
+/* Journal Indicator Clickable Style */
+.journal-indicator.clickable {
+  cursor: pointer;
+  padding: 0.2rem;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.journal-indicator.clickable:hover {
+  background: rgba(139, 69, 19, 0.2);
+  transform: scale(1.1);
+}
+
 /* MIT Task List Widget */
 .mit-task-list-widget .widget-title {
   color: var(--dashboard-accent);

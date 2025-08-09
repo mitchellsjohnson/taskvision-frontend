@@ -52,7 +52,8 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
       if (selectedTask) {
         await updateTask(selectedTask.TaskId, taskData);
       } else {
-        await createTask(taskData);
+        // For new tasks, ensure they are marked as LIT (not MIT)
+        await createTask({ ...taskData, isMIT: false });
       }
       fetchLITTasks(); // Refresh the LIT tasks
       setIsEditModalOpen(false);
@@ -122,7 +123,19 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
   return (
     <>
       <div className="lit-task-list-widget">
-        <h3 className="widget-title">Less Important Tasks</h3>
+        <div className="widget-header">
+          <h3 className="widget-title">Less Important Tasks</h3>
+          <button 
+            className="add-task-button"
+            onClick={() => {
+              setSelectedTask(null);
+              setIsEditModalOpen(true);
+            }}
+            title="Add new LIT task"
+          >
+            + Add LIT
+          </button>
+        </div>
         <div className="widget-content">
           {tasks.length === 0 ? (
             <div className="empty-state">

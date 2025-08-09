@@ -50,7 +50,8 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
       if (selectedTask) {
         await updateTask(selectedTask.TaskId, taskData);
       } else {
-        await createTask(taskData);
+        // For new tasks, ensure they are marked as MIT
+        await createTask({ ...taskData, isMIT: true });
       }
       fetchMITTasks(); // Refresh the MIT tasks
       setIsEditModalOpen(false);
@@ -120,7 +121,19 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
   return (
     <>
       <div className="mit-task-list-widget">
-        <h3 className="widget-title">Most Important Tasks</h3>
+        <div className="widget-header">
+          <h3 className="widget-title">Most Important Tasks</h3>
+          <button 
+            className="add-task-button"
+            onClick={() => {
+              setSelectedTask(null);
+              setIsEditModalOpen(true);
+            }}
+            title="Add new MIT task"
+          >
+            + Add MIT
+          </button>
+        </div>
         <div className="widget-content">
           {tasks.length === 0 ? (
             <div className="empty-state">

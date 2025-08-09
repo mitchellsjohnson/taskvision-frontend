@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth0 } from '@auth0/auth0-react';
 import { WellnessPractice, PracticeInstance } from '../types';
+import { useWellnessApi } from '../services/wellness-api';
 
 interface WellnessStatusWidgetProps {
   onRefresh?: () => void;
@@ -48,6 +49,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
   const [weeklyScore, setWeeklyScore] = useState<number>(0);
   const [weeklyScoreChange, setWeeklyScoreChange] = useState<number>(0);
   const { getAccessTokenSilently } = useAuth0();
+  const { getWeeklyScores } = useWellnessApi();
 
   const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
 
@@ -99,13 +101,11 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       
       // Fetch weekly score for this week
       try {
-        const scoreResponse = await axios.get(`${API_SERVER_URL}/api/wellness/scores`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          params: { startDate: weekStart, endDate: weekEnd, weeks: 1 }
-        });
+        const scores = await getWeeklyScores(1);
         
-        if (scoreResponse.data && scoreResponse.data.length > 0) {
-          setWeeklyScore(scoreResponse.data[0].score || 0);
+        if (scores && scores.length > 0) {
+          const currentWeekScore = scores.find(s => s.weekStart === weekStart);
+          setWeeklyScore(currentWeekScore?.score || 0);
         } else {
           setWeeklyScore(0);
         }
@@ -161,8 +161,14 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     if (currentDateOffset === 0) return 'Today';
     if (currentDateOffset === -1) return 'Yesterday';
     if (currentDateOffset === 1) return 'Tomorrow';
-    if (currentDateOffset < 0) return `${Math.abs(currentDateOffset)} days ago`;
-    return `${currentDateOffset} days ahead`;
+    
+    // For dates beyond +/-1, show the actual date
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + currentDateOffset);
+    return targetDate.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
   const handlePracticeToggle = async (practice: WellnessPractice) => {
@@ -172,16 +178,6 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       const practiceStatus = practiceStatuses.find(p => p.practice === practice);
       
       if (!practiceStatus) return;
-      
-      // For non-current date, only allow viewing journals
-      if (currentDateOffset !== 0) {
-        if (practiceStatus.hasJournal) {
-          setShowJournalFor(practice);
-          const practiceId = `${currentDate}-${practice}`;
-          setJournalContent(journalEntries[practiceId] || '');
-        }
-        return;
-      }
       
       if (practiceStatus.completedToday) {
         // If already completed, show journal option
@@ -334,9 +330,9 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
             <div key={status.practice} className="practice-item">
               <div className="practice-header">
                 <button
-                  className={`practice-toggle ${status.completedToday ? 'completed' : 'pending'} ${currentDateOffset !== 0 ? 'view-only' : ''}`}
+                  className={`practice-toggle ${status.completedToday ? 'completed' : 'pending'}`}
                   onClick={() => handlePracticeToggle(status.practice)}
-                  aria-label={`${currentDateOffset === 0 ? 'Toggle' : 'View'} ${PRACTICE_DISPLAY_NAMES[status.practice]}`}
+                  aria-label={`Toggle ${PRACTICE_DISPLAY_NAMES[status.practice]} for ${getDateDisplayText()}`}
                 >
                   <span className="practice-icon">
                     {getPracticeIcon(status.practice, status.completedToday)}
@@ -345,11 +341,20 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
                     {PRACTICE_DISPLAY_NAMES[status.practice]}
                   </span>
                   <div className="practice-indicators">
-                    {status.completedToday && currentDateOffset === 0 && (
-                      <span className="completed-today-indicator" title="Completed today">✓</span>
+                    {status.completedToday && (
+                      <span className="completed-today-indicator" title={`Completed on ${getDateDisplayText()}`}>✓</span>
                     )}
                     {status.hasJournal && (
-                      <span className="journal-indicator" title="Has journal entry">
+                      <span 
+                        className="journal-indicator clickable" 
+                        title="Click to edit journal entry"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowJournalFor(status.practice);
+                          const practiceId = `${getDateInfo(currentDateOffset).currentDate}-${status.practice}`;
+                          setJournalContent(journalEntries[practiceId] || '');
+                        }}
+                      >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>
                         </svg>
