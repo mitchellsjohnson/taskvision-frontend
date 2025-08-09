@@ -97,14 +97,14 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
         params: { startDate: weekStart, endDate: weekEnd }
       });
       
-      const practices: PracticeInstance[] = response.data.data;
+      const practices: PracticeInstance[] = response.data?.data || [];
       
       // Fetch weekly score for this week
       try {
         const scores = await getWeeklyScores(1);
         
-        if (scores && scores.length > 0) {
-          const currentWeekScore = scores.find(s => s.weekStart === weekStart);
+        if (scores && Array.isArray(scores) && scores.length > 0) {
+          const currentWeekScore = scores.find(s => s && s.weekStart === weekStart);
           setWeeklyScore(currentWeekScore?.score || 0);
         } else {
           setWeeklyScore(0);
@@ -116,24 +116,48 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       
       // Calculate status for each practice
       const statuses: PracticeStatus[] = Object.entries(PRACTICE_DISPLAY_NAMES).map(([practice, displayName]) => {
-        const practiceType = practice as WellnessPractice;
-        const practiceInstances = practices.filter(p => p.practice === practiceType);
-        const completedToday = practiceInstances.some(p => p.date === currentDate && p.completed);
-        const weeklyProgress = practiceInstances.filter(p => p.completed).length;
-        const target = PRACTICE_TARGETS[practiceType];
-        
-        // Check for journal entries (stored locally for now)
-        const todayPracticeId = `${currentDate}-${practiceType}`;
-        const hasJournal = journalEntries[todayPracticeId] ? true : false;
-        
-        return {
-          practice: practiceType,
-          completedToday,
-          weeklyProgress,
-          weeklyTarget: target.weeklyTarget,
-          hasJournal,
-          journalEntry: journalEntries[todayPracticeId]
-        };
+        try {
+          const practiceType = practice as WellnessPractice;
+          const practiceInstances = Array.isArray(practices) ? practices.filter(p => p && p.practice === practiceType) : [];
+          const completedToday = practiceInstances.some(p => p.date === currentDate && p.completed);
+          const weeklyProgress = practiceInstances.filter(p => p.completed).length;
+          const target = PRACTICE_TARGETS[practiceType];
+          
+          if (!target) {
+            console.warn(`No target found for practice: ${practiceType}`);
+            return {
+              practice: practiceType,
+              completedToday: false,
+              weeklyProgress: 0,
+              weeklyTarget: 7,
+              hasJournal: false,
+              journalEntry: ''
+            };
+          }
+          
+          // Check for journal entries (stored locally for now)
+          const todayPracticeId = `${currentDate}-${practiceType}`;
+          const hasJournal = journalEntries[todayPracticeId] ? true : false;
+          
+          return {
+            practice: practiceType,
+            completedToday,
+            weeklyProgress,
+            weeklyTarget: target.weeklyTarget,
+            hasJournal,
+            journalEntry: journalEntries[todayPracticeId] || ''
+          };
+        } catch (error) {
+          console.error(`Error processing practice ${practice}:`, error);
+          return {
+            practice: practice as WellnessPractice,
+            completedToday: false,
+            weeklyProgress: 0,
+            weeklyTarget: 7,
+            hasJournal: false,
+            journalEntry: ''
+          };
+        }
       });
       
       setPracticeStatuses(statuses);
