@@ -4,9 +4,14 @@ import { MITTaskList } from '../MITTaskList';
 
 // Mock the useTaskApi hook
 const mockGetTasks = jest.fn();
-jest.mock('../services/task-api', () => ({
+const mockCreateTask = jest.fn();
+const mockUpdateTask = jest.fn();
+
+jest.mock('../../services/task-api', () => ({
   useTaskApi: () => ({
     getTasks: mockGetTasks,
+    createTask: mockCreateTask,
+    updateTask: mockUpdateTask,
   }),
 }));
 
