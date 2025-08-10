@@ -49,7 +49,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
   const [weeklyScore, setWeeklyScore] = useState<number>(0);
   const [weeklyScoreChange, setWeeklyScoreChange] = useState<number>(0);
   const { getAccessTokenSilently } = useAuth0();
-  const { getWeeklyScores } = useWellnessApi();
+  const { getWeeklyScores, createPracticeInstance, updatePracticeInstance } = useWellnessApi();
 
   const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
 
@@ -307,7 +307,6 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
 
   const handlePracticeToggle = async (practice: WellnessPractice) => {
     try {
-      const accessToken = await getAccessTokenSilently();
       const { currentDate } = getDateInfo(currentDateOffset);
       const practiceStatus = practiceStatuses.find(p => p.practice === practice);
       
@@ -319,17 +318,53 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
         const practiceId = `${currentDate}-${practice}`;
         setJournalContent(journalEntries[practiceId] || '');
       } else {
-        // Mark as complete
-        await axios.post(`${API_SERVER_URL}/api/wellness/practices`, {
-          date: currentDate,
-          practice: practice
-        }, {
-          headers: { Authorization: `Bearer ${accessToken}` }
+        // Mark as complete - use same logic as main wellness page
+        let wasJustCompleted = false;
+        
+        // Check if practice already exists for this date
+        const { weekStart, weekEnd } = getDateInfo(currentDateOffset);
+        const response = await axios.get(`${API_SERVER_URL}/api/wellness/practices`, {
+          headers: { Authorization: `Bearer ${await getAccessTokenSilently()}` },
+          params: { startDate: weekStart, endDate: weekEnd }
         });
         
+        const existingPractices: PracticeInstance[] = response.data?.data || [];
+        const existingPractice = existingPractices.find(
+          p => p.date === currentDate && p.practice === practice
+        );
+        
+        if (existingPractice) {
+          // Update existing practice
+          wasJustCompleted = !existingPractice.completed;
+          await updatePracticeInstance(currentDate, practice, { completed: true });
+        } else {
+          // Try to create new practice
+          try {
+            await createPracticeInstance({
+              date: currentDate,
+              practice,
+            });
+            
+            // Then update it to completed
+            wasJustCompleted = true;
+            await updatePracticeInstance(currentDate, practice, { completed: true });
+          } catch (error) {
+            // If practice already exists (race condition), update it instead
+            if (error instanceof Error && (error.message.includes('already exists') || error.message.includes('409'))) {
+              await updatePracticeInstance(currentDate, practice, { completed: true });
+              wasJustCompleted = true;
+            } else {
+              throw error; // Re-throw other errors
+            }
+          }
+        }
+        
         // Show journal input immediately after completion
-        setShowJournalFor(practice);
-        setJournalContent('');
+        if (wasJustCompleted) {
+          setShowJournalFor(practice);
+          const practiceId = `${currentDate}-${practice}`;
+          setJournalContent(journalEntries[practiceId] || '');
+        }
         
         // Refresh status
         fetchWellnessStatus();

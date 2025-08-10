@@ -146,6 +146,7 @@ const WellnessScoreChart: React.FC<WellnessScoreChartProps> = ({
               const isCurrentWeek = props.payload?.isCurrentWeek;
               return (
                 <circle
+                  key={`dot-${props.payload?.weekStart || props.index}`}
                   cx={props.cx}
                   cy={props.cy}
                   r={isCurrentWeek ? 6 : 4}
