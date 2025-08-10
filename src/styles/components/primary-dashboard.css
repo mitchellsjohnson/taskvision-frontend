@@ -594,57 +594,83 @@
   font-size: 0.7rem;
 }
 
-/* Wellness Status Widget */
+/* Wellness Widget - Updated to Match Main Module Design */
 .wellness-status-widget .practice-item {
-  background: var(--wellness-bg-secondary);
-  border-radius: 8px;
-  padding: 1rem;
-  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(31, 41, 55, 0.3);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 6px;
 }
 
-.wellness-status-widget .practice-item:hover {
-  background: var(--wellness-hover-bg);
-  transform: translateY(-2px);
+.wellness-status-widget .practice-header {
+  margin-bottom: 0.5rem;
 }
 
-.wellness-status-widget .practice-toggle {
-  background: none;
-  border: none;
-  width: 100%;
+.wellness-status-widget .practice-name {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  font-weight: 600;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  gap: 0.25rem;
+}
+
+.wellness-status-widget .practice-controls {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wellness-status-widget .practice-checkbox {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 6px;
+  padding: 0.25rem;
+  border-radius: 4px;
   transition: all 0.2s ease;
+  min-width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.wellness-status-widget .practice-toggle:hover {
-  background: var(--wellness-accent-bg);
+.wellness-status-widget .practice-checkbox:hover {
+  background: rgba(75, 85, 99, 0.3);
+  transform: scale(1.05);
 }
 
-.wellness-status-widget .practice-toggle.completed {
-  background: var(--wellness-success-bg);
+.wellness-status-widget .practice-checkbox.completed {
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.wellness-status-widget .practice-checkbox.incomplete {
+  background: rgba(75, 85, 99, 0.1);
+}
+
+.wellness-status-widget .journal-indicator.clickable {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  color: #8b4513;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wellness-status-widget .journal-indicator.clickable:hover {
+  background: rgba(139, 69, 19, 0.2);
+  transform: scale(1.1);
 }
 
 .wellness-status-widget .practice-icon {
   font-size: 1.5rem;
-}
-
-.wellness-status-widget .practice-name {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--wellness-text-primary);
-  text-align: center;
-}
-
-.wellness-status-widget .journal-indicator {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  font-size: 0.8rem;
 }
 
 .wellness-status-widget .practice-progress {

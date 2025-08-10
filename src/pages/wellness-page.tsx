@@ -84,6 +84,16 @@ const WellnessPage: React.FC = () => {
       setCurrentWeekPractices(practices);
       setWeeklyScores(scores);
 
+      // Load journal entries from practice instances
+      const journalEntries: Record<string, string> = {};
+      practices.forEach(practice => {
+        if (practice.journal) {
+          const practiceId = `${practice.date}-${practice.practice}`;
+          journalEntries[practiceId] = practice.journal;
+        }
+      });
+      setJournalEntries(journalEntries);
+
       // Calculate score for the currently viewed week (not necessarily current week)
       const viewedWeekScoreData = scores.find(s => s.weekStart === currentWeek);
       const viewedWeekScore = viewedWeekScoreData?.score || 0;
@@ -214,20 +224,31 @@ const WellnessPage: React.FC = () => {
   };
 
   // Handle journal save
-  const handleJournalSave = () => {
+  const handleJournalSave = async () => {
     if (!showJournalFor) return;
     
-    const practiceId = `${showJournalFor.date}-${showJournalFor.practice}`;
-    
-    // Store journal entry locally (in production, this would be saved to backend)
-    const updatedEntries = { ...journalEntries };
-    if (journalContent.trim()) {
-      updatedEntries[practiceId] = journalContent.trim();
-    } else {
-      delete updatedEntries[practiceId];
+    try {
+      // Save journal entry to database
+      await updatePracticeInstance(showJournalFor.date, showJournalFor.practice, {
+        journal: journalContent.trim() || undefined
+      });
+      
+      // Update local state for immediate UI feedback
+      const practiceId = `${showJournalFor.date}-${showJournalFor.practice}`;
+      const updatedEntries = { ...journalEntries };
+      if (journalContent.trim()) {
+        updatedEntries[practiceId] = journalContent.trim();
+      } else {
+        delete updatedEntries[practiceId];
+      }
+      setJournalEntries(updatedEntries);
+      
+      // Refresh data to ensure consistency
+      await loadWellnessData();
+    } catch (error) {
+      console.error('Failed to save journal entry:', error);
     }
     
-    setJournalEntries(updatedEntries);
     setShowJournalFor(null);
     setJournalContent('');
   };

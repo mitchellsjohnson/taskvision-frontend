@@ -99,6 +99,16 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       
       const practices: PracticeInstance[] = response.data?.data || [];
       
+      // Load journal entries from practice instances
+      const loadedJournalEntries: Record<string, string> = {};
+      practices.forEach(practice => {
+        if (practice.journal) {
+          const practiceId = `${practice.date}-${practice.practice}`;
+          loadedJournalEntries[practiceId] = practice.journal;
+        }
+      });
+      setJournalEntries(loadedJournalEntries);
+      
       // Fetch weekly score for this week
       try {
         const scores = await getWeeklyScores(1);
@@ -313,10 +323,9 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       if (!practiceStatus) return;
       
       if (practiceStatus.completedToday) {
-        // If already completed, show journal option
-        setShowJournalFor(practice);
-        const practiceId = `${currentDate}-${practice}`;
-        setJournalContent(journalEntries[practiceId] || '');
+        // If already completed, uncheck it (toggle off)
+        await updatePracticeInstance(currentDate, practice, { completed: false });
+        fetchWellnessStatus();
       } else {
         // Mark as complete - use same logic as main wellness page
         let wasJustCompleted = false;
@@ -375,21 +384,32 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     }
   };
 
-  const handleJournalSave = () => {
+  const handleJournalSave = async () => {
     if (!showJournalFor) return;
     
-    const { currentDate } = getDateInfo(currentDateOffset);
-    const practiceId = `${currentDate}-${showJournalFor}`;
-    
-    // Store journal entry locally (in production, this would be saved to backend)
-    const updatedEntries = { ...journalEntries };
-    if (journalContent.trim()) {
-      updatedEntries[practiceId] = journalContent.trim();
-    } else {
-      delete updatedEntries[practiceId];
+    try {
+      const { currentDate } = getDateInfo(currentDateOffset);
+      
+      // Save journal entry to database
+      await updatePracticeInstance(currentDate, showJournalFor, {
+        journal: journalContent.trim() || undefined
+      });
+      
+      // Update local state for immediate UI feedback
+      const practiceId = `${currentDate}-${showJournalFor}`;
+      const updatedEntries = { ...journalEntries };
+      if (journalContent.trim()) {
+        updatedEntries[practiceId] = journalContent.trim();
+      } else {
+        delete updatedEntries[practiceId];
+      }
+      setJournalEntries(updatedEntries);
+      
+      // Refresh data to ensure consistency
+      await fetchWellnessStatus();
+    } catch (error) {
+      console.error('Failed to save journal entry:', error);
     }
-    
-    setJournalEntries(updatedEntries);
     
     // Close journal input
     setShowJournalFor(null);
@@ -498,41 +518,39 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
           {practiceStatuses.map((status) => (
             <div key={status.practice} className="practice-item">
               <div className="practice-header">
+                <span className="practice-name">
+                  {PRACTICE_DISPLAY_NAMES[status.practice]}
+                  {getStatusIndicator(status.practice)}
+                  {getCompletionIndicator(status.practice)}
+                </span>
+              </div>
+              
+              <div className="practice-controls">
                 <button
-                  className={`practice-toggle ${status.completedToday ? 'completed' : 'pending'}`}
+                  className={`practice-checkbox ${status.completedToday ? 'completed' : 'incomplete'}`}
                   onClick={() => handlePracticeToggle(status.practice)}
                   aria-label={`Toggle ${PRACTICE_DISPLAY_NAMES[status.practice]} for ${getDateDisplayText()}`}
+                  title={`${status.completedToday ? 'Uncheck' : 'Check'} ${PRACTICE_DISPLAY_NAMES[status.practice]} for ${getDateDisplayText()}`}
                 >
-                  <span className="practice-icon">
-                    {getPracticeIcon(status.practice, status.completedToday)}
-                  </span>
-                  <span className="practice-name">
-                    {PRACTICE_DISPLAY_NAMES[status.practice]}
-                    {getStatusIndicator(status.practice)}
-                    {getCompletionIndicator(status.practice)}
-                  </span>
-                  <div className="practice-indicators">
-                    {status.completedToday && (
-                      <span className="completed-today-indicator" title={`Completed on ${getDateDisplayText()}`}>✓</span>
-                    )}
-                    {status.hasJournal && (
-                      <span 
-                        className="journal-indicator clickable" 
-                        title="Click to edit journal entry"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowJournalFor(status.practice);
-                          const practiceId = `${getDateInfo(currentDateOffset).currentDate}-${status.practice}`;
-                          setJournalContent(journalEntries[practiceId] || '');
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>
-                        </svg>
-                      </span>
-                    )}
-                  </div>
+                  {status.completedToday ? '✅' : '⬜'}
                 </button>
+                
+                {status.hasJournal && (
+                  <button 
+                    className="journal-indicator clickable" 
+                    title="Click to edit journal entry"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowJournalFor(status.practice);
+                      const practiceId = `${getDateInfo(currentDateOffset).currentDate}-${status.practice}`;
+                      setJournalContent(journalEntries[practiceId] || '');
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M6 2c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z"/>
+                    </svg>
+                  </button>
+                )}
               </div>
               
               <div className="practice-progress">
