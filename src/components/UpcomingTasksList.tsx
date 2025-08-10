@@ -123,9 +123,11 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
     };
 
     window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
     return () => {
       clearTimeout(timeoutId);
       window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
     };
   }, [fetchUpcomingTasks]);
 

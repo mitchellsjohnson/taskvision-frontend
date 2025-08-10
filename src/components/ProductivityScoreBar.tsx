@@ -102,6 +102,27 @@ export const ProductivityScoreBar: React.FC<ProductivityScoreBarProps> = ({ onRe
     fetchProductivityMetrics();
   }, []);
 
+  // Listen for dashboard refresh events with debounce
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleRefresh = () => {
+      // Debounce rapid refresh calls
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchProductivityMetrics();
+      }, 500);
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
+    };
+  }, [fetchProductivityMetrics]);
+
   const handleRetry = () => {
     setRetryCount(0);
     fetchProductivityMetrics();

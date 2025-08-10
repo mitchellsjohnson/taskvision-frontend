@@ -88,6 +88,27 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
     fetchScheduledTasks();
   }, [fetchScheduledTasks]);
 
+  // Listen for dashboard refresh events with debounce
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleRefresh = () => {
+      // Debounce rapid refresh calls
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchScheduledTasks();
+      }, 500);
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
+    };
+  }, [fetchScheduledTasks]);
+
   const formatDueDate = (dueDate: string) => {
     const today = new Date().toISOString().split('T')[0];
     const due = new Date(dueDate).toISOString().split('T')[0];

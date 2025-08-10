@@ -13,6 +13,7 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [renderKey, setRenderKey] = useState(0); // Force re-render key
   
   const { getTasks, updateTask, createTask } = useTaskApi();
 
@@ -20,13 +21,30 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const allTasks = await getTasks({ status: ['Open'] });
-      const litTasks = allTasks
+      
+      // Match tasks page logic: overflow MIT tasks become LIT tasks
+      const allMitTasks = allTasks
+        .filter((task: Task) => task.isMIT && task.status !== 'Completed')
+        .sort((a: Task, b: Task) => a.priority - b.priority);
+      
+      const allLitTasks = allTasks
         .filter((task: Task) => !task.isMIT && task.status !== 'Completed')
-        .slice(0, 3); // Top 3 LIT tasks
+        .sort((a: Task, b: Task) => a.priority - b.priority);
+      
+      // Any MIT tasks beyond the first 3 should be treated as LIT
+      const overflowMitTasks = allMitTasks.slice(3).map(task => ({ ...task, isMIT: false }));
+      
+      const allLitWithOverflow = [...overflowMitTasks, ...allLitTasks]
+        .sort((a: Task, b: Task) => a.priority - b.priority);
+      
+      const litTasks = allLitWithOverflow.slice(0, 3); // Top 3 LIT tasks
       
       setTasks(litTasks);
+
+      // Force re-render
+      setRenderKey(prev => prev + 1);
     } catch (error) {
       console.error('Error fetching LIT tasks:', error);
       setError('Failed to load LIT tasks');
@@ -49,16 +67,36 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
 
   const handleSaveTask = useCallback(async (taskData: Partial<Task>) => {
     try {
+      
       if (selectedTask) {
         await updateTask(selectedTask.TaskId, taskData);
       } else {
         // For new tasks, ensure they are marked as LIT (not MIT)
-        await createTask({ ...taskData, isMIT: false });
+        const newTaskData = { ...taskData, isMIT: false };
+        await createTask(newTaskData);
       }
-      fetchLITTasks(); // Refresh the LIT tasks
+      
+      // Immediate local refresh
+      await fetchLITTasks();
+      
       setIsEditModalOpen(false);
       setSelectedTask(null);
       onRefresh?.(); // Trigger dashboard refresh if callback provided
+      
+      // Dispatch custom event for immediate dashboard refresh
+      const event = new CustomEvent('taskUpdated', { 
+        detail: { type: selectedTask ? 'update' : 'create', isMIT: false, source: 'TopLITTasks' } 
+      });
+      window.dispatchEvent(event);
+      
+      // Also dispatch a general refresh event
+      setTimeout(() => {
+        const refreshEvent = new CustomEvent('dashboardTabSwitch', { 
+          detail: { activeTab: 'dashboard' } 
+        });
+        window.dispatchEvent(refreshEvent);
+      }, 100);
+      
     } catch (error) {
       console.error('Error saving task:', error);
     }
@@ -66,6 +104,27 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
 
   useEffect(() => {
     fetchLITTasks();
+  }, [fetchLITTasks]);
+
+  // Listen for dashboard refresh events with debounce
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleRefresh = () => {
+      // Debounce rapid refresh calls
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchLITTasks();
+      }, 500);
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
+    };
   }, [fetchLITTasks]);
 
   const getDueDateBadgeClass = (dueDate: string) => {
@@ -122,19 +181,21 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
 
   return (
     <>
-      <div className="lit-task-list-widget">
+      <div className="lit-task-list-widget" key={`lit-widget-${renderKey}`}>
         <div className="widget-header">
-          <h3 className="widget-title">Less Important Tasks</h3>
-          <button 
-            className="add-task-button"
-            onClick={() => {
-              setSelectedTask(null);
-              setIsEditModalOpen(true);
-            }}
-            title="Add new LIT task"
-          >
-            + Add LIT
-          </button>
+          <h3 className="widget-title">Top LIT Tasks</h3>
+          <div className="header-buttons">
+            <button 
+              className="add-task-button"
+              onClick={() => {
+                setSelectedTask(null);
+                setIsEditModalOpen(true);
+              }}
+              title="Add new LIT task"
+            >
+              + Add LIT
+            </button>
+          </div>
         </div>
         <div className="widget-content">
           {tasks.length === 0 ? (

@@ -13,6 +13,7 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [renderKey, setRenderKey] = useState(0); // Force re-render key
   
   const { getTasks, updateTask, createTask } = useTaskApi();
 
@@ -20,11 +21,20 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const allTasks = await getTasks({ status: ['Open'] });
-      const mitTasks = allTasks.filter((task: Task) => task.isMIT && task.status !== 'Completed');
+      
+      // Filter and sort MIT tasks by priority, limit to 3 (matching tasks page logic)
+      const allMitTasks = allTasks
+        .filter((task: Task) => task.isMIT && task.status !== 'Completed')
+        .sort((a: Task, b: Task) => a.priority - b.priority);
+      
+      const mitTasks = allMitTasks.slice(0, 3); // Enforce MIT limit: only first 3 tasks
       
       setTasks(mitTasks);
+
+      // Force re-render
+      setRenderKey(prev => prev + 1);
     } catch (error) {
       console.error('Error fetching MIT tasks:', error);
       setError('Failed to load MIT tasks');
@@ -47,16 +57,36 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
 
   const handleSaveTask = useCallback(async (taskData: Partial<Task>) => {
     try {
+      
       if (selectedTask) {
         await updateTask(selectedTask.TaskId, taskData);
       } else {
         // For new tasks, ensure they are marked as MIT
-        await createTask({ ...taskData, isMIT: true });
+        const newTaskData = { ...taskData, isMIT: true };
+        await createTask(newTaskData);
       }
-      fetchMITTasks(); // Refresh the MIT tasks
+      
+      // Immediate local refresh
+      await fetchMITTasks();
+      
       setIsEditModalOpen(false);
       setSelectedTask(null);
       onRefresh?.(); // Trigger dashboard refresh if callback provided
+      
+      // Dispatch custom event for immediate dashboard refresh
+      const event = new CustomEvent('taskUpdated', { 
+        detail: { type: selectedTask ? 'update' : 'create', isMIT: true, source: 'MITTaskList' } 
+      });
+      window.dispatchEvent(event);
+      
+      // Also dispatch a general refresh event
+      setTimeout(() => {
+        const refreshEvent = new CustomEvent('dashboardTabSwitch', { 
+          detail: { activeTab: 'dashboard' } 
+        });
+        window.dispatchEvent(refreshEvent);
+      }, 100);
+      
     } catch (error) {
       console.error('Error saving task:', error);
     }
@@ -64,6 +94,27 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
 
   useEffect(() => {
     fetchMITTasks();
+  }, [fetchMITTasks]);
+
+  // Listen for dashboard refresh events with debounce
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleRefresh = () => {
+      // Debounce rapid refresh calls
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchMITTasks();
+      }, 500);
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
+    };
   }, [fetchMITTasks]);
 
   const getDueDateBadgeClass = (dueDate: string) => {
@@ -120,19 +171,21 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
 
   return (
     <>
-      <div className="mit-task-list-widget">
+      <div className="mit-task-list-widget" key={`mit-widget-${renderKey}`}>
         <div className="widget-header">
           <h3 className="widget-title">Most Important Tasks</h3>
-          <button 
-            className="add-task-button"
-            onClick={() => {
-              setSelectedTask(null);
-              setIsEditModalOpen(true);
-            }}
-            title="Add new MIT task"
-          >
-            + Add MIT
-          </button>
+          <div className="header-buttons">
+            <button 
+              className="add-task-button"
+              onClick={() => {
+                setSelectedTask(null);
+                setIsEditModalOpen(true);
+              }}
+              title="Add new MIT task"
+            >
+              + Add MIT
+            </button>
+          </div>
         </div>
         <div className="widget-content">
           {tasks.length === 0 ? (

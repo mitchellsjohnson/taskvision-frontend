@@ -76,6 +76,7 @@ const WellnessPage: React.FC = () => {
       weekEnd.setDate(weekEnd.getDate() + 6);
       const weekEndStr = weekEnd.toISOString().split('T')[0];
       
+      // Load practices and scores
       const [practices, scores] = await Promise.all([
         getPracticeInstances(currentWeek, weekEndStr),
         getWeeklyScores(12),

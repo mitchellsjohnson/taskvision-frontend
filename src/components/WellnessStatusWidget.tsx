@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { useAuth0 } from '@auth0/auth0-react';
 import { WellnessPractice, PracticeInstance } from '../types';
 import { useWellnessApi } from '../services/wellness-api';
 
@@ -47,11 +45,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
   const [journalEntries, setJournalEntries] = useState<Record<string, string>>({});
   const [currentDateOffset, setCurrentDateOffset] = useState(0); // 0 = today, -1 = yesterday, etc.
   const [weeklyScore, setWeeklyScore] = useState<number>(0);
-  const [weeklyScoreChange, setWeeklyScoreChange] = useState<number>(0);
-  const { getAccessTokenSilently } = useAuth0();
-  const { getWeeklyScores, createPracticeInstance, updatePracticeInstance } = useWellnessApi();
-
-  const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
+  const { getWeeklyScores, createPracticeInstance, updatePracticeInstance, getPracticeInstances } = useWellnessApi();
 
   const getDateInfo = (dateOffset: number = 0) => {
     const baseDate = new Date();
@@ -88,16 +82,10 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
       setIsLoading(true);
       setError(null);
       
-      const accessToken = await getAccessTokenSilently();
       const { weekStart, weekEnd, currentDate } = getDateInfo(currentDateOffset);
       
-      // Fetch practice instances for current week
-      const response = await axios.get(`${API_SERVER_URL}/api/wellness/practices`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: { startDate: weekStart, endDate: weekEnd }
-      });
-      
-      const practices: PracticeInstance[] = response.data?.data || [];
+      // Fetch practice instances for current week using the proper API hook
+      const practices: PracticeInstance[] = await getPracticeInstances(weekStart, weekEnd);
       
       // Load journal entries from practice instances
       const loadedJournalEntries: Record<string, string> = {};
@@ -114,7 +102,9 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
         const scores = await getWeeklyScores(1);
         
         if (scores && Array.isArray(scores) && scores.length > 0) {
-          const currentWeekScore = scores.find(s => s && s.weekStart === weekStart);
+          // Find the score for the current week - scores are returned in descending order
+          // so the first one should be the most recent week
+          const currentWeekScore = scores.find(s => s && s.weekStart === weekStart) || scores[0];
           setWeeklyScore(currentWeekScore?.score || 0);
         } else {
           setWeeklyScore(0);
@@ -145,9 +135,9 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
             };
           }
           
-          // Check for journal entries (stored locally for now)
+          // Check for journal entries for the current date (fixed logic)
           const todayPracticeId = `${currentDate}-${practiceType}`;
-          const hasJournal = journalEntries[todayPracticeId] ? true : false;
+          const hasJournal = !!loadedJournalEntries[todayPracticeId];
           
           return {
             practice: practiceType,
@@ -155,7 +145,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
             weeklyProgress,
             weeklyTarget: target.weeklyTarget,
             hasJournal,
-            journalEntry: journalEntries[todayPracticeId] || ''
+            journalEntry: loadedJournalEntries[todayPracticeId] || ''
           };
         } catch (error) {
           console.error(`Error processing practice ${practice}:`, error);
@@ -177,7 +167,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     } finally {
       setIsLoading(false);
     }
-  }, [getAccessTokenSilently, API_SERVER_URL, journalEntries, currentDateOffset]);
+  }, [getPracticeInstances, getWeeklyScores, currentDateOffset]);
 
   useEffect(() => {
     fetchWellnessStatus();
@@ -332,12 +322,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
         
         // Check if practice already exists for this date
         const { weekStart, weekEnd } = getDateInfo(currentDateOffset);
-        const response = await axios.get(`${API_SERVER_URL}/api/wellness/practices`, {
-          headers: { Authorization: `Bearer ${await getAccessTokenSilently()}` },
-          params: { startDate: weekStart, endDate: weekEnd }
-        });
-        
-        const existingPractices: PracticeInstance[] = response.data?.data || [];
+        const existingPractices: PracticeInstance[] = await getPracticeInstances(weekStart, weekEnd);
         const existingPractice = existingPractices.find(
           p => p.date === currentDate && p.practice === practice
         );
@@ -416,19 +401,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     setJournalContent('');
   };
 
-  const getPracticeIcon = (practice: WellnessPractice, completed: boolean) => {
-    const iconMap: Record<WellnessPractice, string> = {
-      'Gratitude': '🙏',
-      'Meditation': '🧘',
-      'Kindness': '💝',
-      'Social Outreach': '👥',
-      'Novelty Challenge': '🌟',
-      'Savoring Reflection': '🌅',
-      'Exercise': '💪',
-    };
-    
-    return completed ? '✅' : iconMap[practice];
-  };
+
 
   const getProgressBarClass = (practice: WellnessPractice, progress: number, target: number) => {
     const today = new Date();
@@ -504,12 +477,7 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
         <div className="week-range">Week: {weekDisplay}</div>
         <div className="score-info">
           <span className="score-label">Week Score:</span>
-          <span className="score-value">{weeklyScore}/100</span>
-          {weeklyScoreChange !== 0 && (
-            <span className={`score-change ${weeklyScoreChange > 0 ? 'positive' : 'negative'}`}>
-              ({weeklyScoreChange > 0 ? '+' : ''}{weeklyScoreChange})
-            </span>
-          )}
+          <span className="score-value">{Math.round(weeklyScore)}/100</span>
         </div>
       </div>
       

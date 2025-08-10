@@ -102,9 +102,11 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ onRefres
     };
 
     window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
     return () => {
       clearTimeout(timeoutId);
       window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
     };
   }, [fetchRecentActivity]);
 

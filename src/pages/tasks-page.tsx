@@ -390,12 +390,20 @@ export const TasksPage: React.FC = () => {
       newMit.forEach((t, i) => { t.priority = i + 1; });
       newLit.forEach((t, i) => { t.priority = i + 1; });
       
+      // Update the backend with the new priority and isMIT status
+      const newPriority = newIndex + 1; // Priority is 1-based for both MIT and LIT
+      const newIsMIT = listId === 'MIT';
+      
+      // Send the corrected data to backend
+      updateTask(taskId, { 
+        priority: newPriority,
+        isMIT: newIsMIT
+      }).catch(error => {
+        console.error('Failed to persist task move:', error);
+        // Could add error handling/rollback here
+      });
+      
       return [...newMit, ...newLit];
-    });
-
-    updateTask(taskId, { 
-      position: newIndex,
-      isMIT: listId === 'MIT'
     });
 
     // Flash the moved task

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTaskApi } from '../services/task-api';
 
 interface TaskOverviewSummaryProps {
@@ -35,7 +35,7 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
     };
   };
 
-  const fetchTaskSummary = async () => {
+  const fetchTaskSummary = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -69,12 +69,34 @@ export const TaskOverviewSummary: React.FC<TaskOverviewSummaryProps> = ({ onRefr
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [getTasks]); // Added getTasks to dependency array
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     fetchTaskSummary();
-  }, []);
+  }, [fetchTaskSummary]);
+
+  // Listen for dashboard refresh events with debounce
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleRefresh = () => {
+      // Debounce rapid refresh calls
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchTaskSummary();
+      }, 500);
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('taskUpdated', handleRefresh);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('taskUpdated', handleRefresh);
+    };
+  }, [fetchTaskSummary]);
 
   if (isLoading) {
     return (
