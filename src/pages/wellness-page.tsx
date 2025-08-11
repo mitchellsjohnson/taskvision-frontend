@@ -199,22 +199,14 @@ const WellnessPage: React.FC = () => {
 
     // Refresh scores and status
     const scores = await getWeeklyScores(12);
-    
     setWeeklyScores(scores);
+    setViewedWeekScore(scores.find(score => score.weekStart === currentWeek)?.score || 0);
+    setLastWeekScore(scores.length > 1 ? scores[1].score : 0);
 
-    // Calculate score for the currently viewed week (not necessarily current week)
-    const viewedWeekScoreData = scores.find(s => s.weekStart === currentWeek);
-    const viewedWeekScore = viewedWeekScoreData?.score || 0;
-    setViewedWeekScore(viewedWeekScore);
-
-    // Calculate last week score
-    const currentWeekStart = new Date(currentWeek + 'T00:00:00');
-    const lastWeekStart = new Date(currentWeekStart);
-    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-    const lastWeekStartStr = lastWeekStart.toISOString().split('T')[0];
-    
-    const lastWeekScoreData = scores.find(s => s.weekStart === lastWeekStartStr);
-    setLastWeekScore(lastWeekScoreData?.score || 0);
+    // Dispatch custom event to notify dashboard of wellness data update
+    window.dispatchEvent(new CustomEvent('wellnessDataUpdated', {
+      detail: { date, practice, completed }
+    }));
   };
 
   // Handle task creation
@@ -246,6 +238,15 @@ const WellnessPage: React.FC = () => {
       
       // Refresh data to ensure consistency
       await loadWellnessData();
+      
+      // Dispatch custom event to notify dashboard of wellness data update
+      window.dispatchEvent(new CustomEvent('wellnessDataUpdated', {
+        detail: { 
+          date: showJournalFor.date, 
+          practice: showJournalFor.practice, 
+          journal: journalContent.trim() 
+        }
+      }));
     } catch (error) {
       console.error('Failed to save journal entry:', error);
     }

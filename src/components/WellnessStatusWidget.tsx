@@ -169,6 +169,27 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     }
   }, [getPracticeInstances, getWeeklyScores, currentDateOffset]);
 
+  // Listen for dashboard refresh events with debounce
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleRefresh = () => {
+      // Debounce rapid refresh calls
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        fetchWellnessStatus();
+      }, 500);
+    };
+
+    window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('wellnessDataUpdated', handleRefresh);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('wellnessDataUpdated', handleRefresh);
+    };
+  }, [fetchWellnessStatus]);
+
   useEffect(() => {
     fetchWellnessStatus();
   }, [fetchWellnessStatus]);

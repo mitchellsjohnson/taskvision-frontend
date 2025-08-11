@@ -140,9 +140,11 @@ export const WellnessPromptTile: React.FC<WellnessPromptTileProps> = ({
     };
 
     window.addEventListener('dashboardTabSwitch', handleRefresh);
+    window.addEventListener('wellnessDataUpdated', handleRefresh);
     return () => {
       clearTimeout(timeoutId);
       window.removeEventListener('dashboardTabSwitch', handleRefresh);
+      window.removeEventListener('wellnessDataUpdated', handleRefresh);
     };
   }, [fetchWellnessStatus]);
 
