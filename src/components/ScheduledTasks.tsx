@@ -42,11 +42,15 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
       const nextWeekStr = nextWeek.toISOString().split('T')[0];
       
       const grouped: GroupedTasks = {
-        overdue: tasksWithDueDates.filter(task => task.dueDate! < today),
-        today: tasksWithDueDates.filter(task => task.dueDate === today),
-        thisWeek: tasksWithDueDates.filter(task => 
-          task.dueDate! > today && task.dueDate! <= nextWeekStr
-        )
+        overdue: tasksWithDueDates
+          .filter(task => task.dueDate! < today)
+          .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!)), // Earliest first
+        today: tasksWithDueDates
+          .filter(task => task.dueDate === today)
+          .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!)), // Earliest first
+        thisWeek: tasksWithDueDates
+          .filter(task => task.dueDate! > today && task.dueDate! <= nextWeekStr)
+          .sort((a, b) => a.dueDate!.localeCompare(b.dueDate!)) // Earliest first
       };
       
       setGroupedTasks(grouped);
