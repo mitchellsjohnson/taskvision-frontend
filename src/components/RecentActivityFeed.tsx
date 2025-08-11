@@ -48,7 +48,17 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ onRefres
       setData(prev => ({ ...prev, isLoading: true, error: null }));
       
       const response = await axios.get('/api/tasks/activity?limit=5');
-      const activities = response.data as ActivityEntry[];
+      
+      // Ensure we have an array, even if the API returns unexpected data
+      let activities: ActivityEntry[] = [];
+      if (Array.isArray(response.data)) {
+        activities = response.data;
+      } else if (response.data && Array.isArray(response.data.activities)) {
+        activities = response.data.activities;
+      } else {
+        console.warn('Unexpected API response format:', response.data);
+        activities = [];
+      }
 
       setData({
         activities,
