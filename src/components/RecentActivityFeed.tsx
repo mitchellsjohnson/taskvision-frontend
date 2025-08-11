@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+import { useTaskApi } from '../services/task-api';
 
 interface RecentActivityFeedProps {
   onRefresh?: () => void;
@@ -25,6 +25,7 @@ interface RecentActivityData {
 }
 
 export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ onRefresh }) => {
+  const { getRecentActivity } = useTaskApi();
   const [data, setData] = useState<RecentActivityData>({
     activities: [],
     isLoading: true,
@@ -47,16 +48,14 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ onRefres
     try {
       setData(prev => ({ ...prev, isLoading: true, error: null }));
       
-      const response = await axios.get('/api/tasks/activity?limit=5');
+      const response = await getRecentActivity(5);
       
-      // Ensure we have an array, even if the API returns unexpected data
+      // The API returns an array of activities directly
       let activities: ActivityEntry[] = [];
-      if (Array.isArray(response.data)) {
-        activities = response.data;
-      } else if (response.data && Array.isArray(response.data.activities)) {
-        activities = response.data.activities;
+      if (Array.isArray(response)) {
+        activities = response;
       } else {
-        console.warn('Unexpected API response format:', response.data);
+        console.warn('Unexpected API response format:', response);
         activities = [];
       }
 
@@ -87,7 +86,7 @@ export const RecentActivityFeed: React.FC<RecentActivityFeedProps> = ({ onRefres
         setRetryCount(0);
       }
     }
-  }, []);
+  }, [getRecentActivity]);
 
   const handleRetry = useCallback(() => {
     setRetryCount(0);

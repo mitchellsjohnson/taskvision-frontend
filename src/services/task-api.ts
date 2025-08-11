@@ -2,6 +2,18 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { useCallback, useMemo } from 'react';
 import { Task } from '../types';
 
+interface ActivityEntry {
+  id: string;
+  type: 'completion' | 'priority_change' | 'creation';
+  taskId: string;
+  taskTitle: string;
+  timestamp: string;
+  details: {
+    oldValue?: string;
+    newValue?: string;
+  };
+}
+
 const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
 
 export const useTaskApi = () => {
@@ -92,13 +104,21 @@ export const useTaskApi = () => {
     [authenticatedRequest]
   );
 
+  const getRecentActivity = useCallback(
+    async (limit: number = 5): Promise<ActivityEntry[]> => {
+      return authenticatedRequest('GET', `api/tasks/activity?limit=${limit}`);
+    },
+    [authenticatedRequest]
+  );
+
   return useMemo(
     () => ({
       getTasks,
       createTask,
       updateTask,
-      deleteTask
+      deleteTask,
+      getRecentActivity
     }),
-    [getTasks, createTask, updateTask, deleteTask]
+    [getTasks, createTask, updateTask, deleteTask, getRecentActivity]
   );
 };
