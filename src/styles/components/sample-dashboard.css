@@ -1,0 +1,92 @@
+/* SAMPLE Dashboard Styles */
+.sample-dashboard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  border-radius: 8px;
+  min-height: 400px;
+}
+
+.sample-message-container {
+  text-align: center;
+  max-width: 800px;
+  width: 100%;
+}
+
+.sample-message {
+  font-size: 4rem;
+  font-weight: bold;
+  color: #ff0000;
+  text-shadow: 
+    0 0 10px rgba(255, 0, 0, 0.8),
+    0 0 20px rgba(255, 0, 0, 0.6),
+    0 0 30px rgba(255, 0, 0, 0.4);
+  margin-bottom: 2rem;
+  letter-spacing: 2px;
+  font-family: 'Arial Black', Arial, sans-serif;
+}
+
+.sample-message.blinking {
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% {
+    opacity: 1;
+    text-shadow: 
+      0 0 10px rgba(255, 0, 0, 0.8),
+      0 0 20px rgba(255, 0, 0, 0.6),
+      0 0 30px rgba(255, 0, 0, 0.4);
+  }
+  51%, 100% {
+    opacity: 0.3;
+    text-shadow: 
+      0 0 5px rgba(255, 0, 0, 0.4),
+      0 0 10px rgba(255, 0, 0, 0.3),
+      0 0 15px rgba(255, 0, 0, 0.2);
+  }
+}
+
+.sample-subtitle {
+  font-size: 1.5rem;
+  color: #cccccc;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.cache-info {
+  font-size: 0.9rem;
+  color: #888888;
+  margin-top: 2rem;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .sample-message {
+    font-size: 2.5rem;
+  }
+  
+  .sample-subtitle {
+    font-size: 1.2rem;
+  }
+  
+  .sample-dashboard {
+    padding: 1rem;
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sample-message {
+    font-size: 2rem;
+    letter-spacing: 1px;
+  }
+  
+  .sample-subtitle {
+    font-size: 1rem;
+  }
+}

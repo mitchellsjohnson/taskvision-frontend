@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PrimaryDashboard } from './PrimaryDashboard';
+import { SampleDashboard } from './SampleDashboard';
 
 interface DashboardTabsProps {
-  defaultTab?: 'dashboard' | 'wellness';
+  defaultTab?: 'dashboard' | 'wellness' | 'sample';
 }
 
 interface TabData {
@@ -11,9 +12,10 @@ interface TabData {
 }
 
 interface DashboardTabsState {
-  activeTab: 'dashboard' | 'wellness';
+  activeTab: 'dashboard' | 'wellness' | 'sample';
   dashboardData: TabData | null;
   wellnessData: TabData | null;
+  sampleData: TabData | null;
 }
 
 export const DashboardTabs: React.FC<DashboardTabsProps> = ({ 
@@ -23,12 +25,13 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
     activeTab: defaultTab,
     dashboardData: null,
     wellnessData: null,
+    sampleData: null,
   });
 
   const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
 
   // Handle tab switching
-  const handleTabSwitch = useCallback((tab: 'dashboard' | 'wellness') => {
+  const handleTabSwitch = useCallback((tab: 'dashboard' | 'wellness' | 'sample') => {
     if (tab === state.activeTab) return;
 
     setState(prevState => ({
@@ -72,6 +75,9 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           if (state.activeTab === 'wellness') {
             handleTabSwitch('dashboard');
             tabRefs.current.dashboard?.focus();
+          } else if (state.activeTab === 'sample') {
+            handleTabSwitch('wellness');
+            tabRefs.current.wellness?.focus();
           }
           break;
         case 'ArrowRight':
@@ -79,6 +85,9 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           if (state.activeTab === 'dashboard') {
             handleTabSwitch('wellness');
             tabRefs.current.wellness?.focus();
+          } else if (state.activeTab === 'wellness') {
+            handleTabSwitch('sample');
+            tabRefs.current.sample?.focus();
           }
           break;
         case 'Home':
@@ -88,8 +97,8 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
           break;
         case 'End':
           event.preventDefault();
-          handleTabSwitch('wellness');
-          tabRefs.current.wellness?.focus();
+          handleTabSwitch('sample');
+          tabRefs.current.sample?.focus();
           break;
       }
     };
@@ -99,7 +108,7 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
   }, [state.activeTab, handleTabSwitch]);
 
   // Cache management for tab data
-  const updateTabData = useCallback((tab: 'dashboard' | 'wellness', data: any) => {
+  const updateTabData = useCallback((tab: 'dashboard' | 'wellness' | 'sample', data: any) => {
     setState(prevState => ({
       ...prevState,
       [`${tab}Data`]: {
@@ -144,6 +153,18 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
         >
           Wellness
         </button>
+        <button
+          ref={el => tabRefs.current.sample = el}
+          role="tab"
+          aria-selected={state.activeTab === 'sample'}
+          aria-controls="sample-panel"
+          id="sample-tab"
+          className={`dashboard-tab ${state.activeTab === 'sample' ? 'active' : ''}`}
+          onClick={() => handleTabSwitch('sample')}
+          tabIndex={state.activeTab === 'sample' ? 0 : -1}
+        >
+          SAMPLE
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -176,6 +197,22 @@ export const DashboardTabs: React.FC<DashboardTabsProps> = ({
             onDataUpdate={(data) => updateTabData('wellness', data)}
             cachedData={isCacheFresh(state.wellnessData) ? state.wellnessData?.data : null}
           />
+        </div>
+
+        {/* SAMPLE Dashboard Panel */}
+        <div
+          id="sample-panel"
+          role="tabpanel"
+          aria-labelledby="sample-tab"
+          className={`dashboard-tab-panel ${state.activeTab === 'sample' ? 'active' : 'hidden'}`}
+          hidden={state.activeTab !== 'sample'}
+        >
+          {state.activeTab === 'sample' && (
+            <SampleDashboard 
+              onDataUpdate={(data) => updateTabData('sample', data)}
+              cachedData={isCacheFresh(state.sampleData) ? state.sampleData?.data : null}
+            />
+          )}
         </div>
       </div>
     </div>
