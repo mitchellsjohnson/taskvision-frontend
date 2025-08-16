@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useWellnessApi } from '../services/wellness-api';
 import WellnessScoreChart from '../components/wellness/WellnessScoreChart';
 import WellnessTrackerGrid from '../components/wellness/WellnessTrackerGrid';
-import { EditTaskModal } from '../components/edit-task-modal';
+import { EditTaskForm } from '../components/edit-task-form';
 import { useTaskApi } from '../services/task-api';
 import { PracticeInstance, WeeklyWellnessScore, WellnessPractice, Task } from '../types';
+import { Button } from '../components/ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/Dialog';
+import { Icon } from '../components/icon';
 
 const WellnessPage: React.FC = () => {
   const {
@@ -28,7 +31,7 @@ const WellnessPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   
   // Task Modal State
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [pendingWellnessLink, setPendingWellnessLink] = useState<{
     date: string;
@@ -48,7 +51,6 @@ const WellnessPage: React.FC = () => {
 
   // Initialize current week
   useEffect(() => {
-    // Get current date in Eastern Time
     const today = new Date();
     const weekStart = getWeekStart(today);
     setCurrentWeek(weekStart);
@@ -62,80 +64,42 @@ const WellnessPage: React.FC = () => {
   }, [currentWeek]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadWellnessData = async () => {
-    if (!currentWeek) {
-      return;
-    }
-    
-    // Clear any previous errors
+    if (!currentWeek) return;
     clearError();
     setIsLoading(true);
-    
     try {
-      // Load current week practices
       const weekEnd = new Date(currentWeek + 'T00:00:00');
       weekEnd.setDate(weekEnd.getDate() + 6);
       const weekEndStr = weekEnd.toISOString().split('T')[0];
-      
-      // Load practices and scores
       const [practices, scores] = await Promise.all([
         getPracticeInstances(currentWeek, weekEndStr),
         getWeeklyScores(12),
       ]);
-
       setCurrentWeekPractices(practices);
       setWeeklyScores(scores);
-
-      // Load journal entries from practice instances
-      const journalEntries: Record<string, string> = {};
-      practices.forEach(practice => {
-        if (practice.journal) {
-          const practiceId = `${practice.date}-${practice.practice}`;
-          journalEntries[practiceId] = practice.journal;
-        }
+      const newJournalEntries: Record<string, string> = {};
+      practices.forEach(p => {
+        if (p.journal) newJournalEntries[`${p.date}-${p.practice}`] = p.journal;
       });
-      setJournalEntries(journalEntries);
-
-      // Calculate score for the currently viewed week (not necessarily current week)
-      const viewedWeekScoreData = scores.find(s => s.weekStart === currentWeek);
-      const viewedWeekScore = viewedWeekScoreData?.score || 0;
-      setViewedWeekScore(viewedWeekScore);
-
-      // Calculate last week score
-      const currentWeekStart = new Date(currentWeek + 'T00:00:00');
-      const lastWeekStart = new Date(currentWeekStart);
-      lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-      const lastWeekStartStr = lastWeekStart.toISOString().split('T')[0];
-      
+      setJournalEntries(newJournalEntries);
+      const viewedScoreData = scores.find(s => s.weekStart === currentWeek);
+      setViewedWeekScore(viewedScoreData?.score || 0);
+      const lastWeekDate = new Date(currentWeek + 'T00:00:00');
+      lastWeekDate.setDate(lastWeekDate.getDate() - 7);
+      const lastWeekStartStr = lastWeekDate.toISOString().split('T')[0];
       const lastWeekScoreData = scores.find(s => s.weekStart === lastWeekStartStr);
       setLastWeekScore(lastWeekScoreData?.score || 0);
-
-      // Load tasks to get available tags and counts
       const allTasks = await getTasks({ status: ['Open', 'Completed', 'Canceled', 'Waiting'] });
-      const activeTasks = allTasks.filter(task => task.status === 'Open' || task.status === 'Waiting');
-      
+      const activeTasks = allTasks.filter(t => t.status === 'Open' || t.status === 'Waiting');
       const tags = new Set<string>();
-      let mitCount = 0;
-      let litCount = 0;
-      
-      allTasks.forEach(task => {
-        task.tags?.forEach(tag => tags.add(tag));
-      });
-      
-      // Apply MIT limit logic (only first 3 MIT tasks by priority count as MIT)
-      const allMitTasks = activeTasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority);
-      const allLitTasks = activeTasks.filter(task => !task.isMIT);
-      
-      // Enforce MIT limit: only first 3 tasks can be MIT
-      const actualMitTasks = allMitTasks.slice(0, 3);
-      const overflowMitTasks = allMitTasks.slice(3);
-      
-      mitCount = actualMitTasks.length;
-      litCount = allLitTasks.length + overflowMitTasks.length;
-      
+      allTasks.forEach(t => t.tags?.forEach(tag => tags.add(tag)));
+      const allMit = activeTasks.filter(t => t.isMIT).sort((a, b) => a.priority - b.priority);
+      const allLit = activeTasks.filter(t => !t.isMIT);
+      const actualMit = allMit.slice(0, 3);
+      const overflowMit = allMit.slice(3);
       setAllTags(Array.from(tags).sort());
-      setMitTaskCount(mitCount);
-      setLitTaskCount(litCount);
-      
+      setMitTaskCount(actualMit.length);
+      setLitTaskCount(allLit.length + overflowMit.length);
     } catch (err) {
       console.error('Failed to load wellness data:', err);
     } finally {
@@ -143,33 +107,16 @@ const WellnessPage: React.FC = () => {
     }
   };
 
-  // Handle practice update
   const handlePracticeUpdate = async (date: string, practice: WellnessPractice, completed: boolean) => {
-    const existingPractice = currentWeekPractices.find(
-      p => p.date === date && p.practice === practice
-    );
-
+    const existingPractice = currentWeekPractices.find(p => p.date === date && p.practice === practice);
     let wasJustCompleted = false;
-
     if (existingPractice) {
-      // Check if we're marking as completed for the first time
       wasJustCompleted = !existingPractice.completed && completed;
-      
-      // Update existing practice
       const updated = await updatePracticeInstance(date, practice, { completed });
-      
-      setCurrentWeekPractices(prev =>
-        prev.map(p => p.id === updated.id ? updated : p)
-      );
+      setCurrentWeekPractices(prev => prev.map(p => p.id === updated.id ? updated : p));
     } else {
-      // Try to create new practice
       try {
-        const newPractice = await createPracticeInstance({
-          date,
-          practice,
-        });
-        
-        // Then update it to completed if needed
+        const newPractice = await createPracticeInstance({ date, practice });
         if (completed) {
           wasJustCompleted = true;
           const updated = await updatePracticeInstance(date, practice, { completed: true });
@@ -178,55 +125,37 @@ const WellnessPage: React.FC = () => {
           setCurrentWeekPractices(prev => [...prev, newPractice]);
         }
       } catch (error) {
-        // If practice already exists (race condition), update it instead
         if (error instanceof Error && error.message.includes('already exists')) {
           const updated = await updatePracticeInstance(date, practice, { completed });
           setCurrentWeekPractices(prev => [...prev, updated]);
-          // Also refresh the full data to ensure consistency
           await loadWellnessData();
         } else {
-          throw error; // Re-throw other errors
+          throw error;
         }
       }
     }
-
-    // If practice was just completed, show journal modal
     if (wasJustCompleted) {
       setShowJournalFor({ date, practice });
       const practiceId = `${date}-${practice}`;
       setJournalContent(journalEntries[practiceId] || '');
     }
-
-    // Refresh scores and status
     const scores = await getWeeklyScores(12);
     setWeeklyScores(scores);
     setViewedWeekScore(scores.find(score => score.weekStart === currentWeek)?.score || 0);
     setLastWeekScore(scores.length > 1 ? scores[1].score : 0);
-
-    // Dispatch custom event to notify dashboard of wellness data update
-    window.dispatchEvent(new CustomEvent('wellnessDataUpdated', {
-      detail: { date, practice, completed }
-    }));
+    window.dispatchEvent(new CustomEvent('wellnessDataUpdated', { detail: { date, practice, completed } }));
   };
 
-  // Handle task creation
   const handleCreateTask = (date: string, practice: WellnessPractice) => {
     setPendingWellnessLink({ date, practice });
     setSelectedTask(null);
-    setIsTaskModalOpen(true);
+    setIsTaskDialogOpen(true);
   };
 
-  // Handle journal save
   const handleJournalSave = async () => {
     if (!showJournalFor) return;
-    
     try {
-      // Save journal entry to database
-      await updatePracticeInstance(showJournalFor.date, showJournalFor.practice, {
-        journal: journalContent.trim() || undefined
-      });
-      
-      // Update local state for immediate UI feedback
+      await updatePracticeInstance(showJournalFor.date, showJournalFor.practice, { journal: journalContent.trim() || undefined });
       const practiceId = `${showJournalFor.date}-${showJournalFor.practice}`;
       const updatedEntries = { ...journalEntries };
       if (journalContent.trim()) {
@@ -235,142 +164,85 @@ const WellnessPage: React.FC = () => {
         delete updatedEntries[practiceId];
       }
       setJournalEntries(updatedEntries);
-      
-      // Refresh data to ensure consistency
       await loadWellnessData();
-      
-      // Dispatch custom event to notify dashboard of wellness data update
-      window.dispatchEvent(new CustomEvent('wellnessDataUpdated', {
-        detail: { 
-          date: showJournalFor.date, 
-          practice: showJournalFor.practice, 
-          journal: journalContent.trim() 
-        }
-      }));
+      window.dispatchEvent(new CustomEvent('wellnessDataUpdated', { detail: { date: showJournalFor.date, practice: showJournalFor.practice, journal: journalContent.trim() } }));
     } catch (error) {
       console.error('Failed to save journal entry:', error);
     }
-    
     setShowJournalFor(null);
     setJournalContent('');
   };
 
-  // Handle journal edit for existing practice
   const handleJournalEdit = (date: string, practice: WellnessPractice) => {
     setShowJournalFor({ date, practice });
     const practiceId = `${date}-${practice}`;
     setJournalContent(journalEntries[practiceId] || '');
   };
 
-  // Check if practice has journal entry
   const hasJournalEntry = (date: string, practice: WellnessPractice) => {
     const practiceId = `${date}-${practice}`;
     return Boolean(journalEntries[practiceId]);
   };
 
-  // Handle task opening
   const handleOpenTask = async (taskId: string) => {
     try {
       const tasks = await getTasks({ status: ['Open', 'Completed', 'Canceled', 'Waiting'] });
       const task = tasks.find(t => t.TaskId === taskId);
-      
       if (task) {
         setSelectedTask(task);
         setPendingWellnessLink(null);
-        setIsTaskModalOpen(true);
+        setIsTaskDialogOpen(true);
       }
     } catch (error) {
       console.error('Failed to fetch task:', error);
     }
   };
 
-  // Handle week navigation
   const navigateWeek = (direction: 'prev' | 'next') => {
-    // Parse current week as Eastern Time
-    const current = new Date(currentWeek + 'T12:00:00'); // Use noon to avoid timezone edge cases
-    
-    // Navigate by exactly 7 days
+    const current = new Date(currentWeek + 'T12:00:00');
     const offset = direction === 'next' ? 7 : -7;
     current.setDate(current.getDate() + offset);
-    
-    // Ensure we always land on a Monday (week start)
     const newWeekStart = getWeekStart(current);
     setCurrentWeek(newWeekStart);
   };
 
-  // Handle chart week click
   const handleChartWeekClick = (weekStart: string) => {
     setCurrentWeek(weekStart);
   };
 
-  // Handle task modal save
   const handleWellnessTaskSave = async (taskData: Partial<Task>) => {
     try {
       let taskId: string;
-      
       if (selectedTask) {
-        // Update existing task
         await updateTask(selectedTask.TaskId, taskData);
         taskId = selectedTask.TaskId;
       } else {
-        // Create new task with wellness context
-        const newTaskData = {
-          ...taskData,
-          tags: [...(taskData.tags || []), 'Wellness'],
-        };
-        
+        const newTaskData = { ...taskData, tags: [...(taskData.tags || []), 'Wellness'] };
         if (pendingWellnessLink) {
           newTaskData.title = `${pendingWellnessLink.practice}: ${taskData.title}`;
         }
-        
         const newTask = await createTask(newTaskData);
         taskId = newTask.TaskId;
       }
-
-      // If this was for creating a wellness-linked task, link it to the practice
       if (pendingWellnessLink && !selectedTask) {
-        // Check if practice already exists
-        const existingPractice = currentWeekPractices.find(
-          p => p.date === pendingWellnessLink.date && p.practice === pendingWellnessLink.practice
-        );
-
+        const existingPractice = currentWeekPractices.find(p => p.date === pendingWellnessLink.date && p.practice === pendingWellnessLink.practice);
         if (existingPractice) {
-          // Update existing practice to link the task (preserve completion status)
-          await updatePracticeInstance(
-            pendingWellnessLink.date,
-            pendingWellnessLink.practice,
-            { linkedTaskId: taskId }
-          );
+          await updatePracticeInstance(pendingWellnessLink.date, pendingWellnessLink.practice, { linkedTaskId: taskId });
         } else {
-          // Try to create new practice with task link (not completed yet)
           try {
-            await createPracticeInstance({
-              date: pendingWellnessLink.date,
-              practice: pendingWellnessLink.practice,
-              linkedTaskId: taskId
-            });
+            await createPracticeInstance({ date: pendingWellnessLink.date, practice: pendingWellnessLink.practice, linkedTaskId: taskId });
           } catch (error) {
-                         // If practice already exists (race condition), update it instead
-             if (error instanceof Error && error.message.includes('already exists')) {
-               await updatePracticeInstance(
-                 pendingWellnessLink.date,
-                 pendingWellnessLink.practice,
-                 { linkedTaskId: taskId }
-               );
-               // Refresh data to ensure consistency
-               await loadWellnessData();
-             } else {
-               throw error; // Re-throw other errors
-             }
+            if (error instanceof Error && error.message.includes('already exists')) {
+              await updatePracticeInstance(pendingWellnessLink.date, pendingWellnessLink.practice, { linkedTaskId: taskId });
+              await loadWellnessData();
+            } else {
+              throw error;
+            }
           }
         }
       }
-
-      // Refresh data
       await loadWellnessData();
-      
-      // Close modal and reset state
-      setIsTaskModalOpen(false);
+      setIsTaskDialogOpen(false);
       setSelectedTask(null);
       setPendingWellnessLink(null);
     } catch (error) {
@@ -378,28 +250,22 @@ const WellnessPage: React.FC = () => {
     }
   };
 
-  // Format week display
   const formatWeekDisplay = (weekStart: string): string => {
     if (!weekStart) return '';
-    
     const start = new Date(weekStart + 'T00:00:00');
     const end = new Date(weekStart + 'T00:00:00');
     end.setDate(end.getDate() + 6);
-    
     const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    
     return `${startStr} - ${endStr}`;
   };
 
-  // Check if current week is this week
   const isCurrentWeek = (): boolean => {
     const today = new Date();
     const thisWeekStart = getWeekStart(today);
     return currentWeek === thisWeekStart;
   };
 
-  // Handle retry
   const handleRetry = () => {
     clearError();
     loadWellnessData();
@@ -411,9 +277,7 @@ const WellnessPage: React.FC = () => {
         <div className="wellness-error-content">
           <h2>Unable to load wellness data</h2>
           <p>{error}</p>
-          <button onClick={handleRetry} className="wellness-retry-button">
-            Try Again
-          </button>
+          <Button onClick={handleRetry}>Try Again</Button>
         </div>
       </div>
     );
@@ -422,83 +286,49 @@ const WellnessPage: React.FC = () => {
   return (
     <div className="wellness-page">
       <div className="wellness-page-container">
-        {/* Header Section */}
         <div className="wellness-header">
           <div className="wellness-title-section">
             <h1 className="wellness-page-title">Wellness Check</h1>
-            <p className="wellness-page-subtitle">
-              Build daily and weekly habits that scientifically improve well-being
-            </p>
+            <p className="wellness-page-subtitle">Build daily and weekly habits that scientifically improve well-being</p>
           </div>
-          
-          {/* Current Week Score */}
           <div className="wellness-current-score">
             <div className="wellness-score-display">
-                              <span className="wellness-score-label">Week Score:</span>
+              <span className="wellness-score-label">Week Score:</span>
               <span className="wellness-score-value">{Math.round(viewedWeekScore)}/100</span>
               {lastWeekScore > 0 && (
-                <span className={`wellness-score-change ${
-                  viewedWeekScore >= lastWeekScore ? 'positive' : 'negative'
-                }`}>
+                <span className={`wellness-score-change ${viewedWeekScore >= lastWeekScore ? 'positive' : 'negative'}`}>
                   ({viewedWeekScore >= lastWeekScore ? '+' : ''}{Math.round(viewedWeekScore - lastWeekScore)})
                 </span>
               )}
             </div>
-            <div className="wellness-score-subtitle">
-              (Last week: {Math.round(lastWeekScore)})
-            </div>
+            <div className="wellness-score-subtitle">(Last week: {Math.round(lastWeekScore)})</div>
           </div>
         </div>
-
-        {/* Chart Section */}
         <div className="wellness-chart-section">
           <div className="wellness-section-header">
             <h2>Weekly Progress</h2>
             <p>Your wellness scores over the past 12 weeks</p>
           </div>
-          <WellnessScoreChart
-            data={weeklyScores}
-            onWeekClick={handleChartWeekClick}
-            className="wellness-main-chart"
-          />
+          <WellnessScoreChart data={weeklyScores} onWeekClick={handleChartWeekClick} className="wellness-main-chart" />
         </div>
-
-        {/* Tracker Section */}
         <div className="wellness-tracker-section">
           <div className="wellness-section-header">
             <div className="wellness-tracker-title">
               <div className="wellness-tracker-title-left">
                 <h2>Weekly Tracker</h2>
-                <div className="wellness-tracker-score">
-                  Score: <span className="wellness-score-highlight">{Math.round(viewedWeekScore)}/100</span>
-                </div>
+                <div className="wellness-tracker-score">Score: <span className="wellness-score-highlight">{Math.round(viewedWeekScore)}/100</span></div>
               </div>
               <div className="wellness-week-navigation">
-                <button
-                  onClick={() => navigateWeek('prev')}
-                  className="wellness-nav-button"
-                  disabled={isLoading}
-                >
-                  ←
-                </button>
+                <Button onClick={() => navigateWeek('prev')} variant="ghost" size="icon" disabled={isLoading}><Icon name="ChevronLeft" className="h-4 w-4" /></Button>
                 <span className="wellness-current-week">
                   {formatWeekDisplay(currentWeek)}
-                  {isCurrentWeek() && (
-                    <span className="wellness-current-indicator">Current Week</span>
-                  )}
+                  {isCurrentWeek() && (<span className="wellness-current-indicator">Current Week</span>)}
                 </span>
-                <button
-                  onClick={() => navigateWeek('next')}
-                  className="wellness-nav-button"
-                  disabled={isLoading}
-                >
-                  →
-                </button>
+                <Button onClick={() => navigateWeek('next')} variant="ghost" size="icon" disabled={isLoading}><Icon name="ChevronRight" className="h-4 w-4" /></Button>
               </div>
             </div>
             <p>Click cells to mark practices complete • ➕ to add tasks • 🔗 to view linked tasks • 📝 to add/edit journal entries</p>
           </div>
-          
           {currentWeek && (
             <WellnessTrackerGrid
               weekStart={currentWeek}
@@ -513,70 +343,47 @@ const WellnessPage: React.FC = () => {
             />
           )}
         </div>
-
-        {/* Task Modal */}
-        <EditTaskModal
-          isOpen={isTaskModalOpen}
-          onClose={() => {
-            setIsTaskModalOpen(false);
-            setSelectedTask(null);
-            setPendingWellnessLink(null);
-          }}
-          task={selectedTask}
-          onSave={handleWellnessTaskSave}
-          allTags={allTags}
-          mitTaskCount={mitTaskCount}
-          litTaskCount={litTaskCount}
-          defaultValues={
-            pendingWellnessLink && !selectedTask
-              ? {
-                  dueDate: pendingWellnessLink.date,
-                  tags: ['Wellness'],
-                }
-              : undefined
-          }
-        />
-
-        {/* Journal Modal */}
-        {showJournalFor && (
-          <div className="journal-modal">
-            <div className="journal-content">
-              <h4>
-                Reflection for {showJournalFor.practice}
-                <span className="journal-date"> ({new Date(showJournalFor.date).toLocaleDateString()})</span>
-              </h4>
-              <textarea
-                value={journalContent}
-                onChange={(e) => setJournalContent(e.target.value)}
-                placeholder="Journal the details... (Optional)"
-                maxLength={300}
-                rows={4}
-                autoFocus
-                className="journal-input"
-              />
-              <div className="journal-actions">
-                <span className="character-count">
-                  {journalContent.length}/300
-                </span>
-                <button 
-                  className="save-button"
-                  onClick={handleJournalSave}
-                >
-                  Save
-                </button>
-                <button 
-                  className="cancel-button"
-                  onClick={() => {
-                    setShowJournalFor(null);
-                    setJournalContent('');
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <Dialog open={isTaskDialogOpen} onOpenChange={setIsTaskDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{selectedTask ? 'Edit Task' : 'Create New Task'}</DialogTitle>
+            </DialogHeader>
+            <EditTaskForm
+              task={selectedTask}
+              onSave={handleWellnessTaskSave}
+              onCancel={() => setIsTaskDialogOpen(false)}
+              allTags={allTags}
+              mitTaskCount={mitTaskCount}
+              litTaskCount={litTaskCount}
+              defaultValues={
+                pendingWellnessLink && !selectedTask
+                  ? { dueDate: pendingWellnessLink.date, tags: ['Wellness'] }
+                  : undefined
+              }
+            />
+          </DialogContent>
+        </Dialog>
+        <Dialog open={!!showJournalFor} onOpenChange={(isOpen) => { if (!isOpen) setShowJournalFor(null); }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Reflection for {showJournalFor?.practice}</DialogTitle>
+              <DialogDescription>{new Date(showJournalFor?.date || '').toLocaleDateString()}</DialogDescription>
+            </DialogHeader>
+            <textarea
+              value={journalContent}
+              onChange={(e) => setJournalContent(e.target.value)}
+              placeholder="Journal the details... (Optional)"
+              maxLength={300}
+              rows={4}
+              autoFocus
+              className="w-full bg-gray-900/50 text-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <DialogFooter>
+              <Button variant="secondary" onClick={() => setShowJournalFor(null)}>Cancel</Button>
+              <Button onClick={handleJournalSave}>Save</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

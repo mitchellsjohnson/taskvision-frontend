@@ -870,4 +870,32 @@
 /* Ensure wellness cells have relative positioning for absolute journal indicator */
 .wellness-grid-cell.wellness-practice-day {
   position: relative;
-} 
+}
+
+/* Wellness Chart Theming */
+.wellness-chart-container .recharts-cartesian-grid-line {
+  stroke: var(--wellness-border);
+}
+
+.wellness-chart-container .recharts-text,
+.wellness-chart-container .recharts-label {
+  fill: var(--wellness-text-secondary);
+}
+
+.wellness-chart-container .recharts-line-line {
+  stroke: var(--wellness-accent);
+}
+
+.wellness-chart-container .recharts-line-dot circle {
+  stroke: var(--wellness-bg-secondary);
+  stroke-width: 2;
+  fill: var(--wellness-accent);
+}
+
+.wellness-chart-container .recharts-active-dot circle {
+  fill: var(--wellness-accent-light);
+}
+
+.wellness-chart-container .recharts-line-dot.cursor-pointer circle:hover {
+  r: 6;
+}

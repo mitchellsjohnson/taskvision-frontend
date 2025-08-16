@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTaskApi } from '../services/task-api';
 import { Task } from '../types';
+import { Button } from './ui/Button';
+import { Icon } from './icon';
 
 interface OpenOverdueTileProps {
   onRefresh?: () => void;
@@ -48,7 +50,7 @@ export const OpenOverdueTile: React.FC<OpenOverdueTileProps> = ({ onRefresh }) =
       today.setHours(0, 0, 0, 0); // Start of today
 
       // Calculate overdue tasks (dueDate < today)
-      const overdueTasks = openTasks.filter(task => {
+      const overdueTasks = openTasks.filter((task: Task) => {
         if (!task.dueDate) return false;
         const dueDate = new Date(task.dueDate);
         dueDate.setHours(0, 0, 0, 0);
@@ -128,13 +130,9 @@ export const OpenOverdueTile: React.FC<OpenOverdueTileProps> = ({ onRefresh }) =
       return (
         <div className="widget-error" role="alert">
           <p className="error-message">Failed to load task data</p>
-          <button 
-            className="retry-button-small"
-            onClick={handleRetry}
-            aria-label="Retry loading task data"
-          >
+          <Button variant="outline" size="sm" onClick={handleRetry}>
             Retry
-          </button>
+          </Button>
           {retryCount > 0 && (
             <p className="retry-info">Attempt {retryCount}/3</p>
           )}
@@ -192,16 +190,15 @@ export const OpenOverdueTile: React.FC<OpenOverdueTileProps> = ({ onRefresh }) =
     <div className="widget-tile open-overdue-tile">
       <div className="widget-header">
         <h3 className="widget-title">Task Overview</h3>
-        <button 
-          className="refresh-button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={() => fetchTaskCounts()}
           aria-label="Refresh task counts"
           disabled={data.isLoading}
         >
-          <span className={`refresh-icon ${data.isLoading ? 'spinning' : ''}`}>
-            🔄
-          </span>
-        </button>
+          <Icon name="RefreshCw" className={`h-4 w-4 ${data.isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </div>
       
       <div className="widget-content">

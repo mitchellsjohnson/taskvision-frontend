@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Task } from '../types';
-import { EditTaskModal } from './edit-task-modal';
+import { EditTaskForm } from './edit-task-form';
 import { useTaskApi } from '../services/task-api';
+import { Button } from './ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/Dialog';
+import { Icon } from './icon';
 
 interface UpcomingTasksListProps {
   onRefresh?: () => void;
@@ -23,7 +26,7 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
     lastUpdated: 0,
   });
   const [retryCount, setRetryCount] = useState(0);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   
   const { updateTask, createTask } = useTaskApi();
@@ -81,7 +84,7 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
 
   const handleTaskClick = useCallback((task: Task) => {
     setSelectedTask(task);
-    setIsEditModalOpen(true);
+    setIsDialogOpen(true);
   }, []);
 
   const handleSaveTask = useCallback(async (taskData: Partial<Task>) => {
@@ -92,18 +95,13 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
         await createTask(taskData);
       }
       fetchUpcomingTasks(); // Refresh the upcoming tasks
-      setIsEditModalOpen(false);
+      setIsDialogOpen(false);
       setSelectedTask(null);
       onRefresh?.(); // Trigger dashboard refresh if callback provided
     } catch (error) {
       console.error('Error saving task:', error);
     }
   }, [selectedTask, updateTask, createTask, fetchUpcomingTasks, onRefresh]);
-
-  const handleCloseModal = useCallback(() => {
-    setIsEditModalOpen(false);
-    setSelectedTask(null);
-  }, []);
 
   // Initial load
   useEffect(() => {
@@ -177,13 +175,9 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
       return (
         <div className="widget-error" role="alert">
           <p className="error-message">Failed to load upcoming tasks</p>
-          <button 
-            className="retry-button-small"
-            onClick={handleRetry}
-            aria-label="Retry loading upcoming tasks"
-          >
+          <Button variant="outline" size="sm" onClick={handleRetry}>
             Retry
-          </button>
+          </Button>
           {retryCount > 0 && (
             <p className="retry-info">Attempt {retryCount}/3</p>
           )}
@@ -267,16 +261,15 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
       <div className="widget-tile upcoming-tasks-tile">
         <div className="widget-header">
           <h3 className="widget-title">Upcoming Tasks</h3>
-          <button 
-            className="refresh-button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => fetchUpcomingTasks()}
             aria-label="Refresh upcoming tasks"
             disabled={data.isLoading}
           >
-            <span className={`refresh-icon ${data.isLoading ? 'spinning' : ''}`}>
-              🔄
-            </span>
-          </button>
+            <Icon name="RefreshCw" className={`h-4 w-4 ${data.isLoading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
         
         <div className="widget-content">
@@ -292,15 +285,24 @@ export const UpcomingTasksList: React.FC<UpcomingTasksListProps> = ({ onRefresh 
         )}
       </div>
 
-      <EditTaskModal
-        isOpen={isEditModalOpen}
-        onClose={handleCloseModal}
-        task={selectedTask}
-        onSave={handleSaveTask}
-        allTags={[]} // We don't have all tags in this context, but the modal can handle empty array
-        mitTaskCount={0} // We don't track this in the dashboard context
-        litTaskCount={0} // We don't track this in the dashboard context
-      />
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
+            <DialogDescription>
+              {selectedTask ? 'Make changes to your task here. Click save when you are done.' : 'Add a new task. Click save when you are done.'}
+            </DialogDescription>
+          </DialogHeader>
+          <EditTaskForm
+            task={selectedTask}
+            onSave={handleSaveTask}
+            onCancel={() => setIsDialogOpen(false)}
+            allTags={[]}
+            mitTaskCount={0}
+            litTaskCount={0}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }; 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-// import { PageLayout } from '../components/page-layout';
-import { EditTaskModal } from '../components/edit-task-modal';
-// import { DarkModeToggle } from '../components/DarkModeToggle';
+import { EditTaskForm } from '../components/edit-task-form';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/Dialog';
+import { Button } from '../components/ui/Button';
 import { TaskCard } from '../components/TaskCard';
 import { SearchBar } from '../components/SearchBar';
 import { Task } from '../types';
@@ -35,7 +35,7 @@ type TaskStatus = (typeof STATUS_OPTIONS)[number];
 
 export const TasksPage: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [statusFilter, setStatusFilter] = useState<TaskStatus[]>(['Open', 'Waiting']);
   const [tagFilter, setTagFilter] = useState<string[]>([]);
@@ -105,7 +105,7 @@ export const TasksPage: React.FC = () => {
       await createTask(taskData);
     }
     fetchTasks();
-    setIsEditModalOpen(false);
+    setIsDialogOpen(false);
     setSelectedTask(null);
   };
 
@@ -121,7 +121,7 @@ export const TasksPage: React.FC = () => {
   
   const handleOpenEditModal = (task: Task) => {
     setSelectedTask(task);
-    setIsEditModalOpen(true);
+    setIsDialogOpen(true);
   };
 
   const mitTasks = useMemo(() => {
@@ -463,15 +463,14 @@ export const TasksPage: React.FC = () => {
             onSelectionChange={handleStatusFilterChangeSingle}
             title="Status"
           />
-          <button
+          <Button
             onClick={() => {
               setSelectedTask(null);
-              setIsEditModalOpen(true);
+              setIsDialogOpen(true);
             }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors min-h-[44px] flex-1 sm:flex-none"
           >
             + New Task
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -548,15 +547,14 @@ export const TasksPage: React.FC = () => {
                 </div>
                 <h3 className="text-lg font-medium text-gray-300 mb-2">No tasks yet</h3>
                 <p className="text-gray-500 mb-4">Get started by creating your first task</p>
-                <button
+                <Button
                   onClick={() => {
                     setSelectedTask(null);
-                    setIsEditModalOpen(true);
+                    setIsDialogOpen(true);
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
                 >
                   Create First Task
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -652,15 +650,14 @@ export const TasksPage: React.FC = () => {
               </div>
               <h3 className="text-lg font-medium text-gray-300 mb-2">No tasks yet</h3>
               <p className="text-gray-500 mb-4">Get started by creating your first task</p>
-              <button
+              <Button
                 onClick={() => {
                   setSelectedTask(null);
-                  setIsEditModalOpen(true);
+                  setIsDialogOpen(true);
                 }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
               >
                 Create First Task
-              </button>
+              </Button>
             </div>
           )}
         </div>
@@ -671,15 +668,24 @@ export const TasksPage: React.FC = () => {
           ) : null}
         </DragOverlay>
       </DndContext>
-      <EditTaskModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        task={selectedTask}
-        onSave={handleSaveTask}
-        allTags={allTags}
-        mitTaskCount={mitTasks.length}
-        litTaskCount={litTasks.length}
-      />
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
+            <DialogDescription>
+              {selectedTask ? 'Make changes to your task here. Click save when you are done.' : 'Add a new task. Click save when you are done.'}
+            </DialogDescription>
+          </DialogHeader>
+          <EditTaskForm
+            task={selectedTask}
+            onSave={handleSaveTask}
+            onCancel={() => setIsDialogOpen(false)}
+            allTags={allTags}
+            mitTaskCount={mitTasks.length}
+            litTaskCount={litTasks.length}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

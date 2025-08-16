@@ -1,5 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
+import { Button } from '../ui/Button';
 
 export const SignupButton: React.FC = () => {
   const { loginWithRedirect } = useAuth0();
@@ -7,18 +8,18 @@ export const SignupButton: React.FC = () => {
   const handleSignUp = async () => {
     await loginWithRedirect({
       appState: {
-        returnTo: '/dashboard'
+        returnTo: '/dashboard',
       },
       authorizationParams: {
         prompt: 'login',
-        screen_hint: 'signup'
-      }
+        screen_hint: 'signup',
+      },
     });
   };
 
   return (
-    <button className="button__sign-up" onClick={handleSignUp}>
+    <Button onClick={handleSignUp} variant="secondary">
       Sign Up
-    </button>
+    </Button>
   );
 };

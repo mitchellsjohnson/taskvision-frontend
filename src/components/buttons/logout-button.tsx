@@ -1,6 +1,7 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
-import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/solid';
+import { Button } from '../ui/Button';
+import { Icon } from '../icon';
 
 export const LogoutButton: React.FC = () => {
   const { logout } = useAuth0();
@@ -12,12 +13,13 @@ export const LogoutButton: React.FC = () => {
   };
 
   return (
-    <button
-      className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={handleLogout}
     >
-      <ArrowRightOnRectangleIcon className="h-5 w-5" />
+      <Icon name="LogOut" className="mr-2 h-4 w-4" />
       <span>Log Out</span>
-    </button>
+    </Button>
   );
 };

@@ -18,7 +18,6 @@ describe('LoginButton', () => {
   it('renders the login button', () => {
     render(<LoginButton />);
     expect(screen.getByText('Log In')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveClass('button__login');
   });
 
   it('calls loginWithRedirect with correct parameters when clicked', async () => {
