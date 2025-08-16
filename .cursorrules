@@ -16,12 +16,17 @@ TaskVision is a full-stack task management application. This is the React fronte
 ## Development Environment Setup
 - **Frontend Port**: http://localhost:4040
 - **Backend API**: http://localhost:6060
-- **Full-Stack Development**: Use `../taskvision-backend/dev-server.sh start` to run complete environment
-- **Frontend Only**: `npm start` (requires backend running separately)
+- **Full-Stack Development**: Use `cd .. && ./dev-start.sh` to run complete environment
+- **Frontend Only**: Not recommended - always use unified development scripts
+
+### Development Scripts (Located in Parent Directory)
+- **Start All Services**: `cd .. && ./dev-start.sh`
+- **Stop All Services**: `cd .. && ./dev-stop.sh`
+- **Never start frontend alone** - always use unified development scripts
 
 ### Related Services
-- Backend managed by: `../taskvision-backend/dev-server.sh`
-- DynamoDB Local: http://localhost:8000 (managed by backend script)
+- Backend: Express.js API on http://localhost:6060
+- DynamoDB Local: http://localhost:8000 (managed by dev scripts)
 
 ## Code Standards & Patterns
 
@@ -179,10 +184,12 @@ export const apiService = {
 };
 ```
 
-## Environment Configuration
+## Environment Configuration - IMPORTANT CONVENTION
 - **Development**: Points to localhost:6060 backend
 - **Production**: Points to deployed AWS Lambda backend
 - **Auth0**: Configured via environment variables
+- **Environment files**: ALWAYS use `.env.local` for local development (not .env.development)
+- **NOTE**: Both frontend and backend use `.env.local` for local development
 
 ## AI Assistant Instructions
 - Always use functional components with TypeScript
@@ -191,10 +198,20 @@ export const apiService = {
 - Reference existing components for consistent styling
 - Implement proper error handling and loading states
 - Use the established API service patterns
-- For full-stack development, reference the backend dev-server.sh script
+- For full-stack development, use `cd .. && ./dev-start.sh` from project root
 - Follow responsive design principles
 - Include proper accessibility attributes
 - Test components using React Testing Library patterns 
 
 ## MCP tool usage
-When adding dependencies to the system, make sure to leverage seaworthy tools to determine the best versions to use 
+When adding dependencies to the system, make sure to leverage seaworthy tools to determine the best versions to use
+
+## Environment File Convention - CRITICAL
+- **ALWAYS use `.env.local`** for both frontend and backend local development
+- **NEVER use `.env.development`** or other environment file patterns
+- **This is a project-wide standard** that must be followed consistently
+
+## Environment Variable Authority - CRITICAL
+- **NEVER add environment variables** to scripts, code, or .env files without explicit user permission and discussion
+- **Port Configuration**: Scripts should use hardcoded ports for DynamoDB Local, frontend, and backend
+- **Always discuss before modifying** any environment configuration
