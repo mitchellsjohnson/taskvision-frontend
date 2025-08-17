@@ -1,5 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
+import { Button } from '../ui/Button';
 
 export const LoginButton: React.FC = () => {
   const { loginWithRedirect } = useAuth0();
@@ -8,14 +9,14 @@ export const LoginButton: React.FC = () => {
     await loginWithRedirect({
       prompt: 'login',
       appState: {
-        returnTo: '/dashboard'
-      }
+        returnTo: '/dashboard',
+      },
     });
   };
 
   return (
-    <button className="button__login" onClick={handleLogin}>
+    <Button onClick={handleLogin} variant="default">
       Log In
-    </button>
+    </Button>
   );
 };

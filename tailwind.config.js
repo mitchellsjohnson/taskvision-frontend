@@ -7,6 +7,33 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        background: 'var(--bg-primary)',
+        foreground: 'var(--text-primary)',
+        primary: {
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--white)',
+        },
+        secondary: {
+          DEFAULT: 'var(--bg-secondary)',
+          foreground: 'var(--text-secondary)',
+        },
+        muted: {
+          DEFAULT: 'var(--bg-tertiary)',
+          foreground: 'var(--text-muted)',
+        },
+        accent: {
+          DEFAULT: 'var(--bg-accent)',
+          foreground: 'var(--text-secondary)',
+        },
+        destructive: {
+          DEFAULT: 'var(--error-bg)',
+          foreground: 'var(--error-text)',
+        },
+        border: 'var(--border-primary)',
+        input: 'var(--border-secondary)',
+        ring: 'var(--focus-ring)',
+
+        // Original colors kept for compatibility if needed
         'black': '#000000',
         'white': '#ffffff',
         'gray': {
@@ -34,5 +61,5 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 }; 

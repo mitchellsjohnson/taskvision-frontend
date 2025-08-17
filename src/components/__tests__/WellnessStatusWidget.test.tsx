@@ -1,16 +1,21 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { WellnessStatusWidget } from '../WellnessStatusWidget';
+import { useWellnessApi } from '../../services/wellness-api';
 
 // Mock useWellnessApi hook
 const mockGetPracticeInstances = jest.fn();
 const mockGetWeeklyScores = jest.fn();
+const mockUpdatePracticeInstance = jest.fn();
 
 jest.mock('../../services/wellness-api', () => ({
-  useWellnessApi: () => ({
+  useWellnessApi: jest.fn(() => ({
     getPracticeInstances: mockGetPracticeInstances,
     getWeeklyScores: mockGetWeeklyScores,
-  }),
+    updatePracticeInstance: mockUpdatePracticeInstance,
+    createPracticeInstance: jest.fn(),
+  })),
 }));
 
 // Mock Auth0
@@ -84,18 +89,32 @@ describe('WellnessStatusWidget', () => {
   });
 
   it('should handle practice toggle', async () => {
-    const mockPractices: MockPracticeInstance[] = [];
+    const user = userEvent.setup();
+    const mockPractices: MockPracticeInstance[] = [
+      {
+        id: '1',
+        userId: 'user1',
+        date: new Date().toISOString().split('T')[0],
+        practice: 'Gratitude',
+        completed: false,
+        createdAt: '2024-01-15T00:00:00.000Z'
+      },
+    ];
     mockGetPracticeInstances.mockResolvedValue(mockPractices);
     mockGetWeeklyScores.mockResolvedValue([]);
 
     render(<WellnessStatusWidget />);
 
-    await waitFor(() => {
-      expect(screen.getByText('Wellness Status')).toBeInTheDocument();
-    });
+    const gratitudeCheckbox = await screen.findByLabelText(/toggle gratitude/i);
+    expect(gratitudeCheckbox).not.toBeChecked();
 
-    // This test would need to be updated based on the actual practice toggle implementation
-    // For now, we'll comment it out since the component structure has changed
+    await user.click(gratitudeCheckbox);
+
+    expect(mockUpdatePracticeInstance).toHaveBeenCalledWith(
+      expect.any(String),
+      'Gratitude',
+      { completed: true }
+    );
   });
 
   it('should show error state when API fails', async () => {

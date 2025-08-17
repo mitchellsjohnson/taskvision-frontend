@@ -1,37 +1,38 @@
-import {
-  BoltIcon,
-  UserIcon,
-  LightBulbIcon,
-  UserGroupIcon,
-  ArrowPathIcon,
-  UserCircleIcon,
-  MagnifyingGlassIcon,
-  UsersIcon,
-  AcademicCapIcon,
-  BriefcaseIcon,
-  HeartIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/outline';
-import { ComponentType } from 'react';
+import { icons } from 'lucide-react';
 
 export interface DefaultTag {
-  icon: ComponentType<{ className?: string }>;
   border: string;
 }
 
 export const DEFAULT_TAGS: Record<string, DefaultTag> = {
-  '5-min': { icon: BoltIcon, border: 'border-cyan-400' },
-  'Leader': { icon: UserCircleIcon, border: 'border-rose-400' },
-  'Creative': { icon: LightBulbIcon, border: 'border-yellow-400' },
-  'Customer': { icon: UserGroupIcon, border: 'border-teal-400' },
-  'Follow-up': { icon: ArrowPathIcon, border: 'border-orange-400' },
-  'Personal': { icon: UserIcon, border: 'border-pink-400' },
-  'Research': { icon: MagnifyingGlassIcon, border: 'border-purple-400' },
-  'Team': { icon: UsersIcon, border: 'border-blue-400' },
-  'Training': { icon: AcademicCapIcon, border: 'border-green-400' },
-  'Work': { icon: BriefcaseIcon, border: 'border-indigo-400' },
-  'Gratitude': { icon: HeartIcon, border: 'border-red-400' },
-  'Wellness': { icon: SparklesIcon, border: 'border-emerald-400' },
+  '5-min': { border: 'border-cyan-400' },
+  'Leader': { border: 'border-rose-400' },
+  'Creative': { border: 'border-yellow-400' },
+  'Customer': { border: 'border-teal-400' },
+  'Follow-up': { border: 'border-orange-400' },
+  'Personal': { border: 'border-pink-400' },
+  'Research': { border: 'border-purple-400' },
+  'Team': { border: 'border-blue-400' },
+  'Training': { border: 'border-green-400' },
+  'Work': { border: 'border-indigo-400' },
+  'Gratitude': { border: 'border-red-400' },
+  'Wellness': { border: 'border-emerald-400' },
+};
+
+export const TAG_ICON_MAP: Record<string, keyof typeof icons> = {
+  '5-min': 'Zap',
+  Leader: 'UserCog',
+  Creative: 'Lightbulb',
+  Customer: 'Users',
+  'Follow-up': 'ArrowRight',
+  Personal: 'User',
+  Research: 'Search',
+  Team: 'Users',
+  Training: 'BookOpen',
+  Work: 'Briefcase',
+  Gratitude: 'Heart',
+  Wellness: 'Sparkles',
+  default: 'Tag',
 };
 
 // Legacy interface for backward compatibility during migration
