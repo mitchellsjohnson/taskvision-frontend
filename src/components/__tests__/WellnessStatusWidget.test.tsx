@@ -11,10 +11,20 @@ const mockUpdatePracticeInstance = jest.fn();
 
 jest.mock('../../services/wellness-api', () => ({
   useWellnessApi: jest.fn(() => ({
+    loading: false,
+    error: null,
+    clearError: jest.fn(),
+    getWeekStart: jest.fn(),
+    authenticatedRequest: jest.fn(),
     getPracticeInstances: mockGetPracticeInstances,
-    getWeeklyScores: mockGetWeeklyScores,
-    updatePracticeInstance: mockUpdatePracticeInstance,
     createPracticeInstance: jest.fn(),
+    updatePracticeInstance: mockUpdatePracticeInstance,
+    deletePracticeInstance: jest.fn(),
+    getWeeklyScores: mockGetWeeklyScores,
+    getWellnessStatus: jest.fn(),
+    getUserWellnessSettings: jest.fn(),
+    updateUserWellnessSettings: jest.fn(),
+    getCurrentWeekPractices: jest.fn(),
   })),
 }));
 

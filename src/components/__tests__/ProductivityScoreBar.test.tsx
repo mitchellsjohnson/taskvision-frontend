@@ -5,7 +5,7 @@ import { ProductivityScoreBar } from '../ProductivityScoreBar';
 describe('ProductivityScoreBar', () => {
   it('should render without crashing', () => {
     render(<ProductivityScoreBar />);
-    expect(screen.getByText('Productivity Score')).toBeInTheDocument();
+    expect(screen.getByText('Weekly Productivity Score')).toBeInTheDocument();
   });
 
   it('should show loading state initially', () => {

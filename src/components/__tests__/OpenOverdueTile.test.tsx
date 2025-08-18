@@ -131,7 +131,7 @@ describe('OpenOverdueTile', () => {
     // Wait for all retries to complete (up to 3 retries + original call = 4 total)
     await waitFor(() => {
       expect(mockGetTasks).toHaveBeenCalledTimes(4);
-    }, { timeout: 10000 });
+    }, { timeout: 3000 });
     
     // After retries are exhausted, should show error state
     await waitFor(() => {
@@ -155,7 +155,7 @@ describe('OpenOverdueTile', () => {
     // Wait for all initial retries to fail
     await waitFor(() => {
       expect(mockGetTasks).toHaveBeenCalledTimes(4);
-    }, { timeout: 10000 });
+    }, { timeout: 3000 });
     
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Failed to load task data');
@@ -200,7 +200,7 @@ describe('OpenOverdueTile', () => {
     // Wait for all retries to complete and error state to show
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Failed to load task data');
-    }, { timeout: 10000 });
+    }, { timeout: 3000 });
     
     // Should have made initial call + 3 retries = 4 total
     expect(mockGetTasks).toHaveBeenCalledTimes(4);

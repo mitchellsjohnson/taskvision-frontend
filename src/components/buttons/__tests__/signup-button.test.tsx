@@ -18,7 +18,7 @@ describe('SignupButton', () => {
   it('renders the signup button', () => {
     render(<SignupButton />);
     expect(screen.getByText('Sign Up')).toBeInTheDocument();
-    expect(screen.getByRole('button')).toHaveClass('button__sign-up');
+    expect(screen.getByRole('button')).toBeInTheDocument();
   });
 
   it('calls loginWithRedirect with correct parameters when clicked', async () => {

@@ -25,7 +25,7 @@ describe('CharacterCounter', () => {
   it('should show normal color for safe usage', () => {
     render(<CharacterCounter current={100} max={200} />);
     const counter = screen.getByText('100 characters remaining').parentElement;
-    expect(counter).toHaveClass('text-gray-500');
+    expect(counter).toHaveClass('text-muted-foreground');
   });
 
   it('should handle exact limit', () => {
@@ -50,7 +50,7 @@ describe('CharacterCounter', () => {
     it('should be normal at 89% usage', () => {
       render(<CharacterCounter current={178} max={200} />); // 89%
       const counter = screen.getByText('22 characters remaining').parentElement;
-      expect(counter).toHaveClass('text-gray-500');
+      expect(counter).toHaveClass('text-muted-foreground');
     });
 
     it('should be warning at 91% usage', () => {

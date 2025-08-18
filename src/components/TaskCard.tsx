@@ -41,7 +41,7 @@ const getStatusColor = (status: Task['status']) => {
 
 // Helper function to get due date color and icon
 const getDueDateColorAndIcon = (dueDate?: string) => {
-  if (!dueDate) return { color: 'text-gray-400', icon: null };
+  if (!dueDate) return { color: 'text-muted-foreground', icon: null };
   
   const today = new Date();
   const date = new Date(dueDate + 'T00:00:00');
@@ -59,7 +59,7 @@ const getDueDateColorAndIcon = (dueDate?: string) => {
       icon: <span className="inline-block w-2 h-2 bg-yellow-400 rounded-full mr-1"></span>
     }; // Due today - yellow circle
   }
-  return { color: 'text-gray-400', icon: null }; // Future or no due date
+  return { color: 'text-muted-foreground', icon: null }; // Future or no due date
 };
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -148,10 +148,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       style={style}
       id={`task-${task.TaskId}`}
       className={cn(
-        "bg-gray-800 rounded-lg border border-gray-700 hover:bg-gray-700/50 transition-all duration-500 relative",
+        "bg-card rounded-lg border border-border hover:bg-accent transition-all duration-500 relative",
         {
           'shadow-lg shadow-blue-500/20': isOverlay,
-          'bg-gray-700/30 border-blue-500/50': isDragging,
+          'bg-accent/50 border-blue-500/50': isDragging,
           'bg-blue-500/20 border-blue-400/50 shadow-md shadow-blue-500/30': flashingTasks?.has(task.TaskId),
         }
       )}
@@ -196,12 +196,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               {...listeners}
             >
               <div className="flex flex-col gap-0.5">
-                <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
-                <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
-                <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
-                <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
-                <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
-                <div className="w-1.5 h-0.5 bg-gray-400 rounded-full"></div>
+                <div className="w-1.5 h-0.5 bg-muted-foreground rounded-full"></div>
+                <div className="w-1.5 h-0.5 bg-muted-foreground rounded-full"></div>
+                <div className="w-1.5 h-0.5 bg-muted-foreground rounded-full"></div>
+                <div className="w-1.5 h-0.5 bg-muted-foreground rounded-full"></div>
+                <div className="w-1.5 h-0.5 bg-muted-foreground rounded-full"></div>
+                <div className="w-1.5 h-0.5 bg-muted-foreground rounded-full"></div>
               </div>
             </div>
           </div>
@@ -214,16 +214,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="bg-gray-700 text-white p-2 rounded w-full text-lg font-bold border border-gray-600 focus:border-blue-500 focus:outline-none"
+                className="bg-input text-foreground p-2 rounded w-full text-lg font-bold border border-border focus:border-ring focus:outline-none"
                 autoFocus
               />
             ) : (
-              <h3 className="text-lg font-bold text-white leading-tight">{task.title}</h3>
+              <h3 className="text-lg font-bold text-foreground leading-tight">{task.title}</h3>
             )}
           </div>
 
           {/* Metadata Row */}
-          <div className="flex items-center justify-between text-sm text-gray-400 mb-3">
+          <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
             <div className="flex items-center gap-3">
               {task.dueDate && (
                 <span className={`flex items-center ${dueDateColor.color}`}>
@@ -243,7 +243,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                    e.stopPropagation();
                    setIsExpanded(!isExpanded);
                  }}
-                 className="text-gray-400 hover:text-white transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
+                 className="text-muted-foreground hover:text-foreground transition-colors p-2 min-w-[44px] min-h-[44px] flex items-center justify-center"
                  title={isExpanded ? "Hide details (mobile)" : "Show details (mobile)"}
               >
                 <svg
@@ -261,7 +261,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
 
           {/* Expandable details */}
           {isExpanded && (task.description || (task.tags && task.tags.length > 0)) && (
-            <div className="space-y-2 mb-3 p-3 bg-gray-700/30 rounded">
+            <div className="space-y-2 mb-3 p-3 bg-muted rounded">
               {/* Description */}
               {task.description && (
                 <div>
@@ -269,12 +269,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                     <textarea
                       value={editedDescription}
                       onChange={(e) => setEditedDescription(e.target.value)}
-                      className="bg-gray-700 text-white p-2 rounded w-full text-sm border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+                      className="bg-input text-foreground p-2 rounded w-full text-sm border border-border focus:border-ring focus:outline-none resize-none"
                       rows={3}
                       placeholder="Description..."
                     />
                   ) : (
-                    <p className="text-sm text-gray-300">{task.description}</p>
+                    <p className="text-sm text-secondary-foreground">{task.description}</p>
                   )}
                 </div>
               )}
@@ -297,7 +297,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           )}
 
           {/* Action Buttons Row - Always visible on mobile for better UX */}
-          <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-600">
+          <div className="flex items-center justify-center gap-2 pt-2 border-t border-border">
             {isEditing ? (
               <div className="flex gap-2 w-full">
                 <button
@@ -465,7 +465,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         placeholder="Description..."
                       />
                     ) : (
-                      <p className="text-sm text-gray-300">{task.description}</p>
+                      <p className="text-sm text-secondary-foreground">{task.description}</p>
                     )}
                   </div>
                 )}

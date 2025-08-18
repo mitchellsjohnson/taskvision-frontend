@@ -45,12 +45,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-gray-800 p-8 rounded-lg shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
-        <h2 className="text-2xl font-bold text-white mb-6">{taskToEdit ? 'Edit Task' : 'Create New Task'}</h2>
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={onClose}>
+      <div className="bg-card p-8 rounded-lg shadow-2xl w-full max-w-lg" onClick={e => e.stopPropagation()}>
+        <h2 className="text-2xl font-bold text-foreground mb-6">{taskToEdit ? 'Edit Task' : 'Create New Task'}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-secondary-foreground mb-1">
               Title
             </label>
             <input
@@ -58,12 +58,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-input text-foreground border border-border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
               required
             />
           </div>
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-secondary-foreground mb-1">
               Description
             </label>
             <textarea
@@ -71,12 +71,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={4}
-              className="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-input text-foreground border border-border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
             />
           </div>
           <div className="flex gap-4">
             <div className="flex-1">
-              <label htmlFor="dueDate" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="dueDate" className="block text-sm font-medium text-secondary-foreground mb-1">
                 Due Date
               </label>
               <input
@@ -84,18 +84,18 @@ export const TaskModal: React.FC<TaskModalProps> = ({ isOpen, onClose, onSubmit,
                 type="date"
                 value={dueDate}
                 onChange={e => setDueDate(e.target.value)}
-                className="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-input text-foreground border border-border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
               />
             </div>
             <div className="flex-1">
-              <label htmlFor="status" className="block text-sm font-medium text-gray-300 mb-1">
+              <label htmlFor="status" className="block text-sm font-medium text-secondary-foreground mb-1">
                 Status
               </label>
               <select
                 id="status"
                 value={status}
                 onChange={e => setStatus(e.target.value as Task['status'])}
-                className="w-full bg-gray-700 text-white border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-input text-foreground border border-border rounded-md p-2 focus:outline-none focus:ring-1 focus:ring-ring focus:border-ring"
               >
                 <option value="Open">Open</option>
                 <option value="Completed">Completed</option>

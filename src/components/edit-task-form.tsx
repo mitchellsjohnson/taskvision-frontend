@@ -113,9 +113,14 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
             onChange={handleChange}
             maxLength={TASK_LIMITS.TITLE_MAX_LENGTH}
             placeholder="Task Title"
-            className="text-2xl font-bold border-0 border-b-2 rounded-none focus:ring-0 focus:border-blue-500"
+            className="text-2xl font-bold bg-input text-foreground rounded-md p-2 border border-border focus:border-blue-500 focus:outline-none"
+            style={{ boxShadow: 'none !important' }}
+            onFocus={(e) => {
+              e.target.style.boxShadow = 'none';
+              e.target.style.outline = 'none';
+            }}
           />
-          <CharacterCounter current={(currentTask.title || '').length} max={TASK_LIMITS.TITLE_MAX_LENGTH} className="mt-1" />
+          <CharacterCounter current={(currentTask.title || '').length} max={TASK_LIMITS.TITLE_MAX_LENGTH} className="mt-3" />
         </div>
         <div>
           <textarea
@@ -124,7 +129,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
             onChange={handleChange}
             maxLength={TASK_LIMITS.DESCRIPTION_MAX_LENGTH}
             rows={5}
-            className="w-full bg-gray-900/50 text-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full bg-input text-foreground rounded-md p-2 border border-border focus:border-blue-500 focus:outline-none"
             placeholder="Add task details..."
           />
           <CharacterCounter

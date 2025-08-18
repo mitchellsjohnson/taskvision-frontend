@@ -125,6 +125,21 @@
   --active-bg: #e5e7eb;
   --focus-ring: #3b82f6;
   --focus-ring-offset: #ffffff;
+  
+  /* Additional variables for Radix UI components */
+  --card: var(--bg-primary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-primary);
+  --popover-foreground: var(--text-primary);
+  --muted: var(--bg-tertiary);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-accent);
+  --accent-foreground: var(--text-secondary);
+  --destructive: var(--error-bg);
+  --destructive-foreground: var(--error-text);
+  --border: var(--border-primary);
+  --input: var(--border-secondary);
+  --ring: var(--focus-ring);
 }
 
 .dark {
@@ -196,17 +211,32 @@
   --dashboard-bg-tertiary: #0f172a;
   --dashboard-text-primary: #f9fafb;
   --dashboard-text-secondary: #d1d5db;
-  --dashboard-text-muted: #9ca3af;
+  --dashboard-text-muted: #6b7280;
   --dashboard-border: #374151;
-  --dashboard-tab-active: #60a5fa;
-  --dashboard-tab-active-bg: #1e293b;
+  --dashboard-tab-active: #3b82f6;
+  --dashboard-tab-active-bg: #374151;
   --dashboard-tab-hover: #374151;
   
   /* Interactive States - Dark Mode */
   --hover-bg: #374151;
   --active-bg: #4b5563;
-  --focus-ring: #60a5fa;
+  --focus-ring: #3b82f6;
   --focus-ring-offset: #1f2937;
+  
+  /* Additional variables for Radix UI components - Dark Mode */
+  --card: var(--bg-primary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-primary);
+  --popover-foreground: var(--text-primary);
+  --muted: var(--bg-tertiary);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-accent);
+  --accent-foreground: var(--text-secondary);
+  --destructive: var(--error-bg);
+  --destructive-foreground: var(--error-text);
+  --border: var(--border-primary);
+  --input: var(--border-secondary);
+  --ring: var(--focus-ring);
 }
 
 /* Global Transition for Theme Changes */

@@ -9,9 +9,17 @@ jest.mock('../../services/task-api', () => ({
   }),
 }));
 
-jest.mock('../edit-task-modal', () => ({
-  EditTaskModal: ({ isOpen, task, onClose }: any) => 
-    isOpen ? <div data-testid="edit-task-modal">Edit Modal for {task?.title || 'New Task'}</div> : null,
+jest.mock('../edit-task-form', () => ({
+  EditTaskForm: ({ task, onSave, onCancel }: any) => 
+    <div data-testid="edit-task-form">Edit Form for {task?.title || 'New Task'}</div>,
+}));
+
+jest.mock('../ui/Dialog', () => ({
+  Dialog: ({ children, open }: any) => open ? <div data-testid="dialog">{children}</div> : null,
+  DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
+  DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,
+  DialogTitle: ({ children }: any) => <div data-testid="dialog-title">{children}</div>,
+  DialogDescription: ({ children }: any) => <div data-testid="dialog-description">{children}</div>,
 }));
 
 describe('UpcomingTasksList', () => {

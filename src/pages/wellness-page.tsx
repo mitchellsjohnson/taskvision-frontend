@@ -376,7 +376,7 @@ const WellnessPage: React.FC = () => {
               maxLength={300}
               rows={4}
               autoFocus
-              className="w-full bg-gray-900/50 text-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full bg-input text-foreground rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <DialogFooter>
               <Button variant="secondary" onClick={() => setShowJournalFor(null)}>Cancel</Button>

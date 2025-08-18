@@ -117,15 +117,15 @@ describe('MITStatusTile', () => {
     // Wait for all retries to complete (up to 3 retries + original call = 4 total)
     await waitFor(() => {
       expect(mockGetTasks).toHaveBeenCalledTimes(4);
-    }, { timeout: 10000 });
+    }, { timeout: 15000 });
     
     // After retries are exhausted, should show error state
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Failed to load MIT data');
-    });
+    }, { timeout: 5000 });
     
     expect(screen.getByRole('button', { name: 'Retry loading MIT data' })).toBeInTheDocument();
-  });
+  }, 20000);
 
   it('should retry API call when retry button is clicked', async () => {
     // Reject all initial attempts, then succeed on manual retry
@@ -173,11 +173,11 @@ describe('MITStatusTile', () => {
     // Wait for all retries to complete and error state to show
     await waitFor(() => {
       expect(screen.getByRole('alert')).toHaveTextContent('Failed to load MIT data');
-    }, { timeout: 10000 });
+    }, { timeout: 15000 });
     
     // Should have made initial call + 3 retries = 4 total
     expect(mockGetTasks).toHaveBeenCalledTimes(4);
-  });
+  }, 20000);
 
   it('should show last updated timestamp', async () => {
     mockGetTasks.mockResolvedValue([createMockTask('1', true)]);

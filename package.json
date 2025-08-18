@@ -55,6 +55,14 @@
     ],
     "plugins": []
   },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!(axios|lucide-react)/)"
+    ],
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
+  },
   "proxy": "http://localhost:6060",
   "browserslist": {
     "production": [

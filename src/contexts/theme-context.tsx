@@ -11,7 +11,7 @@ const ThemeProviderContext = createContext<ThemeProviderState | undefined>(undef
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode; defaultTheme?: Theme; storageKey?: string }> = ({
   children,
-  defaultTheme = 'system',
+  defaultTheme = 'dark',
   storageKey = 'taskvision-theme',
 }) => {
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem(storageKey) as Theme) || defaultTheme);
