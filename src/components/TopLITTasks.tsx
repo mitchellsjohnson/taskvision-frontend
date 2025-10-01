@@ -5,6 +5,8 @@ import { EditTaskForm } from './edit-task-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Icon } from './icon';
+import { Tag } from './Tag';
+import { DEFAULT_TAGS } from '../constants/tags';
 
 interface TopLITTasksProps {
   onRefresh?: () => void;
@@ -12,6 +14,7 @@ interface TopLITTasksProps {
 
 export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [totalLitCount, setTotalLitCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -31,6 +34,7 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
       const allLitWithOverflow = [...overflowMitTasks, ...allLitTasks].sort((a, b) => a.priority - b.priority);
       const litTasks = allLitWithOverflow.slice(0, 3);
       setTasks(litTasks);
+      setTotalLitCount(allLitWithOverflow.length);
       setRenderKey(prev => prev + 1);
     } catch (error) {
       console.error('Error fetching LIT tasks:', error);
@@ -112,7 +116,7 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
   if (isLoading) {
     return (
       <div className="lit-task-list-widget">
-        <h3 className="widget-title">Less Important Tasks</h3>
+        <h3 className="widget-title">LIT - Less Important Tasks</h3>
         <div className="widget-content loading">
           <div className="loading-spinner"></div>
           <p>Loading LIT tasks...</p>
@@ -124,7 +128,7 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
   if (error) {
     return (
       <div className="lit-task-list-widget">
-        <h3 className="widget-title">Less Important Tasks</h3>
+        <h3 className="widget-title">LIT - Less Important Tasks</h3>
         <div className="widget-content error">
           <p className="error-message">{error}</p>
           <Button variant="outline" onClick={fetchLITTasks}>Retry</Button>
@@ -137,7 +141,7 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
     <>
       <div className="lit-task-list-widget" key={`lit-widget-${renderKey}`}>
         <div className="widget-header">
-          <h3 className="widget-title">Top LIT Tasks</h3>
+          <h3 className="widget-title">LIT - Less Important Tasks</h3>
           <div className="header-buttons">
             <Button
               variant="ghost"
@@ -187,7 +191,12 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
                   {task.tags && task.tags.length > 0 && (
                     <div className="task-tags">
                       {task.tags.map((tag, index) => (
-                        <span key={index} className="task-tag">{tag}</span>
+                        <Tag
+                          key={index}
+                          label={tag}
+                          type={DEFAULT_TAGS[tag] || DEFAULT_TAGS[tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()] ? 'default' : 'custom'}
+                          className="text-xs"
+                        />
                       ))}
                     </div>
                   )}
@@ -196,7 +205,7 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
             </div>
           )}
           <div className="widget-footer">
-            <span className="task-count">Top 3 LIT{tasks.length !== 1 ? 's' : ''}</span>
+            <span className="task-count">{totalLitCount} LIT{totalLitCount !== 1 ? 's' : ''}</span>
             <Button variant="ghost" size="icon" onClick={fetchLITTasks} aria-label="Refresh LIT tasks">
               <Icon name="RefreshCw" className="h-4 w-4" />
             </Button>

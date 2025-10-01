@@ -5,6 +5,8 @@ import { EditTaskForm } from './edit-task-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Icon } from './icon';
+import { Tag } from './Tag';
+import { DEFAULT_TAGS } from '../constants/tags';
 
 interface ScheduledTasksProps {
   onRefresh?: () => void;
@@ -104,6 +106,14 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
     };
   }, [fetchScheduledTasks]);
 
+  const getDueDateBadgeClass = (dueDate: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const due = new Date(dueDate).toISOString().split('T')[0];
+    if (due < today) return 'due-date-badge overdue';
+    if (due === today) return 'due-date-badge today';
+    return 'due-date-badge upcoming';
+  };
+
   const formatDueDate = (dueDate: string) => {
     const today = new Date().toISOString().split('T')[0];
     const due = new Date(dueDate).toISOString().split('T')[0];
@@ -139,14 +149,21 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
             >
               <div className="task-header">
                 <h5 className="task-title">{task.title}</h5>
-                <span className="task-due-date">{formatDueDate(task.dueDate!)}</span>
-                {task.isMIT && <span className="mit-badge">MIT</span>}
+                <div className="task-badges-group">
+                  <span className={getDueDateBadgeClass(task.dueDate!)}>{formatDueDate(task.dueDate!)}</span>
+                  {task.isMIT && <span className="mit-badge">MIT</span>}
+                </div>
               </div>
               {task.description && <p className="task-description">{task.description}</p>}
               {task.tags && task.tags.length > 0 && (
                 <div className="task-tags">
                   {task.tags.map((tag, index) => (
-                    <span key={index} className="task-tag">{tag}</span>
+                    <Tag
+                      key={index}
+                      label={tag}
+                      type={DEFAULT_TAGS[tag] || DEFAULT_TAGS[tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()] ? 'default' : 'custom'}
+                      className="text-xs"
+                    />
                   ))}
                 </div>
               )}

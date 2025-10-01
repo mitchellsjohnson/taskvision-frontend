@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../components/ui/Button';
 import { TaskCard } from '../components/TaskCard';
 import { SearchBar } from '../components/SearchBar';
+import { UndoToast } from '../components/UndoToast';
 import { Task } from '../types';
 import {
   DndContext,
@@ -22,6 +23,8 @@ import {
   sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
 import { useTaskApi } from '../services/task-api';
+import { useDoubleClickPrevention } from '../hooks/useDoubleClickPrevention';
+import { useUndo } from '../hooks/useUndo';
 import { DropdownFilter } from '../components/DropdownFilter';
 import { TagFilterPills } from '../components/TagFilterPills';
 import { DropIndicator } from '../components/DropIndicator';
@@ -48,6 +51,17 @@ export const TasksPage: React.FC = () => {
   const pointerY = useRef(0);
 
   const { getTasks, updateTask, deleteTask, createTask } = useTaskApi();
+  
+  // Undo functionality
+  const { 
+    undoStack, 
+    isUndoing, 
+    undo, 
+    clearUndo,
+    recordTaskCreation,
+    recordTaskUpdate,
+    recordTaskDeletion 
+  } = useUndo();
 
   const fetchTasks = useCallback(async () => {
     try {
@@ -100,9 +114,13 @@ export const TasksPage: React.FC = () => {
 
   const handleSaveTask = async (taskData: Partial<Task>) => {
     if (selectedTask) {
+      // Record for undo before updating
+      recordTaskUpdate(selectedTask.TaskId, selectedTask, taskData);
       await updateTask(selectedTask.TaskId, taskData);
     } else {
-      await createTask(taskData);
+      // Create task and record for undo
+      const newTask = await createTask(taskData);
+      recordTaskCreation(newTask.TaskId, newTask);
     }
     fetchTasks();
     setIsDialogOpen(false);
@@ -114,10 +132,22 @@ export const TasksPage: React.FC = () => {
     fetchTasks();
   };
 
-  const handleDeleteTask = async (taskId: string) => {
+  const deleteTaskOperation = useCallback(async (taskId: string) => {
+    // Find the task to record for undo
+    const taskToDelete = tasks.find(t => t.TaskId === taskId);
+    if (!taskToDelete) {
+      throw new Error('Task not found');
+    }
+
     await deleteTask(taskId);
+    recordTaskDeletion(taskId, taskToDelete);
     fetchTasks();
-  };
+  }, [deleteTask, tasks, recordTaskDeletion, fetchTasks]);
+
+  const { execute: handleDeleteTask } = useDoubleClickPrevention(
+    deleteTaskOperation,
+    { debounceMs: 500, maxLoadingMs: 5000 }
+  );
   
   const handleOpenEditModal = (task: Task) => {
     setSelectedTask(task);
@@ -430,7 +460,7 @@ export const TasksPage: React.FC = () => {
   }, [tasks]);
 
   return (
-    <div className="p-2 sm:p-3 lg:p-6 bg-gray-900 text-white min-h-screen">
+    <div className="p-2 sm:p-3 lg:p-6 min-h-screen" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
       {/* <DarkModeToggle /> */}
       <header className="flex justify-center mb-3 sm:mb-4">
         <SearchBar 
@@ -487,11 +517,11 @@ export const TasksPage: React.FC = () => {
           <div className="mb-4 flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-green-600 rounded"></div>
-              <span className="text-sm font-medium text-white">MIT Tasks ({mitTasks.length}/3)</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>MIT Tasks ({mitTasks.length})</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-600 rounded"></div>
-              <span className="text-sm font-medium text-white">LIT Tasks ({litTasks.length})</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>LIT Tasks ({litTasks.length})</span>
             </div>
           </div>
 
@@ -515,10 +545,10 @@ export const TasksPage: React.FC = () => {
             {mitTasks.length > 0 && litTasks.length > 0 && (
               <div className="relative py-3">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-600"></div>
+                  <div className="w-full border-t" style={{ borderColor: 'var(--border-primary)' }}></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="bg-gray-900 px-3 text-gray-400">Less Important Tasks</span>
+                  <span className="px-3" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>Less Important Tasks</span>
                 </div>
               </div>
             )}
@@ -567,9 +597,9 @@ export const TasksPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-5 h-5 bg-green-600 rounded"></div>
-                <h2 className="text-xl font-bold text-white">MIT - Most Important Tasks</h2>
-                <span className="text-sm font-medium text-white bg-green-600/20 px-2 py-1 rounded">
-                  {mitTasks.length}/3
+                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>MIT - Most Important Tasks</h2>
+                <span className="text-sm font-medium px-2 py-1 rounded" style={{ color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>
+                  {mitTasks.length}
                 </span>
               </div>
               
@@ -605,8 +635,8 @@ export const TasksPage: React.FC = () => {
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-5 h-5 bg-blue-600 rounded"></div>
-                <h2 className="text-xl font-bold text-white">LIT - Less Important Tasks</h2>
-                <span className="text-sm font-medium text-white bg-blue-600/20 px-2 py-1 rounded">
+                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>LIT - Less Important Tasks</h2>
+                <span className="text-sm font-medium px-2 py-1 rounded" style={{ color: 'var(--text-primary)', backgroundColor: 'var(--bg-secondary)' }}>
                   {litTasks.length}
                 </span>
               </div>
@@ -686,6 +716,16 @@ export const TasksPage: React.FC = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Undo Toast */}
+      {undoStack.length > 0 && (
+        <UndoToast
+          action={undoStack[0]}
+          onUndo={() => undo()}
+          onDismiss={() => clearUndo(undoStack[0].id)}
+          isUndoing={isUndoing}
+        />
+      )}
     </div>
   );
 };

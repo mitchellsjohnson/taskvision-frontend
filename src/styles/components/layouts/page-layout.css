@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--black);
+  background-color: var(--bg-secondary);
 }
 
 .page-layout__body {
@@ -18,7 +18,8 @@
   left: 0;
   height: 100vh;
   width: 18rem;
-  background-color: var(--black);
+  background-color: var(--bg-primary);
+  border-right: 1px solid var(--border-primary);
   z-index: 400;
   display: flex;
   flex-direction: column;
@@ -34,7 +35,7 @@
   flex: 1;
   padding: 10rem 2rem 2rem;
   position: relative;
-  background-color: var(--black);
+  background-color: var(--bg-secondary);
 }
 
 @media (max-width: 640px) {

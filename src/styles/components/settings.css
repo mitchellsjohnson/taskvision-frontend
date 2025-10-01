@@ -1,0 +1,51 @@
+/* Settings page specific styles */
+
+/* Radio group responsive layout */
+@media (max-width: 640px) {
+  .font-size-radio-group .grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Settings page container to prevent stacking context issues */
+.settings-page {
+  position: relative;
+  isolation: isolate;
+}
+
+.settings-page .space-y-8 > * {
+  position: relative;
+}
+
+/* Text size radio group styling */
+.font-size-radio-group {
+  margin-bottom: 2rem;
+}
+
+/* Radio button enhancements */
+.settings-page [data-radix-radio-group] {
+  margin: 1rem 0;
+}
+
+.settings-page [data-radix-radio-group] label {
+  transition: color 0.2s ease;
+}
+
+.settings-page [data-radix-radio-group] label:hover {
+  color: var(--text-primary);
+}
+
+/* Accessibility section spacing */
+.accessibility-options {
+  margin-top: 2rem;
+  padding-top: 1rem;
+}
+
+.accessibility-options > div {
+  margin-bottom: 1.5rem;
+}
+
+/* Ensure proper vertical spacing between sections */
+.settings-page .space-y-8 > div {
+  margin-bottom: 2rem;
+}

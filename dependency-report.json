@@ -1,0 +1,246 @@
+{
+  "timestamp": "2025-08-22T13:20:56.153Z",
+  "results": [
+    {
+      "package": "@auth0/auth0-react",
+      "currentVersion": "^1.10.2",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@dnd-kit/core",
+      "currentVersion": "^6.0.8",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@dnd-kit/sortable",
+      "currentVersion": "^7.0.2",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@radix-ui/react-checkbox",
+      "currentVersion": "^1.3.3",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@radix-ui/react-dialog",
+      "currentVersion": "^1.1.15",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@radix-ui/react-label",
+      "currentVersion": "^2.1.7",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@radix-ui/react-primitive",
+      "currentVersion": "^2.1.3",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@radix-ui/react-slider",
+      "currentVersion": "^1.3.6",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@radix-ui/react-slot",
+      "currentVersion": "^1.2.3",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@testing-library/jest-dom",
+      "currentVersion": "^5.16.5",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@testing-library/react",
+      "currentVersion": "^13.4.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@testing-library/user-event",
+      "currentVersion": "^13.5.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@types/jest",
+      "currentVersion": "^27.5.2",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@types/node",
+      "currentVersion": "^16.11.64",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@types/react",
+      "currentVersion": "^18.3.23",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@types/react-dom",
+      "currentVersion": "^18.3.7",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "@types/react-router-dom",
+      "currentVersion": "^5.3.3",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "axios",
+      "currentVersion": "^1.11.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "class-variance-authority",
+      "currentVersion": "^0.7.1",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "clsx",
+      "currentVersion": "^2.1.1",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "cross-env",
+      "currentVersion": "^7.0.3",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "date-fns",
+      "currentVersion": "^2.29.3",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "dotenv-cli",
+      "currentVersion": "^7.0.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "fuse.js",
+      "currentVersion": "^7.1.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "jwt-decode",
+      "currentVersion": "^4.0.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "lucide-react",
+      "currentVersion": "^0.539.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "react",
+      "currentVersion": "^18.3.1",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "react-dom",
+      "currentVersion": "^18.3.1",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "react-router-dom",
+      "currentVersion": "^6.4.2",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "react-scripts",
+      "currentVersion": "^5.0.1",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "recharts",
+      "currentVersion": "^3.0.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "tailwind-merge",
+      "currentVersion": "^3.3.1",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "tailwindcss-animate",
+      "currentVersion": "^1.0.7",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "typescript",
+      "currentVersion": "^4.8.4",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "web-vitals",
+      "currentVersion": "^2.1.4",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "autoprefixer",
+      "currentVersion": "^10.4.14",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "postcss",
+      "currentVersion": "^8.5.6",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    },
+    {
+      "package": "tailwindcss",
+      "currentVersion": "^3.3.0",
+      "status": "error",
+      "message": "Unable to fetch package data"
+    }
+  ],
+  "report": {
+    "vulnerabilities": [],
+    "safeUpdates": [],
+    "riskyUpdates": [],
+    "blockedUpdates": [],
+    "summary": {
+      "total": 38,
+      "vulnerabilities": 0,
+      "safeUpdates": 0,
+      "riskyUpdates": 0,
+      "blockedUpdates": 0
+    }
+  }
+}

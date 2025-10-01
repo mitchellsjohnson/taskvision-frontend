@@ -69,8 +69,11 @@ export const OpenOverdueTile: React.FC<OpenOverdueTileProps> = ({ onRefresh }) =
     } catch (error) {
       console.error('Error fetching task counts:', error);
       
-      // Only retry if we haven't exceeded the limit
-      if (attempt < 3) {
+      // Disable retries in test environment to prevent infinite loops
+      const isTestEnv = process.env.NODE_ENV === 'test' || process.env.REACT_APP_DISABLE_RETRIES === 'true';
+      
+      // Only retry if we haven't exceeded the limit and not in test environment
+      if (attempt < 3 && !isTestEnv) {
         const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
         setRetryCount(attempt + 1);
         setTimeout(() => {

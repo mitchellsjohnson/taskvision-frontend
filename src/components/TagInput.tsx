@@ -6,9 +6,10 @@ interface TagInputProps {
   tags: string[];
   onTagsChange: (tags: string[]) => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, className }) => {
+export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, className, style }) => {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
@@ -111,7 +112,14 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
 
   return (
     <div className="relative">
-      <div className={`flex flex-wrap items-center gap-2 p-3 rounded-md border border-gray-600 focus-within:border-blue-500 transition-colors min-h-[42px] bg-gray-700 ${className}`}>
+      <div 
+        className={`flex flex-wrap items-center gap-2 p-3 rounded-md border transition-colors min-h-[42px] ${className}`}
+        style={{
+          borderColor: 'var(--border-primary)',
+          backgroundColor: 'var(--bg-secondary)',
+          ...style
+        }}
+      >
         {tags.map((tag, index) => (
           <div key={index} className="flex items-center">
             <Tag
@@ -121,9 +129,12 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
             />
             <button
               onClick={() => removeTag(index)}
-              className="ml-1 text-gray-400 hover:text-white transition-colors p-0.5 rounded"
+              className="ml-1 transition-colors p-0.5 rounded"
+              style={{ color: 'var(--text-secondary)' }}
               title="Remove tag"
               aria-label={`Remove ${tag} tag`}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
             >
               ×
             </button>
@@ -137,7 +148,8 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
           onKeyDown={handleInputKeyDown}
           onFocus={() => inputValue && setShowSuggestions(suggestions.length > 0)}
           placeholder="Add tag..."
-          className="bg-transparent focus:outline-none text-sm p-1 flex-grow text-white placeholder-gray-400 min-w-24"
+          className="bg-transparent focus:outline-none text-sm p-1 flex-grow min-w-24"
+          style={{ color: 'var(--text-primary)' }}
           aria-label="Add new tag"
           aria-expanded={showSuggestions}
           aria-haspopup="listbox"
@@ -151,7 +163,11 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
         <div
           ref={suggestionsRef}
           id="tag-suggestions"
-          className="absolute z-50 w-full mt-1 bg-gray-700 rounded-md shadow-lg border border-gray-600 max-h-48 overflow-y-auto"
+          className="absolute z-50 w-full mt-1 rounded-md shadow-lg border max-h-48 overflow-y-auto"
+          style={{ 
+            backgroundColor: 'var(--bg-secondary)', 
+            borderColor: 'var(--border-primary)' 
+          }}
           role="listbox"
           aria-label="Tag suggestions"
         >
@@ -159,11 +175,25 @@ export const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange, classNam
             <div
               key={suggestion}
               onClick={() => handleSuggestionClick(suggestion)}
-              className={`flex items-center px-3 py-2 cursor-pointer transition-colors ${
-                index === selectedSuggestionIndex
-                  ? 'bg-blue-600 text-white'
-                  : 'hover:bg-gray-600 text-gray-200'
-              }`}
+              className="flex items-center px-3 py-2 cursor-pointer transition-colors"
+              style={{
+                backgroundColor: index === selectedSuggestionIndex 
+                  ? 'var(--dashboard-accent)' 
+                  : 'transparent',
+                color: index === selectedSuggestionIndex 
+                  ? 'var(--text-inverse)' 
+                  : 'var(--text-primary)'
+              }}
+              onMouseEnter={(e) => {
+                if (index !== selectedSuggestionIndex) {
+                  e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (index !== selectedSuggestionIndex) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
               role="option"
               aria-selected={index === selectedSuggestionIndex}
             >

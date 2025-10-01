@@ -5,3 +5,13 @@
 @import './styles/theme.css';
 @import './styles/general.css';
 @import './styles/components/index.css';
+
+/* Custom animations */
+@keyframes progress-shrink {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+.animate-progress-shrink {
+  animation: progress-shrink 8s linear forwards;
+}

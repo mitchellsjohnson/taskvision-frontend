@@ -5,6 +5,7 @@ import { NavBarBrand } from './nav-bar-brand';
 import { NavBarButtons } from './nav-bar-buttons';
 import { NavBarTabs } from './nav-bar-tabs';
 import { LogoutButton } from '../../buttons/logout-button';
+import { ThemeToggle } from '../ThemeToggle';
 
 
 export const NavBar: React.FC = () => {
@@ -26,6 +27,7 @@ export const NavBar: React.FC = () => {
           <NavBarButtons />
           {isAuthenticated && (
             <>
+              <ThemeToggle />
               <button
                 onClick={handleSettingsClick}
                 className="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-white transition-colors"

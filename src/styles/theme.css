@@ -116,9 +116,16 @@
   --dashboard-text-secondary: #6b7280;
   --dashboard-text-muted: #9ca3af;
   --dashboard-border: #e5e7eb;
+  --dashboard-accent: #8b4513;
+  --dashboard-secondary-accent: #d2691e;
+  --dashboard-accent-bg: #fdf2f8;
+  --dashboard-accent-hover: rgba(139, 69, 19, 0.1);
+  --dashboard-hover-bg: #f3f4f6;
   --dashboard-tab-active: #3b82f6;
   --dashboard-tab-active-bg: #ffffff;
   --dashboard-tab-hover: #f9fafb;
+  --dashboard-tag-bg: #f3f4f6;
+  --dashboard-tag-text: #374151;
   
   /* Interactive States - Light Mode */
   --hover-bg: #f3f4f6;
@@ -140,6 +147,13 @@
   --border: var(--border-primary);
   --input: var(--border-secondary);
   --ring: var(--focus-ring);
+
+  /* Font size scaling */
+  --font-scale-small: 0.875;
+  --font-scale-medium: 1;
+  --font-scale-large: 1.125;
+  --font-scale-extra-large: 1.25;
+  --font-scale-extra-extra-large: 1.5;
 }
 
 .dark {
@@ -216,6 +230,8 @@
   --dashboard-tab-active: #3b82f6;
   --dashboard-tab-active-bg: #374151;
   --dashboard-tab-hover: #374151;
+  --dashboard-tag-bg: #374151;
+  --dashboard-tag-text: #d1d5db;
   
   /* Interactive States - Dark Mode */
   --hover-bg: #374151;
@@ -224,6 +240,110 @@
   --focus-ring-offset: #1f2937;
   
   /* Additional variables for Radix UI components - Dark Mode */
+  --card: var(--bg-primary);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-primary);
+  --popover-foreground: var(--text-primary);
+  --muted: var(--bg-tertiary);
+  --muted-foreground: var(--text-muted);
+  --accent: var(--bg-accent);
+  --accent-foreground: var(--text-secondary);
+  --destructive: var(--error-bg);
+  --destructive-foreground: var(--error-text);
+  --border: var(--border-primary);
+  --input: var(--border-secondary);
+  --ring: var(--focus-ring);
+}
+
+.light {
+  /* Light Mode - Base Colors */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --bg-tertiary: #f3f4f6;
+  --bg-accent: #f0f9ff;
+  
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-muted: #9ca3af;
+  --text-inverse: #ffffff;
+  
+  --border-primary: #e5e7eb;
+  --border-secondary: #d1d5db;
+  --border-accent: #9ca3af;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  /* Semantic Colors - Light Mode */
+  --success-bg: #dcfce7;
+  --success-border: #22c55e;
+  --success-text: #15803d;
+  
+  --warning-bg: #fef3c7;
+  --warning-border: #f59e0b;
+  --warning-text: #d97706;
+  
+  --error-bg: #fef2f2;
+  --error-border: #ef4444;
+  --error-text: #dc2626;
+  
+  --info-bg: #dbeafe;
+  --info-border: #3b82f6;
+  --info-text: #1d4ed8;
+  
+  /* Wellness Module Colors - Light Mode */
+  --wellness-bg-primary: #f8fdff;
+  --wellness-bg-secondary: #ffffff;
+  --wellness-bg-tertiary: #f9fafb;
+  --wellness-accent: #10a37f;
+  --wellness-accent-light: #34d399;
+  --wellness-text-primary: #1f2937;
+  --wellness-text-secondary: #6b7280;
+  --wellness-border: #e5e7eb;
+  --wellness-gradient: linear-gradient(135deg, #f8fdff 0%, #f0f9ff 100%);
+  
+  /* TVAgent Module Colors - Light Mode */
+  --tvagent-bg-primary: #ffffff;
+  --tvagent-bg-secondary: #f9fafb;
+  --tvagent-bg-tertiary: #f3f4f6;
+  --tvagent-bg-chat: #ffffff;
+  --tvagent-bg-message-user: #f0f9ff;
+  --tvagent-bg-message-agent: #f8fafc;
+  --tvagent-bg-sidebar: #ffffff;
+  --tvagent-text-primary: #1f2937;
+  --tvagent-text-secondary: #6b7280;
+  --tvagent-text-muted: #9ca3af;
+  --tvagent-border: #e5e7eb;
+  --tvagent-accent: #10a37f;
+  --tvagent-accent-hover: rgba(16, 163, 127, 0.1);
+  
+  /* Dashboard Module Colors - Light Mode */
+  --dashboard-bg-primary: #ffffff;
+  --dashboard-bg-secondary: #f9fafb;
+  --dashboard-bg-tertiary: #f3f4f6;
+  --dashboard-text-primary: #1f2937;
+  --dashboard-text-secondary: #6b7280;
+  --dashboard-text-muted: #9ca3af;
+  --dashboard-border: #e5e7eb;
+  --dashboard-accent: #8b4513;
+  --dashboard-secondary-accent: #d2691e;
+  --dashboard-accent-bg: #fdf2f8;
+  --dashboard-accent-hover: rgba(139, 69, 19, 0.1);
+  --dashboard-hover-bg: #f3f4f6;
+  --dashboard-tab-active: #3b82f6;
+  --dashboard-tab-active-bg: #ffffff;
+  --dashboard-tab-hover: #f9fafb;
+  --dashboard-tag-bg: #f3f4f6;
+  --dashboard-tag-text: #374151;
+  
+  /* Interactive States - Light Mode */
+  --hover-bg: #f3f4f6;
+  --active-bg: #e5e7eb;
+  --focus-ring: #3b82f6;
+  --focus-ring-offset: #ffffff;
+  
+  /* Additional variables for Radix UI components */
   --card: var(--bg-primary);
   --card-foreground: var(--text-primary);
   --popover: var(--bg-primary);

@@ -155,17 +155,33 @@ const WellnessPage: React.FC = () => {
   const handleJournalSave = async () => {
     if (!showJournalFor) return;
     try {
-      await updatePracticeInstance(showJournalFor.date, showJournalFor.practice, { journal: journalContent.trim() || undefined });
       const practiceId = `${showJournalFor.date}-${showJournalFor.practice}`;
+      const hadPreviousEntry = Boolean(journalEntries[practiceId]);
+      const hasNewContent = Boolean(journalContent.trim());
+      
+      // Only make API call if there's content or we're clearing an existing entry
+      if (hasNewContent || hadPreviousEntry) {
+        await updatePracticeInstance(showJournalFor.date, showJournalFor.practice, { 
+          journal: hasNewContent ? journalContent.trim() : "" 
+        });
+      }
+      
+      // Update local state
       const updatedEntries = { ...journalEntries };
-      if (journalContent.trim()) {
+      if (hasNewContent) {
         updatedEntries[practiceId] = journalContent.trim();
       } else {
         delete updatedEntries[practiceId];
       }
       setJournalEntries(updatedEntries);
       await loadWellnessData();
-      window.dispatchEvent(new CustomEvent('wellnessDataUpdated', { detail: { date: showJournalFor.date, practice: showJournalFor.practice, journal: journalContent.trim() } }));
+      window.dispatchEvent(new CustomEvent('wellnessDataUpdated', { 
+        detail: { 
+          date: showJournalFor.date, 
+          practice: showJournalFor.practice, 
+          journal: hasNewContent ? journalContent.trim() : "" 
+        } 
+      }));
     } catch (error) {
       console.error('Failed to save journal entry:', error);
     }

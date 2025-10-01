@@ -31,10 +31,10 @@ const formatDate = (dateString: string) => {
 // Helper function to get status color
 const getStatusColor = (status: Task['status']) => {
   const statusColors: { [key in Task['status']]: string } = {
-    'Open': 'text-blue-300',
-    'Completed': 'text-green-300',
-    'Canceled': 'text-red-300',
-    'Waiting': 'text-yellow-300',
+    'Open': 'text-blue-600 dark:text-blue-300',
+    'Completed': 'text-green-600 dark:text-green-300',
+    'Canceled': 'text-red-600 dark:text-red-300',
+    'Waiting': 'text-yellow-600 dark:text-yellow-300',
   };
   return statusColors[status] || statusColors['Open'];
 };
@@ -171,8 +171,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                 className={cn(
                   "px-3 py-2 rounded-full text-xl font-bold border-2 flex-shrink-0 shadow-md",
                   task.isMIT 
-                    ? "bg-green-600/40 text-green-100 border-green-500/70" 
-                    : "bg-blue-600/40 text-blue-100 border-blue-500/70"
+                    ? "bg-green-600/40 text-green-800 dark:text-green-100 border-green-500/70" 
+                    : "bg-blue-600/40 text-blue-800 dark:text-blue-100 border-blue-500/70"
                 )}
               >
                 {task.priority}
@@ -182,8 +182,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <span className={cn(
                 "text-sm font-medium px-3 py-1 rounded-full",
                 task.isMIT 
-                  ? "bg-green-600/20 text-green-300" 
-                  : "bg-blue-600/20 text-blue-300"
+                  ? "bg-green-600/20 text-green-600 dark:text-green-300" 
+                  : "bg-blue-600/20 text-blue-600 dark:text-blue-300"
               )}>
                 {task.isMIT ? 'MIT' : 'LIT'}
               </span>
@@ -259,6 +259,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             )}
           </div>
 
+          {/* Tags - Always visible for better UX */}
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 mb-3">
+              {task.tags.map((tag, index) => (
+                <Tag
+                  key={index}
+                  label={tag}
+                  type={DEFAULT_TAGS[tag] || DEFAULT_TAGS[tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()] ? 'default' : 'custom'}
+                  onClick={onTagClick && !isOverlay ? () => onTagClick(tag) : undefined}
+                  className="text-xs"
+                />
+              ))}
+            </div>
+          )}
+
           {/* Expandable details */}
           {isExpanded && (task.description || (task.tags && task.tags.length > 0)) && (
             <div className="space-y-2 mb-3 p-3 bg-muted rounded">
@@ -302,14 +317,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <div className="flex gap-2 w-full">
                 <button
                   onClick={handleSave}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded transition-colors text-sm font-medium"
+                  className="flex-1 py-2 px-4 rounded transition-colors text-sm font-medium"
+                  style={{ 
+                    backgroundColor: 'var(--success-border)', 
+                    color: 'var(--text-inverse)' 
+                  }}
                   title="Save Changes"
                 >
                   Save
                 </button>
                 <button
                   onClick={handleCancel}
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded transition-colors text-sm font-medium"
+                  className="flex-1 py-2 px-4 rounded transition-colors text-sm font-medium border"
+                  style={{ 
+                    backgroundColor: 'var(--bg-secondary)', 
+                    color: 'var(--text-primary)',
+                    borderColor: 'var(--border-primary)'
+                  }}
                   title="Cancel"
                 >
                   Cancel
@@ -319,7 +343,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               <>
                 <button
                   onClick={handlePencilClick}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                  className="flex-1 py-2 px-3 rounded transition-colors text-sm font-medium flex items-center justify-center gap-1"
+                  style={{ 
+                    backgroundColor: 'var(--info-border)', 
+                    color: 'var(--text-inverse)' 
+                  }}
                   data-testid="edit-task-button-mobile"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -375,8 +403,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
             className={cn(
               "px-3 py-2 rounded-full text-xl font-bold border-2 flex-shrink-0 shadow-md",
               task.isMIT 
-                ? "bg-green-600/40 text-green-100 border-green-500/70" 
-                : "bg-blue-600/40 text-blue-100 border-blue-500/70"
+                ? "bg-green-600/40 text-green-800 dark:text-green-100 border-green-500/70" 
+                : "bg-blue-600/40 text-blue-800 dark:text-blue-100 border-blue-500/70"
             )}
           >
             {task.priority}
@@ -392,8 +420,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                   <span className={cn(
                     "text-sm font-medium px-2 py-0.5 rounded shrink-0",
                     task.isMIT 
-                      ? "bg-green-600/20 text-green-300" 
-                      : "bg-blue-600/20 text-blue-300"
+                      ? "bg-green-600/20 text-green-600 dark:text-green-300" 
+                      : "bg-blue-600/20 text-blue-600 dark:text-blue-300"
                   )}>
                     {task.isMIT ? 'MIT' : 'LIT'}
                   </span>
@@ -405,11 +433,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                         value={editedTitle}
                         onChange={(e) => setEditedTitle(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        className="bg-gray-700 text-white p-1.5 rounded flex-1 text-2xl font-bold border border-gray-600 focus:border-blue-500 focus:outline-none"
+                        className="p-1.5 rounded flex-1 text-2xl font-bold border focus:outline-none"
+                        style={{ 
+                          backgroundColor: 'var(--bg-primary)', 
+                          color: 'var(--text-primary)', 
+                          borderColor: 'var(--border-primary)' 
+                        }}
                         autoFocus
                       />
                     ) : (
-                      <h3 className="text-xl font-bold text-white leading-tight">{task.title}</h3>
+                      <h3 className="text-xl font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{task.title}</h3>
                     )}
                     
                     {/* Expand/Collapse button for details */}
@@ -450,6 +483,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </span>
             </div>
             
+            {/* Tags - Always visible for mobile layout too */}
+            {task.tags && task.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {task.tags.map((tag, index) => (
+                  <Tag
+                    key={index}
+                    label={tag}
+                    type={DEFAULT_TAGS[tag] || DEFAULT_TAGS[tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()] ? 'default' : 'custom'}
+                    onClick={onTagClick && !isOverlay ? () => onTagClick(tag) : undefined}
+                    className="text-xs"
+                  />
+                ))}
+              </div>
+            )}
+            
             {/* Expandable details */}
             {isExpanded && (task.description || (task.tags && task.tags.length > 0)) && (
               <div className="space-y-1 mb-1">
@@ -460,7 +508,12 @@ export const TaskCard: React.FC<TaskCardProps> = ({
                       <textarea
                         value={editedDescription}
                         onChange={(e) => setEditedDescription(e.target.value)}
-                        className="bg-gray-700 text-white p-1.5 rounded w-full text-sm border border-gray-600 focus:border-blue-500 focus:outline-none resize-none"
+                        className="p-1.5 rounded w-full text-sm border focus:outline-none resize-none"
+                        style={{ 
+                          backgroundColor: 'var(--bg-primary)', 
+                          color: 'var(--text-primary)', 
+                          borderColor: 'var(--border-primary)' 
+                        }}
                         rows={2}
                         placeholder="Description..."
                       />
@@ -580,5 +633,5 @@ export const getTagColor = (tag: string) => {
   }
 
   // Default style for custom tags
-  return 'bg-white/10 text-gray-200 border border-white/20';
+  return 'bg-gray-100 text-gray-700 border border-gray-300 dark:bg-white/10 dark:text-gray-200 dark:border-white/20';
 };

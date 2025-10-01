@@ -8,7 +8,8 @@
   box-shadow: rgb(90 95 102) 0-1.5px 0 inset;
 
   z-index: 300;
-  background-color: var(--black);
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-primary);
 }
 
 .nav-bar {
@@ -64,7 +65,7 @@
   margin-right: 24px;
 
   font-weight: 500;
-  font-size: 16px;
+  font-size: 1em;
   line-height: 16px;
 }
 
@@ -84,7 +85,7 @@
 }
 
 .nav-bar__tab:hover {
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 .nav-bar__icon {
@@ -98,11 +99,11 @@
 
 @media only screen and (max-width: 640px) and (hover: none) {
   .mobile-nav-bar__tab:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 
   .mobile-nav-bar__tab--active:hover {
-    color: var(--white);
+    color: var(--text-primary);
   }
 }
 
@@ -112,7 +113,7 @@
   }
 
   .nav-bar__tab {
-    font-size: 1.5rem;
+    font-size: 1.5em;
   }
 
   .nav-bar {
@@ -143,7 +144,7 @@
 
   .nav-bar__icon {
     display: block;
-    font-size: 3.2rem;
+    font-size: 3.2em;
   }
 
   .nav-bar__buttons {
@@ -153,7 +154,7 @@
 
 @media only screen and (max-width: 340px) {
   .nav-bar__tab {
-    font-size: 1.3rem;
+    font-size: 1.3em;
   }
 
   .nav-bar {

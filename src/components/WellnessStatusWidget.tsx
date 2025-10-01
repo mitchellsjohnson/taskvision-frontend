@@ -277,10 +277,20 @@ export const WellnessStatusWidget: React.FC<WellnessStatusWidgetProps> = ({ onRe
     if (!showJournalFor) return;
     try {
       const { currentDate } = getDateInfo(currentDateOffset);
-      await updatePracticeInstance(currentDate, showJournalFor, { journal: journalContent.trim() || undefined });
       const practiceId = `${currentDate}-${showJournalFor}`;
+      const hadPreviousEntry = Boolean(journalEntries[practiceId]);
+      const hasNewContent = Boolean(journalContent.trim());
+      
+      // Only make API call if there's content or we're clearing an existing entry
+      if (hasNewContent || hadPreviousEntry) {
+        await updatePracticeInstance(currentDate, showJournalFor, { 
+          journal: hasNewContent ? journalContent.trim() : "" 
+        });
+      }
+      
+      // Update local state
       const updatedEntries = { ...journalEntries };
-      if (journalContent.trim()) {
+      if (hasNewContent) {
         updatedEntries[practiceId] = journalContent.trim();
       } else {
         delete updatedEntries[practiceId];

@@ -15,11 +15,11 @@ export const Tag: React.FC<TagProps> = ({ label, type, onClick, className = '' }
   const iconName = isDefault ? TAG_ICON_MAP[label] || TAG_ICON_MAP.default : undefined;
 
   const baseClasses = `
-    inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
-    bg-transparent transition-opacity duration-200 ease-in-out
+    inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium
+    bg-gray-100 dark:bg-gray-800 transition-opacity duration-200 ease-in-out
     ${onClick ? 'cursor-pointer hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-blue-500' : 'cursor-default'}
-    ${isDefault && defaultTagData ? defaultTagData.border : 'border-gray-500'}
-    border text-white
+    ${isDefault && defaultTagData ? defaultTagData.border : 'border-gray-400 dark:border-gray-500'}
+    border text-gray-700 dark:text-gray-200
     ${className}
   `;
 

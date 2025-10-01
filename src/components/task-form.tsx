@@ -42,11 +42,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialValues, onC
   };
 
   return (
-    <form onSubmit={handleSubmit} className="task-form bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-      <h3 className="text-lg font-semibold text-white mb-4">{isEditing ? 'Edit Task' : 'Create New Task'}</h3>
+    <form onSubmit={handleSubmit} className="task-form p-6 rounded-lg shadow-md mb-8" style={{ backgroundColor: 'var(--bg-primary)' }}>
+      <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>{isEditing ? 'Edit Task' : 'Create New Task'}</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="mb-4">
-          <label htmlFor="title" className="block text-sm font-medium text-white mb-1">
+          <label htmlFor="title" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Title
           </label>
           <input
@@ -54,19 +54,31 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialValues, onC
             id="title"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2"
+            style={{ 
+              backgroundColor: 'var(--bg-secondary)', 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-primary)',
+              borderWidth: '1px'
+            }}
             required
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="status" className="block text-sm font-medium text-white mb-1">
+          <label htmlFor="status" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Status
           </label>
           <select
             id="status"
             value={status}
             onChange={e => setStatus(e.target.value as TaskInput['status'])}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2"
+            style={{ 
+              backgroundColor: 'var(--bg-secondary)', 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-primary)',
+              borderWidth: '1px'
+            }}
           >
             <option value="Open">Open</option>
             <option value="Waiting">Waiting</option>
@@ -75,19 +87,25 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialValues, onC
           </select>
         </div>
         <div className="md:col-span-2 mb-4">
-          <label htmlFor="description" className="block text-sm font-medium text-white mb-1">
+          <label htmlFor="description" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Description
           </label>
           <textarea
             id="description"
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2"
+            style={{ 
+              backgroundColor: 'var(--bg-secondary)', 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-primary)',
+              borderWidth: '1px'
+            }}
             rows={3}
           />
         </div>
         <div className="mb-4">
-          <label htmlFor="dueDate" className="block text-sm font-medium text-white mb-1">
+          <label htmlFor="dueDate" className="block text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
             Due Date
           </label>
           <input
@@ -95,14 +113,24 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialValues, onC
             id="dueDate"
             value={dueDate}
             onChange={e => setDueDate(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-700 text-white border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2"
+            style={{ 
+              backgroundColor: 'var(--bg-secondary)', 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-primary)',
+              borderWidth: '1px'
+            }}
           />
         </div>
       </div>
       <div className="flex gap-4 mt-2">
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          className="w-full py-2 px-4 rounded-md focus:outline-none focus:ring-2 transition-colors"
+          style={{ 
+            backgroundColor: 'var(--info-border)', 
+            color: 'var(--text-inverse)' 
+          }}
         >
           {isEditing ? 'Update Task' : 'Create Task'}
         </button>
@@ -110,7 +138,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, initialValues, onC
           <button
             type="button"
             onClick={onCancel}
-            className="w-full bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            className="w-full py-2 px-4 rounded-md focus:outline-none focus:ring-2 transition-colors border"
+            style={{ 
+              backgroundColor: 'var(--bg-secondary)', 
+              color: 'var(--text-primary)',
+              borderColor: 'var(--border-primary)'
+            }}
           >
             Cancel
           </button>

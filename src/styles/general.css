@@ -19,9 +19,8 @@ body {
 }
 
 body {
-  background-color: var(--black);
-
-  color: var(--white);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
   font-family: var(--font-primary);
 
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -39,7 +38,7 @@ h5,
 h6 {
   font-family: var(--font-secondary);
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.86);
+  color: var(--text-primary);
 }
 
 h1,
@@ -120,7 +119,7 @@ textarea {
 }
 
 a {
-  color: var(--white);
+  color: var(--text-primary);
   text-decoration: none;
 }
 

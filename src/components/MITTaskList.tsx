@@ -5,6 +5,8 @@ import { EditTaskForm } from './edit-task-form';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Icon } from './icon';
+import { Tag } from './Tag';
+import { DEFAULT_TAGS } from '../constants/tags';
 
 interface MITTaskListProps {
   onRefresh?: () => void;
@@ -113,7 +115,7 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
   if (isLoading) {
     return (
       <div className="mit-task-list-widget">
-        <h3 className="widget-title">Most Important Tasks</h3>
+        <h3 className="widget-title">MIT - Most Important Tasks</h3>
         <div className="widget-content loading">
           <div className="loading-spinner"></div>
           <p>Loading MIT tasks...</p>
@@ -125,7 +127,7 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
   if (error) {
     return (
       <div className="mit-task-list-widget">
-        <h3 className="widget-title">Most Important Tasks</h3>
+        <h3 className="widget-title">MIT - Most Important Tasks</h3>
         <div className="widget-content error">
           <p className="error-message">{error}</p>
           <Button onClick={fetchMITTasks} variant="outline">
@@ -140,7 +142,7 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
     <>
       <div className="mit-task-list-widget" key={`mit-widget-${renderKey}`}>
         <div className="widget-header">
-          <h3 className="widget-title">Most Important Tasks</h3>
+          <h3 className="widget-title">MIT - Most Important Tasks</h3>
           <div className="header-buttons">
             <Button
               variant="ghost"
@@ -189,7 +191,12 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
                   {task.tags && task.tags.length > 0 && (
                     <div className="task-tags">
                       {task.tags.map((tag, index) => (
-                        <span key={index} className="task-tag">{tag}</span>
+                        <Tag
+                          key={index}
+                          label={tag}
+                          type={DEFAULT_TAGS[tag] || DEFAULT_TAGS[tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()] ? 'default' : 'custom'}
+                          className="text-xs"
+                        />
                       ))}
                     </div>
                   )}

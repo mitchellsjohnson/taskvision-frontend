@@ -6,23 +6,17 @@ import { DndContext } from '@dnd-kit/core';
 import { useTaskApi } from '../services/task-api';
 import { MemoryRouter } from 'react-router-dom';
 
-jest.mock('../services/task-api');
-jest.mock('@auth0/auth0-react', () => ({
-  useAuth0: () => ({
-    getAccessTokenSilently: jest.fn().mockResolvedValue('test-token'),
+// Mock the task API service specifically for this test
+const mockGetTasks = jest.fn();
+jest.mock('../services/task-api', () => ({
+  useTaskApi: () => ({
+    getTasks: mockGetTasks,
   }),
 }));
 
-const mockedUseTaskApi = useTaskApi as jest.Mock;
-
 describe('TasksPage', () => {
-  const mockGetTasks = jest.fn();
-
   beforeEach(() => {
     mockGetTasks.mockResolvedValue([]);
-    mockedUseTaskApi.mockReturnValue({
-      getTasks: mockGetTasks,
-    });
   });
 
   afterEach(() => {

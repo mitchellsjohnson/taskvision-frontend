@@ -226,4 +226,22 @@ export const DEFAULT_TAGS: Record<string, DefaultTag> = {
 
 *This tag system represents a significant step forward in making TaskVision more accessible, usable, and professional while maintaining the powerful organizational features users expect.*
 
-# Force build trigger
+## Recent Enhancements
+
+### TVAgent Enhancements
+- **Multiple Task Creation**: Added `create_multiple_tasks` function for batch task creation from single input.
+- **Enhanced Response Formatting**: Improved task list formatting with MIT/LIT sections and readable status indicators.
+- **Wellness Integration**: Integrated wellness suggestions into task responses.
+
+### Dashboard Improvements
+- **Tab System**: Replaced dashboard with tab navigation between "Dashboard" and "Wellness".
+- **New API Endpoints**: Added endpoints for productivity score, recent activity, and upcoming tasks.
+- **Primary Dashboard Layout**: Implemented core widgets with responsive design and error handling.
+
+### Backend and API Enhancements
+- **Task Management APIs**: Full CRUD operations with validation and filtering.
+- **Audit Logging**: Enhanced logging for task status changes and priority updates.
+
+### Development and Deployment
+- **Infrastructure**: Continued use of AWS services and Terraform.
+- **CI/CD**: Integration with AWS CodePipeline for automated testing and deployment.

@@ -56,8 +56,11 @@ export const MITStatusTile: React.FC<MITStatusTileProps> = ({ onRefresh }) => {
     } catch (error) {
       console.error('Error fetching MIT data:', error);
       
-      // Only retry if we haven't exceeded the limit
-      if (attempt < 3) {
+      // Disable retries in test environment to prevent infinite loops
+      const isTestEnv = process.env.NODE_ENV === 'test' || process.env.REACT_APP_DISABLE_RETRIES === 'true';
+      
+      // Only retry if we haven't exceeded the limit and not in test environment
+      if (attempt < 3 && !isTestEnv) {
         const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
         setRetryCount(attempt + 1);
         setTimeout(() => {
@@ -137,10 +140,9 @@ export const MITStatusTile: React.FC<MITStatusTileProps> = ({ onRefresh }) => {
           <span className="mit-count" aria-label={`${data.activeMITs} active MITs`}>
             {data.activeMITs}
           </span>
-          <span className="mit-total">/3</span>
         </div>
         <p className="mit-description">
-          You have <strong>{data.activeMITs} of 3 MITs</strong> active
+          You have <strong>{data.activeMITs} MITs</strong> active
         </p>
         
         {data.activeMITs === 0 && (
@@ -152,11 +154,11 @@ export const MITStatusTile: React.FC<MITStatusTileProps> = ({ onRefresh }) => {
           </div>
         )}
         
-        {data.activeMITs === 3 && (
+        {data.activeMITs >= 3 && (
           <div className="mit-success">
             <span className="success-icon" aria-hidden="true">✅</span>
             <p className="success-text">
-              Perfect! You have your maximum MITs active.
+              Great! You have {data.activeMITs} MITs active.
             </p>
           </div>
         )}

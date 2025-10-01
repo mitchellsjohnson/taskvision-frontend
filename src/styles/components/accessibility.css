@@ -1,0 +1,103 @@
+/* Font size scaling */
+.font-size-small {
+  font-size: calc(1rem * var(--font-scale-small));
+}
+
+.font-size-medium {
+  font-size: calc(1rem * var(--font-scale-medium));
+}
+
+.font-size-large {
+  font-size: calc(1rem * var(--font-scale-large));
+}
+
+.font-size-extra-large {
+  font-size: calc(1rem * var(--font-scale-extra-large));
+}
+
+/* Apply font scaling to body when font size changes */
+body[data-font-size="small"] {
+  font-size: calc(1rem * var(--font-scale-small));
+}
+
+body[data-font-size="medium"] {
+  font-size: calc(1rem * var(--font-scale-medium));
+}
+
+body[data-font-size="large"] {
+  font-size: calc(1rem * var(--font-scale-large));
+}
+
+body[data-font-size="extra-large"] {
+  font-size: calc(1rem * var(--font-scale-extra-large));
+}
+
+body[data-font-size="extra-extra-large"] {
+  font-size: calc(1rem * var(--font-scale-extra-extra-large));
+}
+
+/* High contrast mode */
+.high-contrast {
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --bg-tertiary: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #eeeeee;
+  --text-muted: #cccccc;
+  --border-primary: #ffffff;
+  --border-secondary: #cccccc;
+  --success-border: #00ff00;
+  --warning-border: #ffff00;
+  --error-border: #ff0000;
+  --info-border: #00ffff;
+}
+
+.high-contrast .dark {
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --bg-tertiary: #222222;
+  --text-primary: #ffffff;
+  --text-secondary: #eeeeee;
+  --text-muted: #cccccc;
+}
+
+/* Always show focus */
+.always-show-focus *:focus,
+.always-show-focus *:focus-visible {
+  outline: 2px solid var(--focus-ring) !important;
+  outline-offset: 2px !important;
+}
+
+.always-show-focus button:focus,
+.always-show-focus input:focus,
+.always-show-focus select:focus,
+.always-show-focus textarea:focus,
+.always-show-focus [role="button"]:focus,
+.always-show-focus [role="tab"]:focus,
+.always-show-focus [role="option"]:focus {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 2px var(--focus-ring-offset), 0 0 0 4px var(--focus-ring) !important;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* When reduced motion is enabled via settings */
+:root[style*="--animation-duration: 0s"] *,
+:root[style*="--animation-duration: 0s"] *::before,
+:root[style*="--animation-duration: 0s"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

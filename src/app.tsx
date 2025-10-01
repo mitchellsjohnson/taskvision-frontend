@@ -14,6 +14,7 @@ import { EcosystemAdminPage } from './pages/ecosystem-admin-page';
 import { CallbackPage } from './pages/callback-page';
 import { NotFoundPage } from './pages/not-found-page';
 import { FontSizeProvider } from './contexts/font-size-context';
+import { AccessibilityProvider } from './contexts/accessibility-context';
 import { NavBar } from './components/navigation/desktop/nav-bar';
 import { MobileNavBar } from './components/navigation/mobile/mobile-nav-bar';
 import { SettingsPage } from './pages/settings-page';
@@ -45,11 +46,12 @@ export const App: React.FC = () => {
 
   return (
     <FontSizeProvider>
-      <div className="page-layout">
-        <NavBar />
-        <MobileNavBar />
-        <DarkModeToggle />
-        <main className="page-layout__main">
+      <AccessibilityProvider>
+        <div className="page-layout">
+          <NavBar />
+          <MobileNavBar />
+          <DarkModeToggle />
+          <main className="page-layout__main">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/profile" element={<ProtectedRoute component={ProfilePage} />} />
@@ -68,20 +70,13 @@ export const App: React.FC = () => {
               path="/ecosystem-admin"
               element={<RoleProtectedRoute component={EcosystemAdminPage} requiredRoles={['ecosystem-admin']} />}
             />
-            <Route path="/settings" element={<ProtectedSettingsPage />}>
-              <Route index element={<Navigate to="auth0-views" replace />} />
-              <Route path="auth0-views" element={<Auth0ViewsLegacyPage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="public" element={<PublicPage />} />
-              <Route path="protected" element={<ProtectedRoute component={ProtectedPage} />} />
-              <Route path="admin" element={<RoleProtectedRoute component={AdminPage} requiredRoles={['admin', 'ecosystem-admin']} />} />
-              <Route path="ecosystem-admin" element={<RoleProtectedRoute component={EcosystemAdminPage} requiredRoles={['ecosystem-admin']} />} />
-            </Route>
+            <Route path="/settings" element={<ProtectedSettingsPage />} />
             <Route path="/callback" element={<CallbackPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </main>
-      </div>
+        </div>
+      </AccessibilityProvider>
     </FontSizeProvider>
   );
 };
