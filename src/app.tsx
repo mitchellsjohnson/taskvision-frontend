@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { useAuth0, withAuthenticationRequired } from '@auth0/auth0-react';
 import { PageLoader } from './components/page-loader';
 import { ProtectedRoute } from './components/protected-route';
@@ -18,7 +18,6 @@ import { AccessibilityProvider } from './contexts/accessibility-context';
 import { NavBar } from './components/navigation/desktop/nav-bar';
 import { MobileNavBar } from './components/navigation/mobile/mobile-nav-bar';
 import { SettingsPage } from './pages/settings-page';
-import { Auth0ViewsLegacyPage } from './pages/auth0-views-legacy-page';
 import { DashboardPage } from './pages/dashboard-page';
 import { TVAgentPage } from './pages/tvagent-page';
 import WellnessPage from './pages/wellness-page';
