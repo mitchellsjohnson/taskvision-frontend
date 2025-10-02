@@ -21,6 +21,7 @@ export const ThemeToggle: React.FC = () => {
         return () => mediaQuery.removeEventListener('change', handleChange);
       }
     }
+    return undefined;
   }, []);
 
   // Determine the effective theme (what's actually being displayed)

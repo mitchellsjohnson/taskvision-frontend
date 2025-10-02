@@ -33,20 +33,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode; defaultTheme?:
         systemTheme = mediaQuery && mediaQuery.matches ? 'dark' : 'light';
       }
       root.classList.add(systemTheme);
-      return;
+      return undefined;
     }
 
     root.classList.add(theme);
+    return undefined;
   }, [theme]);
 
   useEffect(() => {
     if (theme !== 'system' || typeof window === 'undefined' || !window.matchMedia) {
-      return;
+      return undefined;
     }
     
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     if (!mediaQuery) {
-      return;
+      return undefined;
     }
     
     const handleChange = () => {

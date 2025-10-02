@@ -43,6 +43,7 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
         setSettings(prev => ({ ...prev, reducedMotion: true }));
       }
     }
+    return undefined;
   }, []);
 
   // Load accessibility settings from backend when user is authenticated
