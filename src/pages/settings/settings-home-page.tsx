@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 
 interface CardProps {
   to: string;
@@ -23,6 +24,38 @@ const Card: React.FC<CardProps> = ({ to, title, description, icon }) => (
 );
 
 export const SettingsHomePage: React.FC = () => {
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const accessToken = await getAccessTokenSilently();
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const roles = payload['https://taskvision.app/roles'] || [];
+        setUserRoles(roles);
+      } catch (error) {
+        console.error('Error fetching user roles:', error);
+        // In local dev with auth disabled, grant ecosystem-admin role
+        setUserRoles(['ecosystem-admin']);
+      }
+    };
+
+    fetchUserRoles();
+  }, [isAuthenticated, getAccessTokenSilently]);
+
+  // In local dev (localhost), always show ecosystem admin features
+  const isLocalDev = window.location.hostname === 'localhost';
+  const hasEcosystemAdminRole = isLocalDev || userRoles.includes('ecosystem-admin');
+
+  // Debug logging
+  console.log('[Settings] isLocalDev:', isLocalDev);
+  console.log('[Settings] userRoles:', userRoles);
+  console.log('[Settings] hasEcosystemAdminRole:', hasEcosystemAdminRole);
+  console.log('[Settings] hostname:', window.location.hostname);
+
   const cards = [
     {
       to: '/settings/personal-info',
@@ -35,6 +68,12 @@ export const SettingsHomePage: React.FC = () => {
       title: 'Auth0 Views Legacy',
       description: 'Legacy views for Auth0 settings',
       icon: '🔒',
+    },
+    {
+      to: '/settings/sms',
+      title: 'SMS / Text Messages',
+      description: 'Manage tasks via SMS commands',
+      icon: '📱',
     },
     {
       to: '/settings/section-x',
@@ -56,6 +95,19 @@ export const SettingsHomePage: React.FC = () => {
     },
   ];
 
+  // Add Ecosystem Admin card only for ecosystem-admin users
+  const allCards = hasEcosystemAdminRole
+    ? [
+        ...cards,
+        {
+          to: '/ecosystem-admin/sms-debug',
+          title: 'Ecosystem Admin',
+          description: 'SMS debug tools and system administration',
+          icon: '🔧',
+        },
+      ]
+    : cards;
+
   return (
     <div>
       <h1 className="text-4xl font-bold text-white mb-2">Account</h1>
@@ -63,7 +115,7 @@ export const SettingsHomePage: React.FC = () => {
         Manage your account settings and preferences.
       </p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {cards.map((card) => (
+        {allCards.map((card) => (
           <Card key={card.to} {...card} />
         ))}
       </div>

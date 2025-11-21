@@ -30,7 +30,12 @@ export const RoleProtectedRoute: React.FC<RoleProtectedRouteProps> = ({ componen
           setUserRoles(roles);
         } catch (error) {
           console.error("Error fetching or decoding access token:", error);
-          setUserRoles([]);
+          // In local dev with auth disabled, grant all roles
+          if (window.location.hostname === 'localhost') {
+            setUserRoles(['admin', 'ecosystem-admin']);
+          } else {
+            setUserRoles([]);
+          }
         } finally {
           setIsRolesLoading(false);
         }

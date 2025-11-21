@@ -11,6 +11,7 @@ import { ProtectedPage } from './pages/protected-page';
 import { AdminPage } from './pages/admin-page';
 import { TasksPage } from './pages/tasks-page';
 import { EcosystemAdminPage } from './pages/ecosystem-admin-page';
+import { SmsDebugPage } from './pages/ecosystem-admin/sms-debug-page';
 import { CallbackPage } from './pages/callback-page';
 import { NotFoundPage } from './pages/not-found-page';
 import { FontSizeProvider } from './contexts/font-size-context';
@@ -68,6 +69,10 @@ export const App: React.FC = () => {
             <Route
               path="/ecosystem-admin"
               element={<RoleProtectedRoute component={EcosystemAdminPage} requiredRoles={['ecosystem-admin']} />}
+            />
+            <Route
+              path="/ecosystem-admin/sms-debug"
+              element={<RoleProtectedRoute component={SmsDebugPage} requiredRoles={['ecosystem-admin']} />}
             />
             <Route path="/settings" element={<ProtectedSettingsPage />} />
             <Route path="/callback" element={<CallbackPage />} />

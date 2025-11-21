@@ -51,16 +51,16 @@ export const TasksPage: React.FC = () => {
   const pointerY = useRef(0);
 
   const { getTasks, updateTask, deleteTask, createTask } = useTaskApi();
-  
+
   // Undo functionality
-  const { 
-    undoStack, 
-    isUndoing, 
-    undo, 
+  const {
+    undoStack,
+    isUndoing,
+    undo,
     clearUndo,
     recordTaskCreation,
     recordTaskUpdate,
-    recordTaskDeletion 
+    recordTaskDeletion
   } = useUndo();
 
   const fetchTasks = useCallback(async () => {
@@ -148,7 +148,7 @@ export const TasksPage: React.FC = () => {
     deleteTaskOperation,
     { debounceMs: 500, maxLoadingMs: 5000 }
   );
-  
+
   const handleOpenEditModal = (task: Task) => {
     setSelectedTask(task);
     setIsDialogOpen(true);
@@ -159,17 +159,17 @@ export const TasksPage: React.FC = () => {
     // Enforce MIT limit: only first 3 tasks can be MIT
     return allMitTasks.slice(0, 3);
   }, [tasks]);
-  
+
   const litTasks = useMemo(() => {
     const allMitTasks = tasks.filter(task => task.isMIT).sort((a, b) => a.priority - b.priority);
     const allLitTasks = tasks.filter(task => !task.isMIT).sort((a, b) => a.priority - b.priority);
-    
+
     // Any MIT tasks beyond the first 3 should be treated as LIT
     const overflowMitTasks = allMitTasks.slice(3).map(task => ({ ...task, isMIT: false }));
-    
+
     return [...overflowMitTasks, ...allLitTasks].sort((a, b) => a.priority - b.priority);
   }, [tasks]);
-  
+
   // Open tasks for search (excludes completed and canceled)
   const openTasks = useMemo(() => tasks.filter(task => task.status === 'Open' || task.status === 'Waiting'), [tasks]);
 
@@ -181,7 +181,7 @@ export const TasksPage: React.FC = () => {
 
   const flashTask = useCallback((taskId: string) => {
     setFlashingTasks(prev => new Set(prev).add(taskId));
-    
+
     // Remove the flash after animation completes - longer duration for subtle fade
     setTimeout(() => {
       setFlashingTasks(prev => {
@@ -200,7 +200,7 @@ export const TasksPage: React.FC = () => {
   const findTaskInUnifiedList = (taskId: string) => {
     const taskIndex = allTasks.findIndex(task => task.TaskId === taskId);
     if (taskIndex === -1) return null;
-    
+
     const task = allTasks[taskIndex];
     return {
       task,
@@ -210,7 +210,7 @@ export const TasksPage: React.FC = () => {
       localIndex: task.isMIT ? mitTasks.findIndex(t => t.TaskId === taskId) : litTasks.findIndex(t => t.TaskId === taskId)
     };
   };
-  
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     setActiveId(active.id as string);
@@ -221,7 +221,7 @@ export const TasksPage: React.FC = () => {
   const handleDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
     const activeId = active.id as string;
-    
+
     if (!over) {
       setDropIndicator(null);
       return;
@@ -236,7 +236,7 @@ export const TasksPage: React.FC = () => {
 
     const activeTask = findTaskInUnifiedList(activeId);
     const overTask = findTaskInUnifiedList(overId);
-    
+
     if (!activeTask || !overTask) {
       setDropIndicator(null);
       return;
@@ -244,57 +244,57 @@ export const TasksPage: React.FC = () => {
 
     const overRect = over.rect;
     const isBelow = (pointerY.current - overRect.top) > (overRect.height / 2);
-    
+
     // Calculate what the target position would be
     const targetIndex = isBelow ? overTask.globalIndex + 1 : overTask.globalIndex;
-    
+
     // Don't show indicator if dropping in the same position or adjacent
     if (targetIndex === activeTask.globalIndex || targetIndex === activeTask.globalIndex + 1) {
-        setDropIndicator(null);
-        return;
+      setDropIndicator(null);
+      return;
     }
 
     // Allow dropping LIT task into MIT positions even if it would exceed 3 tasks
     // The handleDragEnd function will handle bumping the lowest MIT task to LIT
 
     setDropIndicator({
-        overItemId: overId,
-        position: isBelow ? 'after' : 'before'
+      overItemId: overId,
+      position: isBelow ? 'after' : 'before'
     });
   };
-  
+
   const handleDragEnd = async ({ active, over }: DragEndEvent) => {
     const cleanup = () => {
-        setDropIndicator(null);
-        setActiveId(null);
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('touchmove', handleTouchMove);
+      setDropIndicator(null);
+      setActiveId(null);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
     };
 
     if (!over) {
-        cleanup();
-        return;
+      cleanup();
+      return;
     }
 
     const activeTask = findTaskInUnifiedList(active.id as string);
     const overTask = findTaskInUnifiedList(over.id as string);
-    
+
     if (!activeTask || !overTask) {
-        cleanup();
-        return;
+      cleanup();
+      return;
     }
 
     // Calculate target position
     let targetGlobalIndex: number;
     if (dropIndicator) {
-        const dropTask = findTaskInUnifiedList(dropIndicator.overItemId);
-        if (!dropTask) {
-            cleanup();
-            return;
-        }
-        targetGlobalIndex = dropIndicator.position === 'after' ? dropTask.globalIndex + 1 : dropTask.globalIndex;
+      const dropTask = findTaskInUnifiedList(dropIndicator.overItemId);
+      if (!dropTask) {
+        cleanup();
+        return;
+      }
+      targetGlobalIndex = dropIndicator.position === 'after' ? dropTask.globalIndex + 1 : dropTask.globalIndex;
     } else {
-        targetGlobalIndex = overTask.globalIndex;
+      targetGlobalIndex = overTask.globalIndex;
     }
 
     // Allow moving LIT task to MIT section even if it would exceed the limit
@@ -303,62 +303,60 @@ export const TasksPage: React.FC = () => {
     // MIT section is ALWAYS the first 3 positions (0, 1, 2)
     // LIT section starts after the MIT section
     const mitSectionSize = Math.min(mitTasks.length, 3);
-    
+
     // Calculate the new MIT status based on target position
     let newIsMIT: boolean;
     let newLocalIndex: number;
-    
+
     if (targetGlobalIndex <= mitSectionSize) {
-        // Dropping in MIT section (positions 0-2, or within current MIT if less than 3)
-        newIsMIT = true;
-        newLocalIndex = targetGlobalIndex;
+      // Dropping in MIT section (positions 0-2, or within current MIT if less than 3)
+      newIsMIT = true;
+      newLocalIndex = targetGlobalIndex;
     } else {
-        // Dropping in LIT section
-        newIsMIT = false;
-        newLocalIndex = targetGlobalIndex - mitSectionSize;
+      // Dropping in LIT section
+      newIsMIT = false;
+      newLocalIndex = targetGlobalIndex - mitSectionSize;
     }
 
     setTasks(currentTasks => {
-        const newMitTasks = [...mitTasks];
-        const newLitTasks = [...litTasks];
-        
-        // Remove from current position
-        if (activeTask.isMIT) {
-            newMitTasks.splice(activeTask.localIndex, 1);
-        } else {
-            newLitTasks.splice(activeTask.localIndex, 1);
+      const newMitTasks = [...mitTasks];
+      const newLitTasks = [...litTasks];
+
+      // Remove from current position
+      if (activeTask.isMIT) {
+        newMitTasks.splice(activeTask.localIndex, 1);
+      } else {
+        newLitTasks.splice(activeTask.localIndex, 1);
+      }
+
+      // Insert at new position
+      const updatedTask = { ...activeTask.task, isMIT: newIsMIT };
+      if (newIsMIT) {
+        newMitTasks.splice(newLocalIndex, 0, updatedTask);
+        // If MIT list now has > 3 tasks, move the last one to LIT
+        if (newMitTasks.length > 3) {
+          const bumpedTask = newMitTasks.pop();
+          if (bumpedTask) {
+            newLitTasks.unshift({ ...bumpedTask, isMIT: false });
+          }
         }
-        
-        // Insert at new position
-        const updatedTask = { ...activeTask.task, isMIT: newIsMIT };
-        if (newIsMIT) {
-            newMitTasks.splice(newLocalIndex, 0, updatedTask);
-            // If MIT list now has > 3 tasks, move the last one to LIT
-            if (newMitTasks.length > 3) {
-                const bumpedTask = newMitTasks.pop();
-                if (bumpedTask) {
-                    newLitTasks.unshift({ ...bumpedTask, isMIT: false });
-                }
-            }
-        } else {
-            newLitTasks.splice(newLocalIndex, 0, updatedTask);
-        }
-        
-        // Re-index priorities for both lists (1-based)
-        newMitTasks.forEach((task, index) => { task.priority = index + 1; });
-        newLitTasks.forEach((task, index) => { task.priority = index + 1; });
-        
-        return [...newMitTasks, ...newLitTasks];
+      } else {
+        newLitTasks.splice(newLocalIndex, 0, updatedTask);
+      }
+
+      // Don't recalculate priorities here - the backend's reprioritizeTasks will handle it
+      // Just return the reordered tasks
+      return [...newMitTasks, ...newLitTasks];
     });
 
     await updateTask(activeTask.task.TaskId, {
-        isMIT: newIsMIT,
-        position: newLocalIndex,
+      isMIT: newIsMIT,
+      position: newLocalIndex,
     });
-    
+
     // Flash the moved task
     flashTask(activeTask.task.TaskId);
-    
+
     /*
       Do NOT call fetchTasks() immediately here.
       The optimistic state we just staged already mirrors the backend logic (we fully re-indexed priorities).
@@ -368,7 +366,7 @@ export const TasksPage: React.FC = () => {
 
     cleanup();
   };
-  
+
   const handleDragCancel = () => {
     setActiveId(null);
     setDropIndicator(null);
@@ -379,31 +377,31 @@ export const TasksPage: React.FC = () => {
   const activeTask = useMemo(() => tasks.find(task => task.TaskId === activeId), [activeId, tasks]);
 
   const dropAnimation: DropAnimation = { ...defaultDropAnimation };
-  
+
   const handleMove = (taskId: string, listId: 'MIT' | 'LIT', newIndex: number) => {
     setTasks(current => {
       // Split into lists and sort by priority
-      const mit = current.filter(t => t.isMIT).sort((a,b)=>a.priority-b.priority);
-      const lit = current.filter(t => !t.isMIT).sort((a,b)=>a.priority-b.priority);
+      const mit = current.filter(t => t.isMIT).sort((a, b) => a.priority - b.priority);
+      const lit = current.filter(t => !t.isMIT).sort((a, b) => a.priority - b.priority);
 
       // Find the task in either list
       const taskInMit = mit.find(t => t.TaskId === taskId);
       const taskInLit = lit.find(t => t.TaskId === taskId);
       const task = taskInMit || taskInLit;
-      
+
       if (!task) return current;
-      
+
       // Remove task from current list
       const newMit = mit.filter(t => t.TaskId !== taskId);
       const newLit = lit.filter(t => t.TaskId !== taskId);
-      
+
       // Update task's isMIT flag based on target list
       const updatedTask = { ...task, isMIT: listId === 'MIT' };
-      
+
       // Insert into target list at specified index (this will push existing tasks down)
       if (listId === 'MIT') {
         newMit.splice(newIndex, 0, updatedTask);
-        
+
         // Handle MIT limit - if we now have more than 3 tasks, bump the lowest MIT task to LIT
         if (newMit.length > 3) {
           const bumpedTask = newMit.pop();
@@ -415,24 +413,22 @@ export const TasksPage: React.FC = () => {
       } else {
         newLit.splice(newIndex, 0, updatedTask);
       }
-      
-      // Re-index priorities for both lists (1-based)
-      newMit.forEach((t, i) => { t.priority = i + 1; });
-      newLit.forEach((t, i) => { t.priority = i + 1; });
-      
+
+      // Don't recalculate priorities here - the backend's reprioritizeTasks will handle it
+
       // Update the backend with the new priority and isMIT status
       const newPriority = newIndex + 1; // Priority is 1-based for both MIT and LIT
       const newIsMIT = listId === 'MIT';
-      
+
       // Send the corrected data to backend
-      updateTask(taskId, { 
+      updateTask(taskId, {
         priority: newPriority,
         isMIT: newIsMIT
       }).catch(error => {
         console.error('Failed to persist task move:', error);
         // Could add error handling/rollback here
       });
-      
+
       return [...newMit, ...newLit];
     });
 
@@ -463,7 +459,7 @@ export const TasksPage: React.FC = () => {
     <div className="p-2 sm:p-3 lg:p-6 min-h-screen" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
       {/* <DarkModeToggle /> */}
       <header className="flex justify-center mb-3 sm:mb-4">
-        <SearchBar 
+        <SearchBar
           tasks={openTasks}
           onResultClick={(taskId) => {
             // Optionally clear any backend search filter when using instant search
@@ -473,7 +469,7 @@ export const TasksPage: React.FC = () => {
           }}
         />
       </header>
-      
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-3 sm:gap-4">
         <div className="w-full sm:flex-1 sm:min-w-[300px]">
           <TagFilterPills
@@ -531,8 +527,8 @@ export const TasksPage: React.FC = () => {
             {mitTasks.map((task, index) => (
               <React.Fragment key={task.TaskId}>
                 {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
-                <TaskCard 
-                  task={task} 
+                <TaskCard
+                  task={task}
                   {...taskCardProps}
                   listId="MIT"
                   index={index}
@@ -540,7 +536,7 @@ export const TasksPage: React.FC = () => {
                 {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
               </React.Fragment>
             ))}
-            
+
             {/* Visual separator between MIT and LIT */}
             {mitTasks.length > 0 && litTasks.length > 0 && (
               <div className="relative py-3">
@@ -557,8 +553,8 @@ export const TasksPage: React.FC = () => {
             {litTasks.map((task, index) => (
               <React.Fragment key={task.TaskId}>
                 {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
-                <TaskCard 
-                  task={task} 
+                <TaskCard
+                  task={task}
                   {...taskCardProps}
                   listId="LIT"
                   index={index}
@@ -602,13 +598,13 @@ export const TasksPage: React.FC = () => {
                   {mitTasks.length}
                 </span>
               </div>
-              
+
               <div className="space-y-3 min-h-[200px]">
                 {mitTasks.map((task, index) => (
                   <React.Fragment key={task.TaskId}>
                     {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
-                    <TaskCard 
-                      task={task} 
+                    <TaskCard
+                      task={task}
                       {...taskCardProps}
                       listId="MIT"
                       index={index}
@@ -616,7 +612,7 @@ export const TasksPage: React.FC = () => {
                     {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
                   </React.Fragment>
                 ))}
-                
+
                 {/* MIT Empty State */}
                 {mitTasks.length === 0 && (
                   <div className="text-center py-8 border-2 border-dashed border-green-600/30 rounded-lg">
@@ -640,13 +636,13 @@ export const TasksPage: React.FC = () => {
                   {litTasks.length}
                 </span>
               </div>
-              
+
               <div className="space-y-3 min-h-[200px]">
                 {litTasks.map((task, index) => (
                   <React.Fragment key={task.TaskId}>
                     {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'before' && <DropIndicator />}
-                    <TaskCard 
-                      task={task} 
+                    <TaskCard
+                      task={task}
                       {...taskCardProps}
                       listId="LIT"
                       index={index}
@@ -654,7 +650,7 @@ export const TasksPage: React.FC = () => {
                     {dropIndicator?.overItemId === task.TaskId && dropIndicator.position === 'after' && <DropIndicator />}
                   </React.Fragment>
                 ))}
-                
+
                 {/* LIT Empty State */}
                 {litTasks.length === 0 && (
                   <div className="text-center py-8 border-2 border-dashed border-blue-600/30 rounded-lg">

@@ -6,6 +6,7 @@ export const SettingsLeftNav: React.FC = () => {
     { path: '/settings', name: 'Home', exact: true },
     { path: '/settings/personal-info', name: 'Personal info (TODO)' },
     { path: '/settings/auth0-views', name: 'Auth0 Views Legacy' },
+    { path: '/settings/sms', name: 'SMS / Text Messages' },
     { path: '/settings/section-x', name: 'Section X (TODO)' },
     { path: '/settings/section-y', name: 'Section Y (TODO)' },
     { path: '/settings/section-z', name: 'Section Z (TODO)' },

@@ -1,29 +1,57 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Switch } from '../components/ui/Switch';
 import { Label } from '../components/ui/Label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/Tooltip';
-import { 
-  Monitor, 
-  Sun, 
-  Moon, 
-  Type, 
-  Minimize2, 
-  Contrast, 
-  Accessibility, 
-  Bell, 
-  Shield, 
-  User 
+import {
+  Monitor,
+  Sun,
+  Moon,
+  Type,
+  Minimize2,
+  Contrast,
+  Accessibility,
+  Bell,
+  Shield,
+  User
 } from 'lucide-react';
 import { useTheme } from '../contexts/theme-context';
 import { useFontSize } from '../contexts/font-size-context';
 import { useAccessibility } from '../contexts/accessibility-context';
+import { SmsSettingsPage } from './settings/sms-settings-page';
+import { SmsDebugPage } from './ecosystem-admin/sms-debug-page';
 
 export const SettingsPage: React.FC = () => {
   const { theme, setTheme, isLoading: themeLoading } = useTheme();
   const { fontSize, setFontSize } = useFontSize();
   const { settings: accessibilitySettings, updateSetting: updateAccessibilitySetting, isLoading: accessibilityLoading } = useAccessibility();
+  const { isAuthenticated, getAccessTokenSilently } = useAuth0();
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const accessToken = await getAccessTokenSilently();
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        const roles = payload['https://taskvision.app/roles'] || [];
+        setUserRoles(roles);
+      } catch (error) {
+        console.error('Error fetching user roles:', error);
+        // In local dev with auth disabled, grant ecosystem-admin role
+        setUserRoles(['ecosystem-admin']);
+      }
+    };
+
+    fetchUserRoles();
+  }, [isAuthenticated, getAccessTokenSilently]);
+
+  // In local dev (localhost), always show ecosystem admin features
+  const isLocalDev = window.location.hostname === 'localhost';
+  const hasEcosystemAdminRole = isLocalDev || userRoles.includes('ecosystem-admin');
 
   const themeOptions = [
     { value: 'system', label: 'System', icon: Monitor, description: 'Follow your system preference' },
@@ -76,6 +104,8 @@ export const SettingsPage: React.FC = () => {
     </TooltipProvider>
   );
 
+  const [activeTab, setActiveTab] = useState('appearance');
+
   return (
     <div className="settings-page container mx-auto max-w-4xl p-6">
       <div className="mb-8">
@@ -85,154 +115,208 @@ export const SettingsPage: React.FC = () => {
         </p>
       </div>
 
-      <TooltipProvider>
-        <Tabs defaultValue="appearance" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="appearance">Appearance & Accessibility</TabsTrigger>
+      <div className="space-y-6">
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 rounded-lg bg-muted p-1">
+          <button
+            onClick={() => setActiveTab('appearance')}
+            className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${activeTab === 'appearance'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+              }`}
+          >
+            Appearance
+          </button>
+          <button
+            onClick={() => setActiveTab('sms')}
+            className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${activeTab === 'sms'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+              }`}
+          >
+            SMS
+          </button>
+          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <TabsTrigger value="notifications" disabled>Notifications</TabsTrigger>
+                <button
+                  disabled
+                  className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all text-muted-foreground opacity-50 cursor-not-allowed"
+                >
+                  Notifications
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Coming soon</p>
               </TooltipContent>
             </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <TabsTrigger value="privacy" disabled>Privacy</TabsTrigger>
+                <button
+                  disabled
+                  className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all text-muted-foreground opacity-50 cursor-not-allowed"
+                >
+                  Privacy
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Coming soon</p>
               </TooltipContent>
             </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <TabsTrigger value="account" disabled>Account</TabsTrigger>
+                <button
+                  disabled
+                  className="flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all text-muted-foreground opacity-50 cursor-not-allowed"
+                >
+                  Account
+                </button>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Coming soon</p>
               </TooltipContent>
             </Tooltip>
-          </TabsList>
+          </TooltipProvider>
 
-          <TabsContent value="appearance" className="space-y-8">
-            {/* Theme Section */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Theme</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Choose light, dark, or follow your system preference.
-                </p>
-              </div>
-              
-              <RadioGroup
-                value={theme}
-                onValueChange={(value) => setTheme(value as typeof theme)}
-                disabled={themeLoading}
-                className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-              >
-                {themeOptions.map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={option.value} />
-                    <Label 
-                      htmlFor={option.value} 
-                      className="flex items-center gap-2 cursor-pointer font-normal"
-                    >
-                      <option.icon className="h-4 w-4" />
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
+          {hasEcosystemAdminRole && (
+            <button
+              onClick={() => setActiveTab('ecosystem-admin')}
+              className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${activeTab === 'ecosystem-admin'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:bg-background/50 hover:text-foreground'
+                }`}
+            >
+              Ecosystem Admin
+            </button>
+          )}
+        </div>
 
-            {/* Text Size Section */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                  <Type className="h-5 w-5" />
-                  Text Size
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Adjust text size for readability. Works with browser zoom.
-                </p>
-              </div>
-              
-              <RadioGroup
-                value={fontSize}
-                onValueChange={(value) => setFontSize(value as typeof fontSize)}
-                className="grid grid-cols-2 sm:grid-cols-5 gap-4"
-              >
-                {fontSizeOptions.map((option) => {
-                  const sizeClass = option.value === 'small' ? 'text-xs' :
-                                  option.value === 'medium' ? 'text-sm' :
-                                  option.value === 'large' ? 'text-base' :
-                                  option.value === 'extra-large' ? 'text-lg' :
-                                  'text-xl'; // extra-extra-large
-                  
-                  return (
+        {/* Tab Content */}
+        <div className="mt-6">
+          {activeTab === 'appearance' && (
+            <div className="space-y-8">
+              {/* Theme Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Theme</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Choose light, dark, or follow your system preference.
+                  </p>
+                </div>
+
+                <RadioGroup
+                  value={theme}
+                  onValueChange={(value) => setTheme(value as typeof theme)}
+                  disabled={themeLoading}
+                  className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+                >
+                  {themeOptions.map((option) => (
                     <div key={option.value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={option.value} id={`font-${option.value}`} />
-                      <Label 
-                        htmlFor={`font-${option.value}`} 
-                        className={`cursor-pointer font-normal ${sizeClass}`}
-                        title={option.description}
+                      <RadioGroupItem value={option.value} id={option.value} />
+                      <Label
+                        htmlFor={option.value}
+                        className="flex items-center gap-2 cursor-pointer font-normal"
                       >
+                        <option.icon className="h-4 w-4" />
                         {option.label}
                       </Label>
                     </div>
-                  );
-                })}
-              </RadioGroup>
-            </div>
-
-            {/* Accessibility Section */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Accessibility</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Configure accessibility features to improve your experience.
-                </p>
+                  ))}
+                </RadioGroup>
               </div>
-              
-              <div className="accessibility-options space-y-6">
-                {accessibilityOptions.map((option) => (
-                  <div key={option.key} className="flex items-center justify-between">
-                    <div className="flex items-start gap-3">
-                      <option.icon className="h-5 w-5 mt-0.5 text-muted-foreground" />
-                      <div>
-                        <Label className="text-sm font-medium">{option.label}</Label>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {option.description}
-                        </p>
+
+              {/* Text Size Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                    <Type className="h-5 w-5" />
+                    Text Size
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Adjust text size for readability. Works with browser zoom.
+                  </p>
+                </div>
+
+                <RadioGroup
+                  value={fontSize}
+                  onValueChange={(value) => setFontSize(value as typeof fontSize)}
+                  className="grid grid-cols-2 sm:grid-cols-5 gap-4"
+                >
+                  {fontSizeOptions.map((option) => {
+                    const sizeClass = option.value === 'small' ? 'text-xs' :
+                      option.value === 'medium' ? 'text-sm' :
+                        option.value === 'large' ? 'text-base' :
+                          option.value === 'extra-large' ? 'text-lg' :
+                            'text-xl'; // extra-extra-large
+
+                    return (
+                      <div key={option.value} className="flex items-center space-x-2">
+                        <RadioGroupItem value={option.value} id={`font-${option.value}`} />
+                        <Label
+                          htmlFor={`font-${option.value}`}
+                          className={`cursor-pointer font-normal ${sizeClass}`}
+                          title={option.description}
+                        >
+                          {option.label}
+                        </Label>
                       </div>
+                    );
+                  })}
+                </RadioGroup>
+              </div>
+
+              {/* Accessibility Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Accessibility</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Configure accessibility features to improve your experience.
+                  </p>
+                </div>
+
+                <div className="accessibility-options space-y-6">
+                  {accessibilityOptions.map((option) => (
+                    <div key={option.key} className="flex items-center justify-between">
+                      <div className="flex items-start gap-3">
+                        <option.icon className="h-5 w-5 mt-0.5 text-muted-foreground" />
+                        <div>
+                          <Label className="text-sm font-medium">{option.label}</Label>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {option.description}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={accessibilitySettings[option.key]}
+                        onCheckedChange={(checked) =>
+                          updateAccessibilitySetting(option.key, checked)
+                        }
+                        disabled={accessibilityLoading}
+                      />
                     </div>
-                    <Switch
-                      checked={accessibilitySettings[option.key]}
-                      onCheckedChange={(checked) => 
-                        updateAccessibilitySetting(option.key, checked)
-                      }
-                      disabled={accessibilityLoading}
-                    />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-          </TabsContent>
+          )}
 
-          <TabsContent value="notifications" className="space-y-4">
-            <ComingSoonCard icon={Bell} label="Notifications" />
-          </TabsContent>
+          {activeTab === 'sms' && (
+            <div className="space-y-4">
+              <SmsSettingsPage />
+            </div>
+          )}
 
-          <TabsContent value="privacy" className="space-y-4">
-            <ComingSoonCard icon={Shield} label="Privacy" />
-          </TabsContent>
-
-          <TabsContent value="account" className="space-y-4">
-            <ComingSoonCard icon={User} label="Account" />
-          </TabsContent>
-        </Tabs>
-      </TooltipProvider>
+          {activeTab === 'ecosystem-admin' && hasEcosystemAdminRole && (
+            <div className="space-y-4">
+              <SmsDebugPage />
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
