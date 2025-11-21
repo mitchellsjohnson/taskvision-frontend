@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Switch } from '../components/ui/Switch';
 import { Label } from '../components/ui/Label';
@@ -12,10 +11,7 @@ import {
   Type,
   Minimize2,
   Contrast,
-  Accessibility,
-  Bell,
-  Shield,
-  User
+  Accessibility
 } from 'lucide-react';
 import { useTheme } from '../contexts/theme-context';
 import { useFontSize } from '../contexts/font-size-context';
@@ -87,22 +83,6 @@ export const SettingsPage: React.FC = () => {
       icon: Accessibility,
     },
   ];
-
-  const ComingSoonCard: React.FC<{ icon: React.ComponentType<any>; label: string }> = ({ icon: Icon, label }) => (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center gap-3 p-4 border border-border rounded-lg opacity-50 cursor-not-allowed">
-            <Icon className="h-5 w-5" />
-            <span className="text-sm font-medium">{label}</span>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>Coming soon</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
 
   const [activeTab, setActiveTab] = useState('appearance');
 
