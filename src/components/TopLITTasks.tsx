@@ -227,7 +227,8 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
             onCancel={() => setIsDialogOpen(false)}
             allTags={[]}
             mitTaskCount={0}
-            litTaskCount={tasks.length}
+            litTaskCount={totalLitCount}
+            defaultValues={selectedTask ? undefined : { isMIT: false, priority: totalLitCount + 1 }}
           />
         </DialogContent>
       </Dialog>
