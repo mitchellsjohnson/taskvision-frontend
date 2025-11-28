@@ -227,14 +227,15 @@
   --dashboard-text-secondary: #d1d5db;
   --dashboard-text-muted: #6b7280;
   --dashboard-border: #374151;
+  --dashboard-hover-bg: rgba(255, 255, 255, 0.05);
   --dashboard-tab-active: #3b82f6;
   --dashboard-tab-active-bg: #374151;
   --dashboard-tab-hover: #374151;
   --dashboard-tag-bg: #374151;
   --dashboard-tag-text: #d1d5db;
-  
+
   /* Interactive States - Dark Mode */
-  --hover-bg: #374151;
+  --hover-bg: rgba(255, 255, 255, 0.05);
   --active-bg: #4b5563;
   --focus-ring: #3b82f6;
   --focus-ring-offset: #1f2937;

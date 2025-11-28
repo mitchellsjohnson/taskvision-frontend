@@ -24,6 +24,7 @@ import { TVAgentPage } from './pages/tvagent-page';
 import WellnessPage from './pages/wellness-page';
 import DeleteWellnessDataPage from './pages/delete-wellness-data';
 import { DarkModeToggle } from './components/DarkModeToggle';
+import { Toaster } from 'sonner';
 
 const ProtectedSettingsPage = withAuthenticationRequired(SettingsPage, {
   onRedirecting: () => (
@@ -47,6 +48,13 @@ export const App: React.FC = () => {
   return (
     <FontSizeProvider>
       <AccessibilityProvider>
+        <Toaster
+          position="top-center"
+          expand={true}
+          richColors
+          closeButton
+          duration={3000}
+        />
         <div className="page-layout">
           <NavBar />
           <MobileNavBar />

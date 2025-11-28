@@ -7,6 +7,7 @@ import { Button } from './ui/Button';
 import { Icon } from './icon';
 import { Tag } from './Tag';
 import { DEFAULT_TAGS } from '../constants/tags';
+import { toast } from 'sonner';
 
 interface ScheduledTasksProps {
   onRefresh?: () => void;
@@ -68,18 +69,27 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
 
   const handleSaveTask = useCallback(
     async (taskData: Partial<Task>) => {
+      const toastId = toast.loading('🚧 Saving your task...');
       try {
         if (selectedTask) {
           await updateTask(selectedTask.TaskId, taskData);
+          toast.success('✓ Task updated successfully', { id: toastId });
         } else {
           await createTask(taskData);
+          toast.success('✓ Task created successfully', { id: toastId });
         }
         fetchScheduledTasks();
         setIsDialogOpen(false);
         setSelectedTask(null);
         onRefresh?.();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error saving task:', error);
+        if (error.status === 409 || error.errorCode === 'DUPLICATE_TASK') {
+          toast.error('⚠️ Duplicate task: A task with this name and due date already exists', { id: toastId, duration: 5000 });
+        } else {
+          toast.error('Failed to save task. Please try again.', { id: toastId });
+        }
+        throw error;
       }
     },
     [selectedTask, updateTask, createTask, fetchScheduledTasks, onRefresh]
@@ -152,6 +162,7 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
                 <div className="task-badges-group">
                   <span className={getDueDateBadgeClass(task.dueDate!)}>{formatDueDate(task.dueDate!)}</span>
                   {task.isMIT && <span className="mit-badge">MIT</span>}
+                  {!task.isMIT && <span className="lit-badge">LIT #{task.priority}</span>}
                 </div>
               </div>
               {task.description && <p className="task-description">{task.description}</p>}

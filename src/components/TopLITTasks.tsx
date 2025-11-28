@@ -7,6 +7,7 @@ import { Button } from './ui/Button';
 import { Icon } from './icon';
 import { Tag } from './Tag';
 import { DEFAULT_TAGS } from '../constants/tags';
+import { toast } from 'sonner';
 
 interface TopLITTasksProps {
   onRefresh?: () => void;
@@ -50,12 +51,15 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
   }, []);
 
   const handleSaveTask = useCallback(async (taskData: Partial<Task>) => {
+    const toastId = toast.loading('🚧 Saving your task...');
     try {
       if (selectedTask) {
         await updateTask(selectedTask.TaskId, taskData);
+        toast.success('✓ Task updated successfully', { id: toastId });
       } else {
         const newTaskData = { ...taskData, isMIT: false };
         await createTask(newTaskData);
+        toast.success('✓ Task created successfully', { id: toastId });
       }
       await fetchLITTasks();
       setIsDialogOpen(false);
@@ -67,8 +71,14 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
         const refreshEvent = new CustomEvent('dashboardTabSwitch', { detail: { activeTab: 'dashboard' } });
         window.dispatchEvent(refreshEvent);
       }, 100);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving task:', error);
+      if (error.status === 409 || error.errorCode === 'DUPLICATE_TASK') {
+        toast.error('⚠️ Duplicate task: A task with this name and due date already exists', { id: toastId, duration: 5000 });
+      } else {
+        toast.error('Failed to save task. Please try again.', { id: toastId });
+      }
+      throw error;
     }
   }, [selectedTask, updateTask, createTask, fetchLITTasks, onRefresh]);
 
@@ -180,7 +190,10 @@ export const TopLITTasks: React.FC<TopLITTasksProps> = ({ onRefresh }) => {
                   aria-label={`Open task: ${task.title}`}
                 >
                   <div className="task-header">
-                    <h4 className="task-title">{task.title}</h4>
+                    <div className="task-title-row">
+                      <span className="priority-badge">{task.priority}</span>
+                      <h4 className="task-title">{task.title}</h4>
+                    </div>
                     {task.dueDate && (
                       <span className={getDueDateBadgeClass(task.dueDate)}>
                         {formatDueDate(task.dueDate)}

@@ -4,8 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '../components/ui/Button';
 import { TaskCard } from '../components/TaskCard';
 import { SearchBar } from '../components/SearchBar';
-import { UndoToast } from '../components/UndoToast';
 import { Task } from '../types';
+import { toast } from 'sonner';
 import {
   DndContext,
   KeyboardSensor,
@@ -113,18 +113,31 @@ export const TasksPage: React.FC = () => {
 
 
   const handleSaveTask = async (taskData: Partial<Task>) => {
-    if (selectedTask) {
-      // Record for undo before updating
-      recordTaskUpdate(selectedTask.TaskId, selectedTask, taskData);
-      await updateTask(selectedTask.TaskId, taskData);
-    } else {
-      // Create task and record for undo
-      const newTask = await createTask(taskData);
-      recordTaskCreation(newTask.TaskId, newTask);
+    const toastId = toast.loading('🚧 Saving your task...');
+    try {
+      if (selectedTask) {
+        // Record for undo before updating
+        recordTaskUpdate(selectedTask.TaskId, selectedTask, taskData);
+        await updateTask(selectedTask.TaskId, taskData);
+        toast.success('✓ Task updated successfully', { id: toastId });
+      } else {
+        // Create task and record for undo
+        const newTask = await createTask(taskData);
+        recordTaskCreation(newTask.TaskId, newTask);
+        toast.success('✓ Task created successfully', { id: toastId });
+      }
+      fetchTasks();
+      setIsDialogOpen(false);
+      setSelectedTask(null);
+    } catch (error: any) {
+      console.error('Error saving task:', error);
+      if (error.status === 409 || error.errorCode === 'DUPLICATE_TASK') {
+        toast.error('⚠️ Duplicate task: A task with this name and due date already exists', { id: toastId, duration: 5000 });
+      } else {
+        toast.error('Failed to save task. Please try again.', { id: toastId });
+      }
+      throw error;
     }
-    fetchTasks();
-    setIsDialogOpen(false);
-    setSelectedTask(null);
   };
 
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
@@ -713,15 +726,6 @@ export const TasksPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Undo Toast */}
-      {undoStack.length > 0 && (
-        <UndoToast
-          action={undoStack[0]}
-          onUndo={() => undo()}
-          onDismiss={() => clearUndo(undoStack[0].id)}
-          isUndoing={isUndoing}
-        />
-      )}
     </div>
   );
 };

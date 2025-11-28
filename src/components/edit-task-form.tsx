@@ -66,7 +66,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
   }, [task, defaultValues]);
 
   const saveTask = useCallback(async (taskData: Partial<Task>) => {
-    onSave(taskData);
+    await onSave(taskData);
   }, [onSave]);
 
   const { execute: handleSave, isLoading: isSaving } = useDoubleClickPrevention(
@@ -114,7 +114,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
 
   return (
     <>
-      <div className="space-y-4">
+      <div className={`space-y-4 ${isSaving ? 'opacity-60 pointer-events-none' : ''}`}>
         <div>
           <Input
             type="text"
@@ -123,6 +123,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
             onChange={handleChange}
             maxLength={TASK_LIMITS.TITLE_MAX_LENGTH}
             placeholder="Task Title"
+            disabled={isSaving}
             className="text-2xl font-bold bg-input text-foreground rounded-md p-2 border border-border focus:border-blue-500 focus:outline-none"
             style={{ boxShadow: 'none !important' }}
             onFocus={(e) => {
@@ -139,6 +140,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
             onChange={handleChange}
             maxLength={TASK_LIMITS.DESCRIPTION_MAX_LENGTH}
             rows={5}
+            disabled={isSaving}
             className="w-full bg-input text-foreground rounded-md p-2 border border-border focus:border-blue-500 focus:outline-none"
             placeholder="Add task details..."
           />
@@ -158,6 +160,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
                 onClick={() => handleListChange('MIT')}
                 variant={selectedList === 'MIT' ? 'default' : 'secondary'}
                 className="flex-1"
+                disabled={isSaving}
               >
                 MIT ({mitTaskCount}/3)
               </Button>
@@ -166,6 +169,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
                 onClick={() => handleListChange('LIT')}
                 variant={selectedList === 'LIT' ? 'default' : 'secondary'}
                 className="flex-1"
+                disabled={isSaving}
               >
                 LIT ({litTaskCount})
               </Button>
@@ -179,7 +183,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => handlePriorityChange(priorityNumber - 1)}
-                  disabled={priorityNumber <= 1}
+                  disabled={priorityNumber <= 1 || isSaving}
                   className="w-8 h-8 p-0 flex items-center justify-center"
                   aria-label="Decrease priority"
                 >
@@ -218,7 +222,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => handlePriorityChange(priorityNumber + 1)}
-                  disabled={priorityNumber >= maxPriority}
+                  disabled={priorityNumber >= maxPriority || isSaving}
                   className="w-8 h-8 p-0 flex items-center justify-center"
                   aria-label="Increase priority"
                 >
@@ -295,7 +299,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
       )}
 
       <div className="flex justify-end gap-4 mt-6">
-        <Button onClick={onCancel} variant="secondary">
+        <Button onClick={onCancel} variant="secondary" disabled={isSaving}>
           Cancel
         </Button>
         <Button
@@ -307,7 +311,7 @@ export const EditTaskForm: React.FC<EditTaskFormProps> = ({
             isSaving
           }
         >
-          {isSaving ? 'Saving...' : 'Save Changes'}
+          {isSaving ? '🚧 Saving...' : 'Save Changes'}
         </Button>
       </div>
     </>

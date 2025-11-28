@@ -34,7 +34,19 @@ export const useTaskApi = () => {
       const response = await fetch(`${API_SERVER_URL}/${endpoint}`, config);
 
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.statusText}`);
+        // Try to parse error response for more specific error handling
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = { message: response.statusText };
+        }
+
+        const error: any = new Error(errorData.message || `API request failed: ${response.statusText}`);
+        error.status = response.status;
+        error.errorCode = errorData.error;
+        error.details = errorData;
+        throw error;
       }
 
       if (response.status === 204) {
