@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
+import { toast } from 'sonner';
 import { RadioGroup, RadioGroupItem } from '../components/ui/RadioGroup';
 import { Switch } from '../components/ui/Switch';
 import { Label } from '../components/ui/Label';
@@ -85,6 +86,38 @@ export const SettingsPage: React.FC = () => {
   ];
 
   const [activeTab, setActiveTab] = useState('appearance');
+  const [isFixing, setIsFixing] = useState(false);
+
+  const handleFixPriorities = async () => {
+    const toastId = toast.loading('🔧 Fixing task priorities...');
+    setIsFixing(true);
+
+    try {
+      const accessToken = await getAccessTokenSilently();
+      const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
+
+      const response = await fetch(`${API_SERVER_URL}/api/tasks/fix-priorities`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fix priorities');
+      }
+
+      const result = await response.json();
+      toast.success('✓ Task priorities fixed successfully!', { id: toastId });
+      console.log('Fix priorities result:', result);
+    } catch (error) {
+      console.error('Error fixing priorities:', error);
+      toast.error('Failed to fix priorities. Please try again.', { id: toastId });
+    } finally {
+      setIsFixing(false);
+    }
+  };
 
   return (
     <div className="settings-page container mx-auto max-w-4xl p-6">
@@ -279,6 +312,33 @@ export const SettingsPage: React.FC = () => {
                       />
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Maintenance Section */}
+              <div className="space-y-4 border-t pt-8">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Maintenance</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    System maintenance and data cleanup utilities.
+                  </p>
+                </div>
+
+                <div className="bg-muted/50 rounded-lg p-6 space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-1">Fix Task Priorities</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Recalculate and fix duplicate priority numbers for all tasks.
+                      This will ensure MIT tasks are numbered 1-3 and LIT tasks are numbered sequentially.
+                    </p>
+                    <button
+                      onClick={handleFixPriorities}
+                      disabled={isFixing}
+                      className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                    >
+                      {isFixing ? '🔧 Fixing...' : '🔧 Fix Priorities Now'}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
