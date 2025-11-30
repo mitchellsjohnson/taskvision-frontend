@@ -96,6 +96,8 @@ export const SettingsPage: React.FC = () => {
       const accessToken = await getAccessTokenSilently();
       const API_SERVER_URL = process.env.REACT_APP_API_SERVER_URL;
 
+      console.log('Calling fix-priorities endpoint:', `${API_SERVER_URL}/api/tasks/fix-priorities`);
+
       const response = await fetch(`${API_SERVER_URL}/api/tasks/fix-priorities`, {
         method: 'POST',
         headers: {
@@ -104,16 +106,25 @@ export const SettingsPage: React.FC = () => {
         }
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to fix priorities');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Failed to fix priorities: ${response.status} ${errorText}`);
       }
 
       const result = await response.json();
-      toast.success('✓ Task priorities fixed successfully!', { id: toastId });
       console.log('Fix priorities result:', result);
+      toast.success(`✓ Fixed ${result.totalFixed} tasks! MIT: ${result.mitCount}, LIT: ${result.litCount}`, { id: toastId, duration: 5000 });
+
+      // Reload the page to see updated priorities
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
       console.error('Error fixing priorities:', error);
-      toast.error('Failed to fix priorities. Please try again.', { id: toastId });
+      toast.error(`Failed to fix priorities: ${error instanceof Error ? error.message : 'Unknown error'}`, { id: toastId });
     } finally {
       setIsFixing(false);
     }
