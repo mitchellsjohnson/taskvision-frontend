@@ -54,10 +54,6 @@ export const TasksPage: React.FC = () => {
 
   // Undo functionality
   const {
-    undoStack,
-    isUndoing,
-    undo,
-    clearUndo,
     recordTaskCreation,
     recordTaskUpdate,
     recordTaskDeletion
