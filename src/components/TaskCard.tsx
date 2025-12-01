@@ -167,15 +167,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
               {/* Priority number */}
-              <div 
+              <div
                 className={cn(
                   "px-3 py-2 rounded-full text-xl font-bold border-2 flex-shrink-0 shadow-md",
-                  task.isMIT 
-                    ? "bg-green-600/40 text-green-800 dark:text-green-100 border-green-500/70" 
+                  task.isMIT
+                    ? "bg-green-600/40 text-green-800 dark:text-green-100 border-green-500/70"
                     : "bg-blue-600/40 text-blue-800 dark:text-blue-100 border-blue-500/70"
                 )}
               >
-                {task.priority}
+                {index !== undefined ? index + 1 : task.priority}
               </div>
               
               {/* MIT/LIT indicator */}
@@ -399,15 +399,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </div>
 
           {/* Priority number - Large and prominent */}
-          <div 
+          <div
             className={cn(
               "px-3 py-2 rounded-full text-xl font-bold border-2 flex-shrink-0 shadow-md",
-              task.isMIT 
-                ? "bg-green-600/40 text-green-800 dark:text-green-100 border-green-500/70" 
+              task.isMIT
+                ? "bg-green-600/40 text-green-800 dark:text-green-100 border-green-500/70"
                 : "bg-blue-600/40 text-blue-800 dark:text-blue-100 border-blue-500/70"
             )}
           >
-            {task.priority}
+            {index !== undefined ? index + 1 : task.priority}
           </div>
 
           {/* Main Content Area */}
