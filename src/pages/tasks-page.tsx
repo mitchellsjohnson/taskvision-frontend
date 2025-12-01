@@ -423,7 +423,9 @@ export const TasksPage: React.FC = () => {
         newLit.splice(newIndex, 0, updatedTask);
       }
 
-      // Don't recalculate priorities here - the backend's reprioritizeTasks will handle it
+      // Recalculate priorities for UI display
+      const mitWithPriorities = newMit.map((t, idx) => ({ ...t, priority: idx + 1 }));
+      const litWithPriorities = newLit.map((t, idx) => ({ ...t, priority: idx + 1 }));
 
       // Update the backend with the new priority and isMIT status
       const newPriority = newIndex + 1; // Priority is 1-based for both MIT and LIT
@@ -438,7 +440,7 @@ export const TasksPage: React.FC = () => {
         // Could add error handling/rollback here
       });
 
-      return [...newMit, ...newLit];
+      return [...mitWithPriorities, ...litWithPriorities];
     });
 
     // Flash the moved task
