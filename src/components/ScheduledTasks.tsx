@@ -142,7 +142,7 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
       <div className={`task-group ${className}`}>
         <h4 className="group-title">{title} ({tasks.length})</h4>
         <div className="task-list">
-          {tasks.map((task) => (
+          {tasks.map((task, index) => (
             <div
               key={task.TaskId}
               className="task-item clickable"
@@ -162,7 +162,7 @@ export const ScheduledTasks: React.FC<ScheduledTasksProps> = ({ onRefresh }) => 
                 <div className="task-badges-group">
                   <span className={getDueDateBadgeClass(task.dueDate!)}>{formatDueDate(task.dueDate!)}</span>
                   {task.isMIT && <span className="mit-badge">MIT</span>}
-                  {!task.isMIT && <span className="lit-badge">LIT #{task.priority}</span>}
+                  {!task.isMIT && <span className="lit-badge">LIT</span>}
                 </div>
               </div>
               {task.description && <p className="task-description">{task.description}</p>}

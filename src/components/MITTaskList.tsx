@@ -175,7 +175,7 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
             </div>
           ) : (
             <div className="task-list">
-              {tasks.map((task) => (
+              {tasks.map((task, index) => (
                 <div
                   key={task.TaskId}
                   className="task-item clickable"
@@ -195,7 +195,7 @@ export const MITTaskList: React.FC<MITTaskListProps> = ({ onRefresh }) => {
                 >
                   <div className="task-header">
                     <div className="task-title-row">
-                      <span className="priority-badge">{task.priority}</span>
+                      <span className="priority-badge">{index + 1}</span>
                       <h4 className="task-title">{task.title}</h4>
                     </div>
                     {task.dueDate && <span className={getDueDateBadgeClass(task.dueDate)}>{formatDueDate(task.dueDate)}</span>}
