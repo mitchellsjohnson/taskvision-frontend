@@ -1,13 +1,14 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TagFilterPills } from '../TagFilterPills';
 import { DEFAULT_TAGS } from '../../constants/tags';
 
-const mockOnTagClick = jest.fn();
+const mockOnTagClick = vi.fn();
 
 describe('TagFilterPills', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders all default tags as buttons', () => {

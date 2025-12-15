@@ -49,9 +49,7 @@
   "scripts": {
     "start": "cross-env PORT=4040 NODE_OPTIONS='--no-deprecation' dotenv -e .env react-scripts start",
     "build": "react-scripts build",
-    "test": "NODE_OPTIONS='--max-old-space-size=4096' vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
+    "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint --fix --ext .js,.jsx,.ts,.tsx src"
@@ -71,7 +69,10 @@
       "^axios$": "axios/dist/node/axios.cjs"
     },
     "clearMocks": true,
-    "resetMocks": true
+    "restoreMocks": true,
+    "resetMocks": true,
+    "testTimeout": 10000,
+    "maxWorkers": "50%"
   },
   "proxy": "http://localhost:6060",
   "browserslist": {
@@ -87,11 +88,8 @@
     ]
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.1.2",
-    "@vitest/ui": "^4.0.15",
     "autoprefixer": "^10.4.14",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.3.0",
-    "vitest": "^4.0.15"
+    "tailwindcss": "^3.3.0"
   }
 }

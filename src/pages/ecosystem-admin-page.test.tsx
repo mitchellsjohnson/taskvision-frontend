@@ -1,15 +1,16 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor } from '@testing-library/react';
 import { getEcosystemAdminResource } from '../services/message.service';
 import { EcosystemAdminPage } from './ecosystem-admin-page';
 
-jest.mock('../services/message.service');
+vi.mock('../services/message.service');
 
-const mockedGetEcosystemAdminResource = getEcosystemAdminResource as jest.Mock;
+const mockedGetEcosystemAdminResource = getEcosystemAdminResource as any;
 
 describe('EcosystemAdminPage', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render the page title', async () => {

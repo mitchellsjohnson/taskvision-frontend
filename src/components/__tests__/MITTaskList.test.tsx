@@ -1,13 +1,14 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor } from '@testing-library/react';
 import { MITTaskList } from '../MITTaskList';
 
 // Mock the useTaskApi hook
-const mockGetTasks = jest.fn();
-const mockCreateTask = jest.fn();
-const mockUpdateTask = jest.fn();
+const mockGetTasks = vi.fn();
+const mockCreateTask = vi.fn();
+const mockUpdateTask = vi.fn();
 
-jest.mock('../../services/task-api', () => ({
+vi.mock('../../services/task-api', () => ({
   useTaskApi: () => ({
     getTasks: mockGetTasks,
     createTask: mockCreateTask,
@@ -16,15 +17,15 @@ jest.mock('../../services/task-api', () => ({
 }));
 
 // Mock Auth0
-jest.mock('@auth0/auth0-react', () => ({
+vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
-    getAccessTokenSilently: jest.fn().mockResolvedValue('mock-token'),
+    getAccessTokenSilently: vi.fn().mockResolvedValue('mock-token'),
   }),
 }));
 
 describe('MITTaskList', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render loading state initially', () => {

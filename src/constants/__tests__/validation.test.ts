@@ -1,4 +1,5 @@
 import { TASK_LIMITS, validateTaskField } from '../validation';
+import { vi } from "vitest";
 
 describe('validation constants and functions', () => {
   describe('TASK_LIMITS', () => {

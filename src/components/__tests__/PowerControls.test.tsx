@@ -1,12 +1,13 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PowerControls } from '../PowerControls';
 
 describe('PowerControls', () => {
-  let onMove: jest.Mock;
+  let onMove: any;
 
   beforeEach(() => {
-    onMove = jest.fn();
+    onMove = vi.fn();
   });
 
   const renderComponent = (props: any) => {

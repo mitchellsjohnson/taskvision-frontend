@@ -1,16 +1,17 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { NavBarTabs } from '../nav-bar-tabs';
 import { useAuth0 } from '@auth0/auth0-react';
 
 // Mock the useAuth0 hook
-jest.mock('@auth0/auth0-react', () => ({
+vi.mock('@auth0/auth0-react', () => ({
   __esModule: true,
-  useAuth0: jest.fn(),
+  useAuth0: vi.fn(),
 }));
 
-const useAuth0Mock = useAuth0 as jest.Mock;
+const useAuth0Mock = useAuth0 as any;
 
 describe('NavBarTabs', () => {
   beforeEach(() => {

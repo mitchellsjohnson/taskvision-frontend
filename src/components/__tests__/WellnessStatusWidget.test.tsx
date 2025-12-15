@@ -1,37 +1,38 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WellnessStatusWidget } from '../WellnessStatusWidget';
 import { useWellnessApi } from '../../services/wellness-api';
 
 // Mock useWellnessApi hook
-const mockGetPracticeInstances = jest.fn();
-const mockGetWeeklyScores = jest.fn();
-const mockUpdatePracticeInstance = jest.fn();
+const mockGetPracticeInstances = vi.fn();
+const mockGetWeeklyScores = vi.fn();
+const mockUpdatePracticeInstance = vi.fn();
 
-jest.mock('../../services/wellness-api', () => ({
-  useWellnessApi: jest.fn(() => ({
+vi.mock('../../services/wellness-api', () => ({
+  useWellnessApi: vi.fn(() => ({
     loading: false,
     error: null,
-    clearError: jest.fn(),
-    getWeekStart: jest.fn(),
-    authenticatedRequest: jest.fn(),
+    clearError: vi.fn(),
+    getWeekStart: vi.fn(),
+    authenticatedRequest: vi.fn(),
     getPracticeInstances: mockGetPracticeInstances,
-    createPracticeInstance: jest.fn(),
+    createPracticeInstance: vi.fn(),
     updatePracticeInstance: mockUpdatePracticeInstance,
-    deletePracticeInstance: jest.fn(),
+    deletePracticeInstance: vi.fn(),
     getWeeklyScores: mockGetWeeklyScores,
-    getWellnessStatus: jest.fn(),
-    getUserWellnessSettings: jest.fn(),
-    updateUserWellnessSettings: jest.fn(),
-    getCurrentWeekPractices: jest.fn(),
+    getWellnessStatus: vi.fn(),
+    getUserWellnessSettings: vi.fn(),
+    updateUserWellnessSettings: vi.fn(),
+    getCurrentWeekPractices: vi.fn(),
   })),
 }));
 
 // Mock Auth0
-jest.mock('@auth0/auth0-react', () => ({
+vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
-    getAccessTokenSilently: jest.fn().mockResolvedValue('mock-token'),
+    getAccessTokenSilently: vi.fn().mockResolvedValue('mock-token'),
   }),
 }));
 
@@ -46,7 +47,7 @@ interface MockPracticeInstance {
 
 describe('WellnessStatusWidget', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     
     // Set up default mock implementations
     mockGetPracticeInstances.mockResolvedValue([]);
@@ -99,7 +100,6 @@ describe('WellnessStatusWidget', () => {
   });
 
   it('should handle practice toggle', async () => {
-    const user = userEvent.setup();
     const mockPractices: MockPracticeInstance[] = [
       {
         id: '1',
@@ -118,7 +118,7 @@ describe('WellnessStatusWidget', () => {
     const gratitudeCheckbox = await screen.findByLabelText(/toggle gratitude/i);
     expect(gratitudeCheckbox).not.toBeChecked();
 
-    await user.click(gratitudeCheckbox);
+    await userEvent.click(gratitudeCheckbox);
 
     expect(mockUpdatePracticeInstance).toHaveBeenCalledWith(
       expect.any(String),

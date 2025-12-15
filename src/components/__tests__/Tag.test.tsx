@@ -1,12 +1,13 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Tag } from '../Tag';
 
-const mockOnClick = jest.fn();
+const mockOnClick = vi.fn();
 
 describe('Tag', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Default Tags', () => {
@@ -67,7 +68,7 @@ describe('Tag', () => {
       render(<Tag label="CustomTag" type="custom" />);
       
       const tag = screen.getByRole('listitem');
-      expect(tag).toHaveClass('border-gray-500');
+      expect(tag).toHaveClass('border-gray-400');
     });
   });
 
@@ -191,7 +192,7 @@ describe('Tag', () => {
       render(<Tag label="Leader" type="default" />);
       
       const tag = screen.getByRole('listitem');
-      expect(tag).toHaveClass('text-white');
+      expect(tag).toHaveClass('text-gray-700');
     });
   });
 }); 

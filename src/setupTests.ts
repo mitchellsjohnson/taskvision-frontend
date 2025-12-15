@@ -1,105 +1,96 @@
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach, vi } from 'vitest';
+import React from 'react';
+
+// Cleanup after each test
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
   })),
 });
 
-// Mock window.dispatchEvent to prevent event-related hangs  
-beforeEach(() => {
-  jest.spyOn(window, 'dispatchEvent').mockImplementation(() => true);
-});
-
-afterEach(() => {
-  // Clean up all mocks
-  jest.restoreAllMocks();
-  jest.clearAllMocks();
-});
-
 // Mock Auth0 with more complete mock
-jest.mock('@auth0/auth0-react', () => ({
+vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
     isAuthenticated: false,
-    loginWithRedirect: jest.fn(),
-    logout: jest.fn(),
+    loginWithRedirect: vi.fn(),
+    logout: vi.fn(),
     user: null,
     isLoading: false,
-    getAccessTokenSilently: jest.fn().mockResolvedValue('mock-token')
+    getAccessTokenSilently: vi.fn().mockResolvedValue('mock-token')
   }),
   Auth0Provider: ({ children }: { children: React.ReactNode }) => children
 }));
 
+// Mock ThemeContext to prevent "useTheme must be used within a ThemeProvider" errors
+vi.mock('./contexts/theme-context', () => ({
+  ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
+  useTheme: () => ({
+    theme: 'dark',
+    setTheme: vi.fn(),
+    isLoading: false
+  })
+}));
+
+// Mock FontSizeContext
+vi.mock('./contexts/font-size-context', () => ({
+  FontSizeProvider: ({ children }: { children: React.ReactNode }) => children,
+  useFontSize: () => ({
+    fontSize: 'medium',
+    setFontSize: vi.fn()
+  })
+}));
+
+// Mock AccessibilityContext
+vi.mock('./contexts/accessibility-context', () => ({
+  AccessibilityProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAccessibility: () => ({
+    settings: {
+      reducedMotion: false,
+      highContrast: false,
+      alwaysShowFocus: false,
+    },
+    updateSetting: vi.fn(),
+    isLoading: false,
+  })
+}));
+
 // Mock react-router-dom
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => jest.fn(),
-  useLocation: () => ({ pathname: '/' })
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+    useLocation: () => ({ pathname: '/' })
+  };
+});
+
+// API mocks removed - individual test files handle their own mocks to avoid conflicts
+
+// Wellness API mock removed - individual test files handle their own mocks
+
+vi.mock('./services/tvagent-api', () => ({
+  sendMessage: vi.fn().mockResolvedValue({ response: 'Mock response' })
 }));
 
-// Mock all API services to prevent real network calls
-jest.mock('./services/task-api', () => ({
-  getTasks: jest.fn().mockResolvedValue([]),
-  createTask: jest.fn().mockResolvedValue({ id: '1', title: 'Test Task' }),
-  updateTask: jest.fn().mockResolvedValue({ id: '1', title: 'Updated Task' }),
-  deleteTask: jest.fn().mockResolvedValue(undefined),
-  getProductivityMetrics: jest.fn().mockResolvedValue({
-    completedTasks: 5,
-    createdTasks: 10,
-    finalScore: 50
-  }),
-  getRecentActivity: jest.fn().mockResolvedValue([]),
-  getUpcomingTasks: jest.fn().mockResolvedValue([]),
-  useTaskApi: () => ({
-    getTasks: jest.fn().mockResolvedValue([]),
-    createTask: jest.fn().mockResolvedValue({ id: '1', title: 'Test Task' }),
-    updateTask: jest.fn().mockResolvedValue({ id: '1', title: 'Updated Task' }),
-    deleteTask: jest.fn().mockResolvedValue(undefined),
-    getProductivityMetrics: jest.fn().mockResolvedValue({
-      completedTasks: 5,
-      createdTasks: 10,
-      finalScore: 50
-    }),
-    getRecentActivity: jest.fn().mockResolvedValue([]),
-    getUpcomingTasks: jest.fn().mockResolvedValue([])
-  })
-}));
-
-jest.mock('./services/user-settings-api', () => ({
-  getUserSettings: jest.fn().mockResolvedValue({}),
-  updateUserSettings: jest.fn().mockResolvedValue({})
-}));
-
-jest.mock('./services/wellness-api', () => ({
-  getWellnessData: jest.fn().mockResolvedValue([]),
-  updateWellnessData: jest.fn().mockResolvedValue({}),
-  useWellnessApi: () => ({
-    getWeeklyScores: jest.fn().mockResolvedValue([]),
-    createPracticeInstance: jest.fn().mockResolvedValue({}),
-    updatePracticeInstance: jest.fn().mockResolvedValue({}),
-    getPracticeInstances: jest.fn().mockResolvedValue([])
-  })
-}));
-
-jest.mock('./services/tvagent-api', () => ({
-  sendMessage: jest.fn().mockResolvedValue({ response: 'Mock response' })
-}));
-
-jest.mock('./services/tvagent-v2-api', () => ({
-  sendMessage: jest.fn().mockResolvedValue({ response: 'Mock response' })
+vi.mock('./services/tvagent-v2-api', () => ({
+  sendMessage: vi.fn().mockResolvedValue({ response: 'Mock response' })
 }));
 
 // Set test environment variables to disable retry logic
@@ -107,19 +98,21 @@ process.env.NODE_ENV = 'test';
 process.env.REACT_APP_DISABLE_RETRIES = 'true';
 
 // Mock axios to catch any unmocked API calls
-jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    get: jest.fn().mockResolvedValue({ data: [] }),
-    post: jest.fn().mockResolvedValue({ data: {} }),
-    put: jest.fn().mockResolvedValue({ data: {} }),
-    delete: jest.fn().mockResolvedValue({ data: {} }),
-    interceptors: {
-      request: { use: jest.fn() },
-      response: { use: jest.fn() }
-    }
-  })),
-  get: jest.fn().mockResolvedValue({ data: [] }),
-  post: jest.fn().mockResolvedValue({ data: {} }),
-  put: jest.fn().mockResolvedValue({ data: {} }),
-  delete: jest.fn().mockResolvedValue({ data: {} })
+vi.mock('axios', () => ({
+  default: {
+    create: vi.fn(() => ({
+      get: vi.fn().mockResolvedValue({ data: [] }),
+      post: vi.fn().mockResolvedValue({ data: {} }),
+      put: vi.fn().mockResolvedValue({ data: {} }),
+      delete: vi.fn().mockResolvedValue({ data: {} }),
+      interceptors: {
+        request: { use: vi.fn() },
+        response: { use: vi.fn() }
+      }
+    })),
+    get: vi.fn().mockResolvedValue({ data: [] }),
+    post: vi.fn().mockResolvedValue({ data: {} }),
+    put: vi.fn().mockResolvedValue({ data: {} }),
+    delete: vi.fn().mockResolvedValue({ data: {} })
+  }
 }));

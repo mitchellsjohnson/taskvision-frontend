@@ -1,20 +1,21 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { UpcomingTasksList } from '../UpcomingTasksList';
 
 // Mock the task API and edit modal
-jest.mock('../../services/task-api', () => ({
+vi.mock('../../services/task-api', () => ({
   useTaskApi: () => ({
-    getTasks: jest.fn(),
+    getTasks: vi.fn(),
   }),
 }));
 
-jest.mock('../edit-task-form', () => ({
+vi.mock('../edit-task-form', () => ({
   EditTaskForm: ({ task, onSave, onCancel }: any) => 
     <div data-testid="edit-task-form">Edit Form for {task?.title || 'New Task'}</div>,
 }));
 
-jest.mock('../ui/Dialog', () => ({
+vi.mock('../ui/Dialog', () => ({
   Dialog: ({ children, open }: any) => open ? <div data-testid="dialog">{children}</div> : null,
   DialogContent: ({ children }: any) => <div data-testid="dialog-content">{children}</div>,
   DialogHeader: ({ children }: any) => <div data-testid="dialog-header">{children}</div>,

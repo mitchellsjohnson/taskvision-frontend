@@ -1,25 +1,26 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { OpenOverdueTile } from '../OpenOverdueTile';
 import { useTaskApi } from '../../services/task-api';
 import { Task } from '../../types';
 
 // Mock the task API service specifically for this test
-const mockGetTasks = jest.fn();
-jest.mock('../../services/task-api', () => ({
+const mockGetTasks = vi.fn();
+vi.mock('../../services/task-api', () => ({
   useTaskApi: () => ({
     getTasks: mockGetTasks,
-    createTask: jest.fn(),
-    updateTask: jest.fn(),
-    deleteTask: jest.fn(),
+    createTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
   }),
 }));
 
 describe('OpenOverdueTile', () => {
-  const mockOnRefresh = jest.fn();
+  const mockOnRefresh = vi.fn();
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   const createMockTask = (id: string, dueDate?: string): Task => ({

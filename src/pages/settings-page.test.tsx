@@ -1,4 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { vi } from "vitest";
 import { MemoryRouter } from 'react-router-dom';
 import { SettingsPage } from './settings-page';
 import { ThemeProvider } from '../contexts/theme-context';
@@ -7,10 +8,10 @@ import { AccessibilityProvider } from '../contexts/accessibility-context';
 import { smsSettingsApi } from '../services/sms-settings-api';
 
 // Mock the SMS API
-jest.mock('../services/sms-settings-api', () => ({
+vi.mock('../services/sms-settings-api', () => ({
   smsSettingsApi: {
-    getSettings: jest.fn(),
-    initializeSms: jest.fn(),
+    getSettings: vi.fn(),
+    initializeSms: vi.fn(),
   },
 }));
 
@@ -30,8 +31,8 @@ const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 describe('SettingsPage', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
-    (smsSettingsApi.getSettings as jest.Mock).mockResolvedValue(null);
+    vi.clearAllMocks();
+    (smsSettingsApi.getSettings as any).mockResolvedValue(null);
   });
 
   it('should render the settings page with main heading', () => {

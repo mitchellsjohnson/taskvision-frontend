@@ -1,16 +1,17 @@
 import { getDateFilterRanges, getDateFilterLabel } from '../dateFilters';
+import { vi } from "vitest";
 import { DateFilterOption } from '../../components/DateFilter';
 
 // Mock Date to ensure consistent test results
 const mockDate = new Date('2024-01-15T12:00:00Z'); // Monday, January 15, 2024
 
 beforeEach(() => {
-  jest.useFakeTimers();
-  jest.setSystemTime(mockDate);
+  vi.useFakeTimers();
+  vi.setSystemTime(mockDate);
 });
 
 afterEach(() => {
-  jest.useRealTimers();
+  vi.useRealTimers();
 });
 
 describe('getDateFilterRanges', () => {
@@ -55,7 +56,7 @@ describe('getDateFilterRanges', () => {
   it('handles edge case for week calculation when day is Sunday', () => {
     // Mock Sunday, January 14, 2024
     const sundayMock = new Date('2024-01-14T12:00:00Z');
-    jest.setSystemTime(sundayMock);
+    vi.setSystemTime(sundayMock);
     
     const result = getDateFilterRanges('dueThisWeek');
     expect(result).toEqual({
@@ -67,7 +68,7 @@ describe('getDateFilterRanges', () => {
   it('handles edge case for month calculation at end of month', () => {
     // Mock January 31, 2024
     const endOfMonthMock = new Date('2024-01-31T12:00:00Z');
-    jest.setSystemTime(endOfMonthMock);
+    vi.setSystemTime(endOfMonthMock);
     
     const result = getDateFilterRanges('dueThisMonth');
     expect(result).toEqual({
@@ -79,7 +80,7 @@ describe('getDateFilterRanges', () => {
   it('handles February leap year correctly', () => {
     // Mock February 15, 2024 (leap year)
     const leapYearMock = new Date('2024-02-15T12:00:00Z');
-    jest.setSystemTime(leapYearMock);
+    vi.setSystemTime(leapYearMock);
     
     const result = getDateFilterRanges('dueThisMonth');
     expect(result).toEqual({

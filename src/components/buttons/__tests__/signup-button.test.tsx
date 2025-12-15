@@ -1,10 +1,11 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { SignupButton } from '../signup-button';
 
 // Mock the useAuth0 hook
-const mockLoginWithRedirect = jest.fn();
-jest.mock('@auth0/auth0-react', () => ({
+const mockLoginWithRedirect = vi.fn();
+vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
     loginWithRedirect: mockLoginWithRedirect
   })

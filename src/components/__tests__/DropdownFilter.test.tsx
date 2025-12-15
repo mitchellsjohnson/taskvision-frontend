@@ -1,15 +1,16 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DropdownFilter } from '../DropdownFilter';
 
 const options = ['Open', 'Waiting', 'Completed'] as const;
 type Status = (typeof options)[number];
 
-const mockOnSelectionChange = jest.fn();
+const mockOnSelectionChange = vi.fn();
 
 describe('DropdownFilter', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders the title', () => {

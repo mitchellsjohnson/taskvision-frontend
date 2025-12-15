@@ -1,9 +1,10 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { DashboardPage } from './dashboard-page';
 
 // Mock the DashboardTabs component to avoid complex dependencies
-jest.mock('../components/DashboardTabs', () => ({
+vi.mock('../components/DashboardTabs', () => ({
   DashboardTabs: ({ defaultTab }: { defaultTab?: string }) => (
     <div data-testid="dashboard-tabs">
       <button role="tab" aria-selected={defaultTab === 'dashboard'}>

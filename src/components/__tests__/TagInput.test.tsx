@@ -1,14 +1,15 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react';
 import { TagInput } from '../TagInput';
 
-const mockOnTagsChange = jest.fn();
+const mockOnTagsChange = vi.fn();
 
 describe('TagInput', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Basic Functionality', () => {
@@ -45,14 +46,6 @@ describe('TagInput', () => {
 
   describe('Autocomplete Functionality', () => {
     it('shows suggestions when typing a partial match', async () => {
-      // Mock DEFAULT_TAGS to ensure consistent behavior
-      jest.mock('../../constants/tags', () => ({
-        DEFAULT_TAGS: {
-          'Creative': 'creative',
-          'Customer': 'customer'
-        }
-      }));
-
       render(<TagInput tags={[]} onTagsChange={mockOnTagsChange} />);
       
       const input = screen.getByPlaceholderText('Add tag...');

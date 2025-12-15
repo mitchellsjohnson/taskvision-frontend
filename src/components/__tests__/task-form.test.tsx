@@ -1,10 +1,11 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TaskForm } from '../task-form';
 import { Task } from '../../types';
 
-const mockOnSubmit = jest.fn();
-const mockOnCancel = jest.fn();
+const mockOnSubmit = vi.fn();
+const mockOnCancel = vi.fn();
 
 const initialValues: Partial<Task> = {
   title: 'Initial Title',
@@ -15,7 +16,7 @@ const initialValues: Partial<Task> = {
 
 describe('TaskForm', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders in "create" mode', () => {

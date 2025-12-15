@@ -1,10 +1,11 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { MITGrid } from '../mit-grid';
 import { Task } from '../../types';
 import { DndContext } from '@dnd-kit/core';
 
-jest.mock('../TaskCard', () => ({
+vi.mock('../TaskCard', () => ({
   TaskCard: ({ task }: { task: Task }) => <div data-testid="task-card">{task.title}</div>,
 }));
 
@@ -13,9 +14,9 @@ const mockTasks: Task[] = [
   { TaskId: '2', title: 'MIT Task 2', status: 'Open', priority: 2, isMIT: true, UserId: 'user-1', creationDate: '', modifiedDate: '', completedDate: null },
 ];
 
-const mockOnOpenEditModal = jest.fn();
-const mockOnUpdate = jest.fn();
-const mockOnDelete = jest.fn();
+const mockOnOpenEditModal = vi.fn();
+const mockOnUpdate = vi.fn();
+const mockOnDelete = vi.fn();
 
 const renderGrid = (tasks: Task[]) => {
     return render(

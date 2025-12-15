@@ -1,13 +1,14 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { ProfilePage } from './profile-page';
 
-jest.mock('@auth0/auth0-react', () => ({
-  useAuth0: jest.fn(),
+vi.mock('@auth0/auth0-react', () => ({
+  useAuth0: vi.fn(),
 }));
 
-const mockedUseAuth0 = useAuth0 as jest.Mock;
+const mockedUseAuth0 = useAuth0 as any;
 
 describe('ProfilePage', () => {
   const user = {

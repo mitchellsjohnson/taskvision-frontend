@@ -1,17 +1,18 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { DashboardTabs } from '../DashboardTabs';
 
 // Mock the custom event dispatch
-const mockDispatchEvent = jest.fn();
+const mockDispatchEvent = vi.fn();
 Object.defineProperty(window, 'dispatchEvent', {
   value: mockDispatchEvent,
 });
 
 describe('DashboardTabs', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('Initial Rendering', () => {

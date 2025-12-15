@@ -1,12 +1,13 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ArrowControls, ArrowControlsProps } from '../ArrowControls';
 
 describe('ArrowControls', () => {
-  let onMove: jest.Mock;
+  let onMove: any;
 
   beforeEach(() => {
-    onMove = jest.fn();
+    onMove = vi.fn();
   });
 
   const renderComponent = (props: Partial<ArrowControlsProps>) => {

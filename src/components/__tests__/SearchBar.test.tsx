@@ -1,15 +1,17 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SearchBar } from '../SearchBar';
 import { Task } from '../../types';
 
 // Mock the useSearchTasks hook
-jest.mock('../../hooks/useSearchTasks', () => ({
-  useSearchTasks: jest.fn(),
+import { useSearchTasks } from '../../hooks/useSearchTasks';
+vi.mock('../../hooks/useSearchTasks', () => ({
+  useSearchTasks: vi.fn(),
 }));
 
-const mockUseSearchTasks = require('../../hooks/useSearchTasks').useSearchTasks as jest.MockedFunction<any>;
+const mockUseSearchTasks = useSearchTasks as anyedFunction<any>;
 
 const mockTasks: Task[] = [
   {
@@ -54,25 +56,25 @@ const mockTasks: Task[] = [
 ];
 
 describe('SearchBar', () => {
-  const mockOnResultClick = jest.fn();
+  const mockOnResultClick = vi.fn();
   
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockUseSearchTasks.mockReturnValue([]);
     
     // Mock getElementById for scroll functionality
     const mockElement = {
-      scrollIntoView: jest.fn(),
+      scrollIntoView: vi.fn(),
       classList: {
-        add: jest.fn(),
-        remove: jest.fn(),
+        add: vi.fn(),
+        remove: vi.fn(),
       },
     };
-    jest.spyOn(document, 'getElementById').mockReturnValue(mockElement as any);
+    vi.spyOn(document, 'getElementById').mockReturnValue(mockElement as any);
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('renders search input with correct placeholder', () => {

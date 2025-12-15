@@ -1,34 +1,35 @@
 import { renderHook } from '@testing-library/react';
+import { vi } from "vitest";
 
 // Mock Auth0
-jest.mock('@auth0/auth0-react', () => ({
+vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
-    getAccessTokenSilently: jest.fn().mockResolvedValue('mock-token'),
+    getAccessTokenSilently: vi.fn().mockResolvedValue('mock-token'),
   }),
 }));
 
 // Mock the entire task-api module to avoid environment variable issues
-jest.mock('../task-api', () => ({
-  useTaskApi: jest.fn(),
+vi.mock('../task-api', () => ({
+  useTaskApi: vi.fn(),
 }));
 
 import { useTaskApi } from '../task-api';
 
 // Mock fetch
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe('useTaskApi', () => {
   const mockApiMethods = {
-    getTasks: jest.fn(),
-    createTask: jest.fn(),
-    updateTask: jest.fn(),
-    deleteTask: jest.fn(),
+    getTasks: vi.fn(),
+    createTask: vi.fn(),
+    updateTask: vi.fn(),
+    deleteTask: vi.fn(),
   };
 
   beforeEach(() => {
     mockFetch.mockClear();
-    (useTaskApi as jest.Mock).mockReturnValue(mockApiMethods);
+    (useTaskApi as any).mockReturnValue(mockApiMethods);
     Object.values(mockApiMethods).forEach(mock => mock.mockClear());
   });
 

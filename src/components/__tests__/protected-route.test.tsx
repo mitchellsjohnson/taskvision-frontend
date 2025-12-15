@@ -1,13 +1,14 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { withAuthenticationRequired } from '@auth0/auth0-react';
 import { ProtectedRoute } from '../protected-route';
 
-jest.mock('@auth0/auth0-react', () => ({
-  withAuthenticationRequired: jest.fn()
+vi.mock('@auth0/auth0-react', () => ({
+  withAuthenticationRequired: vi.fn()
 }));
 
-const mockedWithAuthenticationRequired = withAuthenticationRequired as jest.Mock;
+const mockedWithAuthenticationRequired = withAuthenticationRequired as any;
 
 describe('ProtectedRoute', () => {
   const TestComponent = () => <div>Protected Content</div>;
@@ -17,7 +18,7 @@ describe('ProtectedRoute', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('uses withAuthenticationRequired HOC', () => {

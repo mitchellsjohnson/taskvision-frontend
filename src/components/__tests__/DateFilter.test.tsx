@@ -1,12 +1,13 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { DateFilter, DateFilterOption } from '../DateFilter';
 
-const mockOnSelectionChange = jest.fn();
+const mockOnSelectionChange = vi.fn();
 
 describe('DateFilter', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders with default title and selected option', () => {

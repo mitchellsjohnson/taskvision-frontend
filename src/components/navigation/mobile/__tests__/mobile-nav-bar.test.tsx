@@ -1,9 +1,10 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MobileNavBar } from '../mobile-nav-bar';
 
 // Mock the child components
-jest.mock('../mobile-nav-bar-brand', () => ({
+vi.mock('../mobile-nav-bar-brand', () => ({
   MobileNavBarBrand: ({ handleClick }: { handleClick: () => void }) => (
     <div data-testid="mobile-nav-bar-brand" onClick={handleClick}>
       Brand
@@ -11,7 +12,7 @@ jest.mock('../mobile-nav-bar-brand', () => ({
   )
 }));
 
-jest.mock('../mobile-menu-toggle-button', () => ({
+vi.mock('../mobile-menu-toggle-button', () => ({
   MobileMenuToggleButton: ({ handleClick }: { handleClick: () => void }) => (
     <button data-testid="mobile-menu-toggle" onClick={handleClick}>
       Toggle
@@ -19,7 +20,7 @@ jest.mock('../mobile-menu-toggle-button', () => ({
   )
 }));
 
-jest.mock('../mobile-nav-bar-tabs', () => ({
+vi.mock('../mobile-nav-bar-tabs', () => ({
   MobileNavBarTabs: ({ handleClick }: { handleClick: () => void }) => (
     <div data-testid="mobile-nav-bar-tabs" onClick={handleClick}>
       Tabs
@@ -27,7 +28,7 @@ jest.mock('../mobile-nav-bar-tabs', () => ({
   )
 }));
 
-jest.mock('../mobile-nav-bar-buttons', () => ({
+vi.mock('../mobile-nav-bar-buttons', () => ({
   MobileNavBarButtons: () => <div data-testid="mobile-nav-bar-buttons">Buttons</div>
 }));
 

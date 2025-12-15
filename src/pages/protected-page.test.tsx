@@ -1,16 +1,17 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react';
 import { getProtectedResource } from '../services/message.service';
 import { ProtectedPage } from './protected-page';
 
-jest.mock('../services/message.service');
+vi.mock('../services/message.service');
 
-const mockedGetProtectedResource = getProtectedResource as jest.Mock;
+const mockedGetProtectedResource = getProtectedResource as any;
 
 describe('ProtectedPage', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render the page title', async () => {

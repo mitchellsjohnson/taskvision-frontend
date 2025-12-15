@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor } from '@testing-library/react';
 import { TasksPage } from './tasks-page';
 import { Task } from '../types';
@@ -7,8 +8,8 @@ import { useTaskApi } from '../services/task-api';
 import { MemoryRouter } from 'react-router-dom';
 
 // Mock the task API service specifically for this test
-const mockGetTasks = jest.fn();
-jest.mock('../services/task-api', () => ({
+const mockGetTasks = vi.fn();
+vi.mock('../services/task-api', () => ({
   useTaskApi: () => ({
     getTasks: mockGetTasks,
   }),
@@ -20,7 +21,7 @@ describe('TasksPage', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('renders the MIT and LIT columns and fetches tasks on mount', async () => {
@@ -40,7 +41,7 @@ describe('TasksPage', () => {
       },
     ];
 
-    (mockGetTasks as jest.Mock).mockResolvedValue(mockTasks);
+    (mockGetTasks as any).mockResolvedValue(mockTasks);
 
     render(
       <MemoryRouter>

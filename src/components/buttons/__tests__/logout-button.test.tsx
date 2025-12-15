@@ -1,10 +1,11 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LogoutButton } from '../logout-button';
 
 // Mock the useAuth0 hook
-const mockLogout = jest.fn();
-jest.mock('@auth0/auth0-react', () => ({
+const mockLogout = vi.fn();
+vi.mock('@auth0/auth0-react', () => ({
   useAuth0: () => ({
     logout: mockLogout
   })

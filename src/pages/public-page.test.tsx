@@ -1,15 +1,16 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen, waitFor } from '@testing-library/react';
 import { getPublicResource } from '../services/message.service';
 import { PublicPage } from './public-page';
 
-jest.mock('../services/message.service');
+vi.mock('../services/message.service');
 
-const mockedGetPublicResource = getPublicResource as jest.Mock;
+const mockedGetPublicResource = getPublicResource as any;
 
 describe('PublicPage', () => {
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should render the page title', async () => {

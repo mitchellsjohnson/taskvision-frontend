@@ -1,33 +1,33 @@
 import React from 'react';
+import { vi } from "vitest";
 import { render, screen } from '@testing-library/react';
 import { NavBar } from '../nav-bar';
 import { useAuth0 } from '@auth0/auth0-react';
 import { MemoryRouter } from 'react-router-dom';
 
-jest.mock('@auth0/auth0-react', () => ({
-  useAuth0: jest.fn(),
+vi.mock('@auth0/auth0-react', () => ({
+  useAuth0: vi.fn(),
 }));
 
-const mockedUseAuth0 = useAuth0 as jest.Mock;
+const mockedUseAuth0 = useAuth0 as any;
 
 // Mock child components
-jest.mock('../nav-bar-brand', () => ({
+vi.mock('../nav-bar-brand', () => ({
   NavBarBrand: () => <div data-testid="nav-bar-brand">Brand</div>,
 }));
-jest.mock('../nav-bar-tabs', () => ({
+vi.mock('../nav-bar-tabs', () => ({
   NavBarTabs: () => <div data-testid="nav-bar-tabs">Tabs</div>,
 }));
-jest.mock('../nav-bar-buttons', () => ({
-  NavBarButtons: () => {
-    const mockedUseAuth0 = require('@auth0/auth0-react').useAuth0;
-    const { isAuthenticated } = mockedUseAuth0();
-    return (
-      <div data-testid="nav-bar-buttons">
-        {!isAuthenticated && <button data-testid="login-button">Log In</button>}
-        {isAuthenticated && <button data-testid="logout-button">Log Out</button>}
-      </div>
-    );
-  },
+// Create a simple mock that we can control from tests
+let mockIsAuthenticated = false;
+
+vi.mock('../nav-bar-buttons', () => ({
+  NavBarButtons: () => (
+    <div data-testid="nav-bar-buttons">
+      {!mockIsAuthenticated && <button data-testid="login-button">Log In</button>}
+      {mockIsAuthenticated && <button data-testid="logout-button">Log Out</button>}
+    </div>
+  ),
 }));
 
 const renderNavBar = () => {
@@ -45,6 +45,7 @@ describe('NavBar', () => {
 
   describe('when unauthenticated', () => {
     beforeEach(() => {
+      mockIsAuthenticated = false;
       mockedUseAuth0.mockReturnValue({ isAuthenticated: false });
     });
 
@@ -62,6 +63,7 @@ describe('NavBar', () => {
 
   describe('when authenticated', () => {
     beforeEach(() => {
+      mockIsAuthenticated = true;
       mockedUseAuth0.mockReturnValue({ isAuthenticated: true });
     });
 
